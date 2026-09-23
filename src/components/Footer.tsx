@@ -16,7 +16,7 @@ export default function Footer() {
                 </svg>
               </div>
               <span className="brand-name">
-                Insta<span>Snap</span>
+                Gram<span>Save</span>
               </span>
             </Link>
             <p className="footer-tagline">
@@ -89,14 +89,14 @@ export default function Footer() {
         {/* Disclaimer Notice */}
         <div className="footer-disclaimer">
           <p>
-            <strong>Disclaimer:</strong> InstaSnap is an independent archiving utility and is not affiliated, associated, authorized, endorsed by, or in any way officially connected with Instagram, Meta Platforms, Inc., or any of their subsidiaries. Instagram and Meta are registered trademarks of their respective holders. InstaSnap does not host, store, or archive copyrighted content on its servers; all media files are delivered directly from Instagram public CDN servers upon direct user request.
+            <strong>Disclaimer:</strong> GramSave is an independent archiving utility and is not affiliated, associated, authorized, endorsed by, or in any way officially connected with Instagram, Meta Platforms, Inc., or any of their subsidiaries. Instagram and Meta are registered trademarks of their respective holders. GramSave does not host, store, or archive copyrighted content on its servers; all media files are delivered directly from Instagram public CDN servers upon direct user request.
           </p>
         </div>
 
         {/* Bottom copyright row */}
         <div className="footer-bottom">
           <p className="copyright-text">
-            &copy; {new Date().getFullYear()} InstaSnap. All rights reserved. Built for creators and archiving.
+            &copy; {new Date().getFullYear()} GramSave. All rights reserved. Built for creators and archiving.
           </p>
           <div className="footer-status-pill">
             <span className="status-dot"></span>

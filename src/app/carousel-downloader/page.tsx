@@ -18,28 +18,28 @@ export const metadata: Metadata = {
     "Instagram slideshow saver",
   ],
   alternates: {
-    canonical: "https://instasnap.app/carousel-downloader",
+    canonical: "https://gramsave.site/carousel-downloader",
   },
   openGraph: {
     title: "Instagram Carousel Downloader - Save All Slides & Albums",
     description:
       "Save all photos and videos from Instagram carousel albums in full resolution with one click.",
-    url: "https://instasnap.app/carousel-downloader",
+    url: "https://gramsave.site/carousel-downloader",
   },
 };
 
 const CAROUSEL_FAQS: FaqItem[] = [
   {
     q: "How many slides can I download from an Instagram carousel album?",
-    a: "Instagram permits creators to post up to 20 photos and video clips within a single swipeable carousel album. InstaSnap automatically scans and unpacks the entire sidecar tree, allowing you to preview and download all slides individually or together.",
+    a: "Instagram permits creators to post up to 20 photos and video clips within a single swipeable carousel album. GramSave automatically scans and unpacks the entire sidecar tree, allowing you to preview and download all slides individually or together.",
   },
   {
     q: "Does it work for mixed-media carousels containing both videos and photos?",
-    a: "Yes! InstaSnap detects whether each individual slide is a video or a photo. Video slides are delivered as 1080p MP4 files with sound, while photo slides are delivered as full-resolution JPG images.",
+    a: "Yes! GramSave detects whether each individual slide is a video or a photo. Video slides are delivered as 1080p MP4 files with sound, while photo slides are delivered as full-resolution JPG images.",
   },
   {
     q: "Can I download only a specific slide without downloading the whole album?",
-    a: "Absolutely! After analyzing the URL, InstaSnap renders a numbered preview gallery of every slide with its own dedicated format and download buttons so you only save the exact photos or clips you need.",
+    a: "Absolutely! After analyzing the URL, GramSave renders a numbered preview gallery of every slide with its own dedicated format and download buttons so you only save the exact photos or clips you need.",
   },
   {
     q: "Can I download all slides in one batch?",
@@ -62,13 +62,13 @@ export default function CarouselDownloaderPage() {
             "@type": "ListItem",
             position: 1,
             name: "Home",
-            item: "https://instasnap.app",
+            item: "https://gramsave.site",
           },
           {
             "@type": "ListItem",
             position: 2,
             name: "Instagram Carousel Downloader",
-            item: "https://instasnap.app/carousel-downloader",
+            item: "https://gramsave.site/carousel-downloader",
           },
         ],
       },
@@ -111,7 +111,7 @@ export default function CarouselDownloaderPage() {
               Unpack &amp; Download Every Slide from Instagram Carousel Albums
             </h2>
             <p style={{ color: "var(--text-secondary)", fontSize: "1.05rem", lineHeight: 1.8, marginBottom: "24px" }}>
-              Carousel posts (swipeable albums) are one of the most engaging storytelling formats on Instagram, allowing creators to pack up to 20 high-res photos and video clips into a single post. Most ordinary downloaders only grab the very first image and fail on the rest. <strong>InstaSnap Carousel Downloader</strong> parses the full sidecar album tree and unlocks every individual slide for instant download.
+              Carousel posts (swipeable albums) are one of the most engaging storytelling formats on Instagram, allowing creators to pack up to 20 high-res photos and video clips into a single post. Most ordinary downloaders only grab the very first image and fail on the rest. <strong>GramSave Carousel Downloader</strong> parses the full sidecar album tree and unlocks every individual slide for instant download.
             </p>
 
             {/* Features Grid */}
@@ -162,7 +162,7 @@ export default function CarouselDownloaderPage() {
               <div className="step-card">
                 <span className="step-number">02</span>
                 <span className="step-badge" style={{ color: "#a855f7", background: "rgba(168, 85, 247, 0.15)", borderColor: "rgba(168, 85, 247, 0.3)" }}>Step 2</span>
-                <h3 className="step-title">Paste into InstaSnap</h3>
+                <h3 className="step-title">Paste into GramSave</h3>
                 <p className="step-text">
                   Paste the album link into the downloader search box and click <strong>Download</strong>.
                 </p>

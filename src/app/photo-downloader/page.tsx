@@ -18,28 +18,28 @@ export const metadata: Metadata = {
     "Instagram image downloader online",
   ],
   alternates: {
-    canonical: "https://instasnap.app/photo-downloader",
+    canonical: "https://gramsave.site/photo-downloader",
   },
   openGraph: {
     title: "Instagram Photo Downloader - High-Resolution Image Saver",
     description:
       "Save uncompressed Instagram photos in their original clarity. Works seamlessly on iPhone, Android, and PC.",
-    url: "https://instasnap.app/photo-downloader",
+    url: "https://gramsave.site/photo-downloader",
   },
 };
 
 const PHOTO_FAQS: FaqItem[] = [
   {
-    q: "Why is downloading with InstaSnap superior to taking a screenshot?",
-    a: "Screenshots inherit your phone screen's physical pixel grid, often resulting in blurry artifacts, color shift, and ugly UI overlays like battery icons and timestamps. InstaSnap connects directly to Instagram's content delivery servers to retrieve the original, uncompressed master JPG file at maximum pixel dimensions.",
+    q: "Why is downloading with GramSave superior to taking a screenshot?",
+    a: "Screenshots inherit your phone screen's physical pixel grid, often resulting in blurry artifacts, color shift, and ugly UI overlays like battery icons and timestamps. GramSave connects directly to Instagram's content delivery servers to retrieve the original, uncompressed master JPG file at maximum pixel dimensions.",
   },
   {
     q: "What are Instagram's standard photo dimensions and aspect ratios?",
-    a: "Instagram accepts three standard dimensions: Square (1:1 at 1080 × 1080 px), Portrait (4:5 at 1080 × 1350 px), and Landscape (1.91:1 at 1080 × 566 px). InstaSnap preserves the exact uploaded aspect ratio without forced cropping.",
+    a: "Instagram accepts three standard dimensions: Square (1:1 at 1080 × 1080 px), Portrait (4:5 at 1080 × 1350 px), and Landscape (1.91:1 at 1080 × 566 px). GramSave preserves the exact uploaded aspect ratio without forced cropping.",
   },
   {
     q: "Can I download all photos from a multi-picture post?",
-    a: "Yes! When an Instagram post contains multiple slides (carousel album), InstaSnap identifies every individual photo in the sequence so you can download the complete set in full resolution.",
+    a: "Yes! When an Instagram post contains multiple slides (carousel album), GramSave identifies every individual photo in the sequence so you can download the complete set in full resolution.",
   },
   {
     q: "In what file format are the images downloaded?",
@@ -62,13 +62,13 @@ export default function PhotoDownloaderPage() {
             "@type": "ListItem",
             position: 1,
             name: "Home",
-            item: "https://instasnap.app",
+            item: "https://gramsave.site",
           },
           {
             "@type": "ListItem",
             position: 2,
             name: "Instagram Photo Downloader",
-            item: "https://instasnap.app/photo-downloader",
+            item: "https://gramsave.site/photo-downloader",
           },
         ],
       },
@@ -111,7 +111,7 @@ export default function PhotoDownloaderPage() {
               Original Master Resolution Instagram Photo Downloader
             </h2>
             <p style={{ color: "var(--text-secondary)", fontSize: "1.05rem", lineHeight: 1.8, marginBottom: "24px" }}>
-              Instagram is the premier visual portfolio for world-class photographers, digital artists, architects, and visual designers. When you see an awe-inspiring photograph or reference artwork, taking a screen capture degrades the color depth and introduces compression blur. <strong>InstaSnap Photo Downloader</strong> retrieves the original master image file uploaded by the creator, giving you pristine clarity up to 1080x1350 resolution.
+              Instagram is the premier visual portfolio for world-class photographers, digital artists, architects, and visual designers. When you see an awe-inspiring photograph or reference artwork, taking a screen capture degrades the color depth and introduces compression blur. <strong>GramSave Photo Downloader</strong> retrieves the original master image file uploaded by the creator, giving you pristine clarity up to 1080x1350 resolution.
             </p>
 
             {/* Features Grid */}
@@ -162,7 +162,7 @@ export default function PhotoDownloaderPage() {
               <div className="step-card">
                 <span className="step-number">02</span>
                 <span className="step-badge" style={{ color: "#a855f7", background: "rgba(168, 85, 247, 0.15)", borderColor: "rgba(168, 85, 247, 0.3)" }}>Step 2</span>
-                <h3 className="step-title">Paste into InstaSnap</h3>
+                <h3 className="step-title">Paste into GramSave</h3>
                 <p className="step-text">
                   Paste the URL in the search box above and click the <strong>Download</strong> button.
                 </p>

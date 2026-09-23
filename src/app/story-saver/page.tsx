@@ -18,20 +18,20 @@ export const metadata: Metadata = {
     "story saver online free",
   ],
   alternates: {
-    canonical: "https://instasnap.app/story-saver",
+    canonical: "https://gramsave.site/story-saver",
   },
   openGraph: {
     title: "Instagram Story Saver - Save Stories & Highlights Online",
     description:
       "Download Instagram Stories and Highlights anonymously before they expire. Fast, free, and secure.",
-    url: "https://instasnap.app/story-saver",
+    url: "https://gramsave.site/story-saver",
   },
 };
 
 const STORY_FAQS: FaqItem[] = [
   {
     q: "Can the account owner see that I viewed or saved their Instagram Story?",
-    a: "No! When you use InstaSnap Story Saver, your viewing and downloading are completely anonymous. You do not log into your Instagram account, so your handle will never appear in their 'Seen By' viewer list.",
+    a: "No! When you use GramSave Story Saver, your viewing and downloading are completely anonymous. You do not log into your Instagram account, so your handle will never appear in their 'Seen By' viewer list.",
   },
   {
     q: "Can I download an Instagram Story after the 24-hour window?",
@@ -39,7 +39,7 @@ const STORY_FAQS: FaqItem[] = [
   },
   {
     q: "How do I save Instagram Story Highlights?",
-    a: "Open the Instagram profile, open the Highlight collection, tap the Share icon, and select 'Copy Link'. Paste that link into InstaSnap to extract the individual video clips and high-resolution stills from that Highlight.",
+    a: "Open the Instagram profile, open the Highlight collection, tap the Share icon, and select 'Copy Link'. Paste that link into GramSave to extract the individual video clips and high-resolution stills from that Highlight.",
   },
   {
     q: "In what format are video stories and photo stories saved?",
@@ -62,13 +62,13 @@ export default function StorySaverPage() {
             "@type": "ListItem",
             position: 1,
             name: "Home",
-            item: "https://instasnap.app",
+            item: "https://gramsave.site",
           },
           {
             "@type": "ListItem",
             position: 2,
             name: "Instagram Story Saver",
-            item: "https://instasnap.app/story-saver",
+            item: "https://gramsave.site/story-saver",
           },
         ],
       },
@@ -111,7 +111,7 @@ export default function StorySaverPage() {
               Save Instagram Stories &amp; Highlights Anonymously
             </h2>
             <p style={{ color: "var(--text-secondary)", fontSize: "1.05rem", lineHeight: 1.8, marginBottom: "24px" }}>
-              Instagram Stories capture spontaneous moments, travel recommendations, workout routines, and breaking announcements. Because Stories automatically self-destruct after 24 hours, valuable information can be lost permanently. <strong>InstaSnap Story Saver</strong> gives you a fast, 100% anonymous way to preserve any public Story or Highlight clip directly to your device in original master quality.
+              Instagram Stories capture spontaneous moments, travel recommendations, workout routines, and breaking announcements. Because Stories automatically self-destruct after 24 hours, valuable information can be lost permanently. <strong>GramSave Story Saver</strong> gives you a fast, 100% anonymous way to preserve any public Story or Highlight clip directly to your device in original master quality.
             </p>
 
             {/* Privacy & Highlights Grid */}

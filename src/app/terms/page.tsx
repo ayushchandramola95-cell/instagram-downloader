@@ -4,10 +4,10 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
-  title: "Terms of Service - InstaSnap",
-  description: "Read the Terms of Service for using InstaSnap's Instagram media downloading and archiving tool.",
+  title: "Terms of Service - GramSave",
+  description: "Read the Terms of Service for using GramSave's Instagram media downloading and archiving tool.",
   alternates: {
-    canonical: "https://instasnap.app/terms",
+    canonical: "https://gramsave.site/terms",
   },
 };
 
@@ -42,7 +42,7 @@ export default function TermsPage() {
                 <span className="legal-section-num">1</span> Acceptance of Terms
               </h2>
               <p className="legal-body-text">
-                By accessing and using InstaSnap (&quot;the Service&quot;), you acknowledge that you have read, understood, and agree to be bound by these Terms of Service. If you do not agree with any part of these terms, please discontinue using the service immediately.
+                By accessing and using GramSave (&quot;the Service&quot;), you acknowledge that you have read, understood, and agree to be bound by these Terms of Service. If you do not agree with any part of these terms, please discontinue using the service immediately.
               </p>
             </div>
 
@@ -51,7 +51,7 @@ export default function TermsPage() {
                 <span className="legal-section-num">2</span> Purpose and Fair Use
               </h2>
               <p className="legal-body-text">
-                InstaSnap is provided exclusively as a technical utility for personal, non-commercial archiving, educational purposes, and fair use. Users are solely responsible for ensuring that their downloading and use of media conforms to applicable intellectual property and copyright laws in their respective jurisdictions.
+                GramSave is provided exclusively as a technical utility for personal, non-commercial archiving, educational purposes, and fair use. Users are solely responsible for ensuring that their downloading and use of media conforms to applicable intellectual property and copyright laws in their respective jurisdictions.
               </p>
               <div className="legal-callout-box">
                 <strong style={{ color: "var(--text-primary)", display: "block", marginBottom: "4px" }}>📌 Creator Fair Use Note</strong>
@@ -66,7 +66,7 @@ export default function TermsPage() {
                 <span className="legal-section-num">3</span> Intellectual Property Rights
               </h2>
               <p className="legal-body-text">
-                All videos, photos, stories, and audio clips downloaded through this service remain the copyrighted intellectual property of their respective creators and copyright owners. InstaSnap does not claim ownership, licensing rights, or host rights over any third-party media.
+                All videos, photos, stories, and audio clips downloaded through this service remain the copyrighted intellectual property of their respective creators and copyright owners. GramSave does not claim ownership, licensing rights, or host rights over any third-party media.
               </p>
             </div>
 
@@ -75,7 +75,7 @@ export default function TermsPage() {
                 <span className="legal-section-num">4</span> Non-Affiliation Disclaimer
               </h2>
               <p className="legal-body-text">
-                InstaSnap is an independent archiving utility and is not affiliated, associated, authorized, endorsed by, or in any way officially connected with Instagram, Meta Platforms, Inc., or any of their subsidiaries or affiliates.
+                GramSave is an independent archiving utility and is not affiliated, associated, authorized, endorsed by, or in any way officially connected with Instagram, Meta Platforms, Inc., or any of their subsidiaries or affiliates.
               </p>
             </div>
 
@@ -84,7 +84,7 @@ export default function TermsPage() {
                 <span className="legal-section-num">5</span> Limitation of Liability
               </h2>
               <p className="legal-body-text">
-                The Service is provided &quot;as is&quot; without warranties of any kind, whether express or implied. In no event shall InstaSnap or its operators be liable for any indirect, incidental, punitive, or consequential damages resulting from the use or inability to use this service.
+                The Service is provided &quot;as is&quot; without warranties of any kind, whether express or implied. In no event shall GramSave or its operators be liable for any indirect, incidental, punitive, or consequential damages resulting from the use or inability to use this service.
               </p>
             </div>
           </div>

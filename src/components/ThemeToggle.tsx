@@ -8,7 +8,7 @@ export default function ThemeToggle() {
 
   useEffect(() => {
     setMounted(true);
-    const saved = localStorage.getItem("instasnap-theme") as "dark" | "light" | null;
+    const saved = (localStorage.getItem("gramsave-theme") || localStorage.getItem("instasnap-theme")) as "dark" | "light" | null;
     const initial =
       saved ||
       (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches
@@ -22,7 +22,7 @@ export default function ThemeToggle() {
     const next = theme === "dark" ? "light" : "dark";
     setTheme(next);
     document.documentElement.setAttribute("data-theme", next);
-    localStorage.setItem("instasnap-theme", next);
+    localStorage.setItem("gramsave-theme", next);
   };
 
   if (!mounted) {

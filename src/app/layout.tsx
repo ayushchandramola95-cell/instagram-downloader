@@ -1,13 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
-
-const jakarta = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  variable: "--font-jakarta",
-  weight: ["400", "500", "600", "700", "800"],
-  display: "swap",
-});
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -17,7 +9,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "InstaSnap - Free Instagram Video, Reels & Story Downloader (1080p HD)",
+  title: "GramSave - Free Instagram Video, Reels & Story Downloader (1080p HD)",
   description:
     "Fast, free and anonymous online Instagram video downloader. Save Instagram Reels, Stories, Photos, and Audio in high quality 1080p MP4. No app or login required.",
   keywords: [
@@ -29,9 +21,9 @@ export const metadata: Metadata = {
     "Instagram audio downloader",
     "save Instagram post",
   ],
-  authors: [{ name: "InstaSnap Team" }],
-  creator: "InstaSnap",
-  publisher: "InstaSnap",
+  authors: [{ name: "GramSave Team" }],
+  creator: "GramSave",
+  publisher: "GramSave",
   robots: {
     index: true,
     follow: true,
@@ -46,20 +38,20 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://instasnap.app",
-    title: "InstaSnap - Free Instagram Video, Reels & Story Downloader (1080p)",
+    url: "https://gramsave.site",
+    title: "GramSave - Free Instagram Video, Reels & Story Downloader (1080p)",
     description:
       "Instant high-quality Instagram video & reels downloader. 100% free, safe and works on iPhone, Android, and PC.",
-    siteName: "InstaSnap",
+    siteName: "GramSave",
   },
   twitter: {
     card: "summary_large_image",
-    title: "InstaSnap - Free Instagram Video Downloader",
+    title: "GramSave - Free Instagram Video Downloader",
     description:
       "Download Instagram Reels, Stories, and Videos in Full HD 1080p. Fast, free, no login needed.",
   },
   alternates: {
-    canonical: "https://instasnap.app",
+    canonical: "https://gramsave.site",
   },
 };
 
@@ -73,9 +65,9 @@ export default function RootLayout({
     "@graph": [
       {
         "@type": "WebApplication",
-        "@id": "https://instasnap.app/#webapp",
-        name: "InstaSnap Instagram Video Downloader",
-        url: "https://instasnap.app",
+        "@id": "https://gramsave.site/#webapp",
+        name: "GramSave Instagram Video Downloader",
+        url: "https://gramsave.site",
         applicationCategory: "MultimediaApplication",
         operatingSystem: "All",
         browserRequirements: "Requires JavaScript. Requires HTML5.",
@@ -109,7 +101,7 @@ export default function RootLayout({
           {
             "@type": "HowToStep",
             name: "Step 2: Paste Link",
-            text: "Paste the copied Instagram URL into the input field at InstaSnap.",
+            text: "Paste the copied Instagram URL into the input field at GramSave.",
             position: 2,
           },
           {
@@ -122,23 +114,23 @@ export default function RootLayout({
       },
       {
         "@type": "Organization",
-        "@id": "https://instasnap.app/#organization",
-        name: "InstaSnap",
-        url: "https://instasnap.app",
-        logo: "https://instasnap.app/favicon.ico",
+        "@id": "https://gramsave.site/#organization",
+        name: "GramSave",
+        url: "https://gramsave.site",
+        logo: "https://gramsave.site/favicon.ico",
       },
       {
         "@type": "WebSite",
-        "@id": "https://instasnap.app/#website",
-        url: "https://instasnap.app",
-        name: "InstaSnap",
-        publisher: { "@id": "https://instasnap.app/#organization" },
+        "@id": "https://gramsave.site/#website",
+        url: "https://gramsave.site",
+        name: "GramSave",
+        publisher: { "@id": "https://gramsave.site/#organization" },
       },
     ],
   };
 
   return (
-    <html lang="en" className={jakarta.variable}>
+    <html lang="en">
       <head>
         <link rel="dns-prefetch" href="https://challenges.cloudflare.com" />
         <link rel="preconnect" href="https://challenges.cloudflare.com" crossOrigin="anonymous" />
@@ -147,7 +139,7 @@ export default function RootLayout({
             __html: `
               (function() {
                 try {
-                  var saved = localStorage.getItem('instasnap-theme');
+                  var saved = localStorage.getItem('gramsave-theme') || localStorage.getItem('instasnap-theme');
                   var initial = saved || 'dark';
                   document.documentElement.setAttribute('data-theme', initial);
                 } catch (e) {}

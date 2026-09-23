@@ -4,10 +4,10 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy - InstaSnap",
-  description: "Learn about how InstaSnap respects user privacy with zero data logging and anonymous media downloading.",
+  title: "Privacy Policy - GramSave",
+  description: "Learn about how GramSave respects user privacy with zero data logging and anonymous media downloading.",
   alternates: {
-    canonical: "https://instasnap.app/privacy",
+    canonical: "https://gramsave.site/privacy",
   },
 };
 
@@ -42,7 +42,7 @@ export default function PrivacyPage() {
                 <span className="legal-section-num">1</span> Zero Personal Data Collection
               </h2>
               <p className="legal-body-text">
-                InstaSnap does not require you to register, log in, or provide any personal information, email addresses, phone numbers, or Instagram passwords. Your browsing and downloads remain 100% anonymous at all times.
+                GramSave does not require you to register, log in, or provide any personal information, email addresses, phone numbers, or Instagram passwords. Your browsing and downloads remain 100% anonymous at all times.
               </p>
               <div className="legal-callout-box">
                 <strong style={{ color: "var(--text-primary)", display: "block", marginBottom: "4px" }}>🛡️ Anonymity Guarantee</strong>
@@ -75,7 +75,7 @@ export default function PrivacyPage() {
                 <span className="legal-section-num">4</span> Cookies & Local Preferences
               </h2>
               <p className="legal-body-text">
-                InstaSnap may use minimal client-side local storage exclusively to save your UI preferences (such as dark mode theme or recent search formatting). We do not deploy third-party cross-site behavioral tracking cookies or advertising pixels.
+                GramSave may use minimal client-side local storage exclusively to save your UI preferences (such as dark mode theme or recent search formatting). We do not deploy third-party cross-site behavioral tracking cookies or advertising pixels.
               </p>
             </div>
 

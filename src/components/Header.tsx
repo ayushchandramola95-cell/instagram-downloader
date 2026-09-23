@@ -34,7 +34,7 @@ export default function Header({ activeTab }: HeaderProps) {
             </svg>
           </div>
           <span className="brand-name">
-            Insta<span>Snap</span>
+            Gram<span>Save</span>
           </span>
         </Link>
 

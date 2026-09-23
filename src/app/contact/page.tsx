@@ -4,10 +4,10 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
-  title: "Contact & DMCA Removal - InstaSnap",
-  description: "Get in touch with the InstaSnap team or request DMCA content blocking and removal.",
+  title: "Contact & DMCA Removal - GramSave",
+  description: "Get in touch with the GramSave team or request DMCA content blocking and removal.",
   alternates: {
-    canonical: "https://instasnap.app/contact",
+    canonical: "https://gramsave.site/contact",
   },
 };
 
@@ -33,7 +33,7 @@ export default function ContactPage() {
                 Contact & <span className="gradient-text">DMCA Takedown</span>
               </h1>
               <p style={{ color: "var(--text-secondary)", fontSize: "1rem", lineHeight: 1.7 }}>
-                InstaSnap respects intellectual property rights and adheres to the Digital Millennium Copyright Act (DMCA). If you are a copyright owner or authorized agent wishing to prevent specific URLs from being downloaded through our service, please reach out below.
+                GramSave respects intellectual property rights and adheres to the Digital Millennium Copyright Act (DMCA). If you are a copyright owner or authorized agent wishing to prevent specific URLs from being downloaded through our service, please reach out below.
               </p>
             </div>
 
@@ -55,7 +55,7 @@ export default function ContactPage() {
                   Technical Assistance
                 </h3>
                 <p style={{ fontSize: "0.86rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>
-                  Report bugs, download issues, or provide feedback to improve InstaSnap.
+                  Report bugs, download issues, or provide feedback to improve GramSave.
                 </p>
               </div>
             </div>
@@ -110,13 +110,13 @@ export default function ContactPage() {
                     Official Legal Desk
                   </div>
                   <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "var(--text-primary)" }}>
-                    support@instasnap.app
+                    support@gramsave.site
                   </div>
                 </div>
               </div>
 
               <a
-                href="mailto:support@instasnap.app?subject=DMCA%20Notice%20/%20InstaSnap%20Inquiry"
+                href="mailto:support@gramsave.site?subject=DMCA%20Notice%20/%20GramSave%20Inquiry"
                 style={{
                   background: "var(--insta-gradient)",
                   color: "#ffffff",

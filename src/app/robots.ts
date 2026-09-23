@@ -9,6 +9,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/api/"],
       },
     ],
-    sitemap: "https://instasnap.app/sitemap.xml",
+    sitemap: "https://gramsave.site/sitemap.xml",
   };
 }

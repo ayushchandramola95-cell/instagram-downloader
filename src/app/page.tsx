@@ -10,8 +10,8 @@ const HOME_FAQS: FaqItem[] = [
     a: "When using Safari on iOS, paste the link and tap Download. Safari will prompt you to download the MP4 file (look for the blue downward arrow in Safari's address bar). Tap the downloaded video, tap the iOS Share button (the square with an arrow pointing up), and select 'Save Video'. The clip will immediately appear in your Apple Photos camera roll.",
   },
   {
-    q: "Is InstaSnap really 100% free with no daily download limits?",
-    a: "Yes. InstaSnap is completely free and supported by non-intrusive advertisements. There are no daily download limits, no premium tiers, no watermarks, and no registration or credit card requirements.",
+    q: "Is GramSave really 100% free with no daily download limits?",
+    a: "Yes. GramSave is completely free and supported by non-intrusive advertisements. There are no daily download limits, no premium tiers, no watermarks, and no registration or credit card requirements.",
   },
   {
     q: "Do I need to log in or share my Instagram password?",
@@ -27,7 +27,7 @@ const HOME_FAQS: FaqItem[] = [
   },
   {
     q: "Can I download multi-slide carousel albums and swipeable posts?",
-    a: "Yes! While standard downloaders fail on multi-slide posts, InstaSnap parses the complete Instagram sidecar album tree. You can inspect thumbnails of every photo and video slide, choose individual quality settings, or batch-download all slides together.",
+    a: "Yes! While standard downloaders fail on multi-slide posts, GramSave parses the complete Instagram sidecar album tree. You can inspect thumbnails of every photo and video slide, choose individual quality settings, or batch-download all slides together.",
   },
   {
     q: "Can I use downloaded audio and music clips in my own video editor?",
@@ -35,7 +35,7 @@ const HOME_FAQS: FaqItem[] = [
   },
   {
     q: "Can I download private Instagram posts or stories?",
-    a: "No. InstaSnap strictly honors privacy standards and platform policies. We only extract media from public Instagram profiles and posts. Private accounts require authentication that we do not access.",
+    a: "No. GramSave strictly honors privacy standards and platform policies. We only extract media from public Instagram profiles and posts. Private accounts require authentication that we do not access.",
   },
 ];
 
@@ -186,7 +186,7 @@ export default function Home() {
         {/* Feature Highlights Grid */}
         <section className="features-section container" id="features">
           <div className="section-header">
-            <div className="section-tag">Why Creators Choose InstaSnap</div>
+            <div className="section-tag">Why Creators Choose GramSave</div>
             <h2 className="section-title">Built for Speed, Quality & Privacy</h2>
             <p className="section-desc">
               Engineered for maximum speed, crystal-clear 1080p resolution, and complete anonymity across all modern devices.
@@ -289,7 +289,7 @@ export default function Home() {
               <ul className="device-step-list">
                 <li className="device-step-item">
                   <span className="device-step-dot">1</span>
-                  <span>Open Safari, paste the link into InstaSnap, and tap <strong>Download</strong>.</span>
+                  <span>Open Safari, paste the link into GramSave, and tap <strong>Download</strong>.</span>
                 </li>
                 <li className="device-step-item">
                   <span className="device-step-dot">2</span>
@@ -343,7 +343,7 @@ export default function Home() {
                 </li>
                 <li className="device-step-item">
                   <span className="device-step-dot">2</span>
-                  <span>Paste the link into InstaSnap and hit Enter or click <strong>Download</strong>.</span>
+                  <span>Paste the link into GramSave and hit Enter or click <strong>Download</strong>.</span>
                 </li>
                 <li className="device-step-item">
                   <span className="device-step-dot">3</span>
@@ -358,11 +358,11 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Comparison Matrix (InstaSnap vs Screen Recording) */}
+        {/* Comparison Matrix (GramSave vs Screen Recording) */}
         <section className="container comparison-section" id="comparison">
           <div className="section-header">
             <div className="section-tag">Quality Comparison</div>
-            <h2 className="section-title">InstaSnap vs. Screen Recording &amp; App Save</h2>
+            <h2 className="section-title">GramSave vs. Screen Recording &amp; App Save</h2>
             <p className="section-desc">
               Discover why content creators and editors prefer direct stream extraction over lossy screen recording.
             </p>
@@ -373,7 +373,7 @@ export default function Home() {
               <thead>
                 <tr>
                   <th>Feature / Benefit</th>
-                  <th className="highlight-col">InstaSnap (Recommended)</th>
+                  <th className="highlight-col">GramSave (Recommended)</th>
                   <th>Screen Recording</th>
                   <th>Instagram App &quot;Save&quot;</th>
                 </tr>
@@ -418,7 +418,7 @@ export default function Home() {
         <FaqAccordion
           items={HOME_FAQS}
           title="Frequently Asked Questions"
-          subtitle="Clear, honest answers about saving Instagram media with InstaSnap."
+          subtitle="Clear, honest answers about saving Instagram media with GramSave."
         />
       </main>
 

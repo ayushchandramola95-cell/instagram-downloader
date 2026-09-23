@@ -226,7 +226,7 @@ export async function extractWithYtDlp(targetUrl: string): Promise<ExtractedMedi
     // Optional cookies file (Netscape format) to bypass Instagram login walls
     const cookiesEnv = process.env.YT_DLP_COOKIES_PATH;
     const defaultCookies = path.join(process.cwd(), "cookies.txt");
-    const tmpCookies = path.join(process.platform === "win32" ? process.cwd() : "/tmp", "instasnap_cookies.txt");
+    const tmpCookies = path.join(process.platform === "win32" ? process.cwd() : "/tmp", "gramsave_cookies.txt");
 
     if (cookiesEnv && fs.existsSync(cookiesEnv)) {
       args.push("--cookies", cookiesEnv);

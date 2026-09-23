@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://instasnap.app";
+  const baseUrl = "https://gramsave.site";
   const now = new Date();
 
   return [

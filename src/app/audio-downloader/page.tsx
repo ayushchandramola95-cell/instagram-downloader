@@ -18,19 +18,19 @@ export const metadata: Metadata = {
     "download Instagram audio 320kbps",
   ],
   alternates: {
-    canonical: "https://instasnap.app/audio-downloader",
+    canonical: "https://gramsave.site/audio-downloader",
   },
   openGraph: {
     title: "Instagram Audio Downloader - Extract MP3 Audio Online",
     description:
       "Save audio tracks and trending songs from Instagram Reels directly in 320kbps MP3 format.",
-    url: "https://instasnap.app/audio-downloader",
+    url: "https://gramsave.site/audio-downloader",
   },
 };
 
 const AUDIO_FAQS: FaqItem[] = [
   {
-    q: "What audio bitrate does InstaSnap extract from Instagram Reels?",
+    q: "What audio bitrate does GramSave extract from Instagram Reels?",
     a: "We extract audio tracks at the highest bitrate provided by Instagram's source stream—typically 320kbps or 256kbps MP3/AAC at 44.1kHz stereo, ensuring punchy bass and crystal-clear voice clarity.",
   },
   {
@@ -43,7 +43,7 @@ const AUDIO_FAQS: FaqItem[] = [
   },
   {
     q: "Why do some Reels have no extractable audio?",
-    a: "If a Reel was uploaded completely muted, or if Instagram muted the audio track due to geographic copyright restrictions in your area, the audio stream will be silent. If you can hear the track in your browser, InstaSnap will extract it cleanly.",
+    a: "If a Reel was uploaded completely muted, or if Instagram muted the audio track due to geographic copyright restrictions in your area, the audio stream will be silent. If you can hear the track in your browser, GramSave will extract it cleanly.",
   },
   {
     q: "Do I need to install an audio conversion program?",
@@ -62,13 +62,13 @@ export default function AudioDownloaderPage() {
             "@type": "ListItem",
             position: 1,
             name: "Home",
-            item: "https://instasnap.app",
+            item: "https://gramsave.site",
           },
           {
             "@type": "ListItem",
             position: 2,
             name: "Instagram Audio Downloader",
-            item: "https://instasnap.app/audio-downloader",
+            item: "https://gramsave.site/audio-downloader",
           },
         ],
       },
@@ -111,7 +111,7 @@ export default function AudioDownloaderPage() {
               Extract Background Music &amp; Voiceovers from Any Instagram Reel
             </h2>
             <p style={{ color: "var(--text-secondary)", fontSize: "1.05rem", lineHeight: 1.8, marginBottom: "24px" }}>
-              Many of today&apos;s most viral beats, acoustic covers, podcasts, and trending memes debut as background sound bites on Instagram Reels. If you heard an inspiring motivational speech, workout soundtrack, or unique remix and want just the audio without saving the heavy video file, <strong>InstaSnap Audio Downloader</strong> separates and exports the audio track into a pristine 320kbps MP3 file in seconds.
+              Many of today&apos;s most viral beats, acoustic covers, podcasts, and trending memes debut as background sound bites on Instagram Reels. If you heard an inspiring motivational speech, workout soundtrack, or unique remix and want just the audio without saving the heavy video file, <strong>GramSave Audio Downloader</strong> separates and exports the audio track into a pristine 320kbps MP3 file in seconds.
             </p>
 
             {/* Feature Highlights */}
@@ -162,7 +162,7 @@ export default function AudioDownloaderPage() {
               <div className="step-card">
                 <span className="step-number">02</span>
                 <span className="step-badge" style={{ color: "#a855f7", background: "rgba(168, 85, 247, 0.15)", borderColor: "rgba(168, 85, 247, 0.3)" }}>Step 2</span>
-                <h3 className="step-title">Paste into InstaSnap</h3>
+                <h3 className="step-title">Paste into GramSave</h3>
                 <p className="step-text">
                   Paste the URL in the search box above and click the <strong>Download</strong> button.
                 </p>

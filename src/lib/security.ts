@@ -171,7 +171,7 @@ export function sanitizeFilename(
   defaultExt: "mp4" | "mp3" | "jpg" = "mp4"
 ): string {
   if (!rawFilename || typeof rawFilename !== "string") {
-    return `instasnap_media_${Date.now()}.${defaultExt}`;
+    return `gramsave_media_${Date.now()}.${defaultExt}`;
   }
 
   // Strip null bytes and control characters
@@ -197,7 +197,7 @@ export function sanitizeFilename(
 
   // Fallback if name becomes empty
   if (!namePart) {
-    namePart = `instasnap_${Date.now()}`;
+    namePart = `gramsave_${Date.now()}`;
   }
 
   // Limit name length to 80 chars
