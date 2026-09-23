@@ -1,0 +1,57 @@
+# ==============================================================================
+# Google Cloud Build Configuration for InstaSnap
+# Builds Docker image and deploys directly to Google Cloud Run
+# ==============================================================================
+
+steps:
+  # Step 1: Build the Docker image using the multi-stage Dockerfile
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-image'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/instasnap:latest'
+      - '.'
+
+  # Step 2: Push the image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-image'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/instasnap:latest'
+
+  # Step 3: Deploy to Google Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'deploy-cloudrun'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'instasnap'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/instasnap:latest'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--memory'
+      - '1Gi'
+      - '--cpu'
+      - '1'
+      - '--concurrency'
+      - '80'
+      - '--timeout'
+      - '60s'
+      - '--min-instances'
+      - '0'
+      - '--max-instances'
+      - '10'
+      - '--set-env-vars'
+      - 'NODE_ENV=production,PORT=8080,RATE_LIMIT_FETCH_PER_MIN=30,RATE_LIMIT_DOWNLOAD_PER_MIN=60'
+
+images:
+  - 'gcr.io/$PROJECT_ID/instasnap:latest'
+
+options:
+  logging: CLOUD_LOGGING_ONLY

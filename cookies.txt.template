@@ -1,0 +1,12 @@
+# Netscape HTTP Cookie File
+# http://curl.haxx.se/rfc/cookie_spec.html
+# This is a template file for yt-dlp Instagram cookies.
+#
+# HOW TO POPULATE THIS FILE:
+# 1. Install Chrome/Edge extension: "Get cookies.txt locally" (https://github.com/kairi003/Get-Cookie-UX)
+# 2. Go to https://www.instagram.com (logged into any Instagram account)
+# 3. Click the extension icon and click "Export"
+# 4. Save/rename the exported file to "cookies.txt" directly in this folder.
+#
+# Once cookies.txt is created here, yt-dlp will automatically use it on every request,
+# bypassing Instagram login walls and rate limits!

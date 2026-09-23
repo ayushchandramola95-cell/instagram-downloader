@@ -1,0 +1,1435 @@
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
+import { ExtractedMedia, FetchMediaResponse, MediaResolution } from "@/lib/types";
+
+export type MediaTab = "all" | "reels" | "stories" | "photos" | "audio" | "carousel";
+
+interface TabPreset {
+  id: MediaTab;
+  label: string;
+  icon: string;
+  badge: string;
+  titlePrefix: string;
+  titleHighlight: string;
+  titleSuffix: string;
+  subtitle: string;
+  placeholder: string;
+  pageHref: string;
+}
+
+const TAB_PRESETS: Record<MediaTab, TabPreset> = {
+  all: {
+    id: "all",
+    label: "All In One",
+    icon: "🔥",
+    badge: "Fast, Free & Anonymous Instagram Downloader",
+    titlePrefix: "Download Instagram ",
+    titleHighlight: "Reels, Videos",
+    titleSuffix: " & Stories",
+    subtitle:
+      "Save Instagram Reels, Videos, Carousel Albums, Stories, and Photos in 1080p Full HD MP4 and 320kbps MP3 without login or watermark.",
+    placeholder: "Paste Instagram Reel, Video, Carousel, or Story URL here...",
+    pageHref: "/",
+  },
+  reels: {
+    id: "reels",
+    label: "Reels",
+    icon: "🎬",
+    badge: "100% Free Instagram Reels Downloader in 1080p",
+    titlePrefix: "Download Instagram ",
+    titleHighlight: "Reels in 1080p",
+    titleSuffix: " Full HD",
+    subtitle:
+      "Save viral Instagram reels with crystal-clear original audio and zero watermark in maximum bitrate 1080p MP4.",
+    placeholder: "Paste Instagram Reel link here (e.g., https://www.instagram.com/reel/...)",
+    pageHref: "/reels-downloader",
+  },
+  stories: {
+    id: "stories",
+    label: "Story Saver",
+    icon: "⚡",
+    badge: "100% Anonymous Instagram Story & Highlight Saver",
+    titlePrefix: "Download Instagram ",
+    titleHighlight: "Stories & Highlights",
+    titleSuffix: " Anonymously",
+    subtitle:
+      "Save ephemeral 24-hour stories and user highlights in original quality before they disappear. 100% anonymous.",
+    placeholder: "Paste Instagram Story link (e.g., https://www.instagram.com/stories/username/...)",
+    pageHref: "/story-saver",
+  },
+  photos: {
+    id: "photos",
+    label: "Photo / Post",
+    icon: "📸",
+    badge: "Original Quality Instagram Photo Saver",
+    titlePrefix: "Download Instagram ",
+    titleHighlight: "Photos & Images",
+    titleSuffix: " in HD",
+    subtitle:
+      "Save uncompressed high-resolution photos, portrait images, and profile pictures without lossy screenshot compression.",
+    placeholder: "Paste Instagram Photo link (e.g., https://www.instagram.com/p/...)",
+    pageHref: "/photo-downloader",
+  },
+  audio: {
+    id: "audio",
+    label: "Audio MP3",
+    icon: "🎵",
+    badge: "Fast Instagram Audio & 320kbps MP3 Extractor",
+    titlePrefix: "Convert Instagram Reels to ",
+    titleHighlight: "320kbps MP3 Audio",
+    titleSuffix: "",
+    subtitle:
+      "Extract background music, sound effects, voiceovers, and trending audio tracks from Instagram reels into standalone MP3s.",
+    placeholder: "Paste Instagram Reel or Video URL to extract MP3 (e.g., https://www.instagram.com/reel/...)",
+    pageHref: "/audio-downloader",
+  },
+  carousel: {
+    id: "carousel",
+    label: "Carousel",
+    icon: "📂",
+    badge: "100% Free Instagram Carousel & Album Downloader",
+    titlePrefix: "Download Instagram ",
+    titleHighlight: "Carousel & Albums",
+    titleSuffix: " All Slides",
+    subtitle:
+      "Save all photos, videos, and mixed-media slides from swipeable Instagram carousel albums in 1080p Full HD with 1 click.",
+    placeholder: "Paste Instagram Carousel or Album link (e.g., https://www.instagram.com/p/...)",
+    pageHref: "/carousel-downloader",
+  },
+};
+
+interface DownloaderSectionProps {
+  defaultTab?: MediaTab;
+  showTabs?: boolean;
+}
+
+export default function DownloaderSection({
+  defaultTab = "all",
+  showTabs = true,
+}: DownloaderSectionProps) {
+  const [activeTab] = useState<MediaTab>(defaultTab);
+  const [url, setUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<ExtractedMedia | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [pasteSuccess, setPasteSuccess] = useState(false);
+
+  // Quality toggle selection for single media (index in result.resolutions)
+  const [selectedQualityIndex, setSelectedQualityIndex] = useState<number>(0);
+
+  // Carousel state
+  const [carouselSelectedQualities, setCarouselSelectedQualities] = useState<Record<number, number>>({});
+  const [carouselViewMode, setCarouselViewMode] = useState<"grid" | "showcase">("grid");
+  const [activeShowcaseSlide, setActiveShowcaseSlide] = useState<number>(0);
+  const [batchDownloading, setBatchDownloading] = useState(false);
+  const [batchProgressText, setBatchProgressText] = useState("");
+
+  // Download simulation progress
+  const [downloadingFile, setDownloadingFile] = useState<string | null>(null);
+  const [downloadProgress, setDownloadProgress] = useState<number>(0);
+
+  // Copy link feedback
+  const [copiedLink, setCopiedLink] = useState(false);
+
+  // Interactive HTML5 Audio Player
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [audioCurrentTime, setAudioCurrentTime] = useState(0);
+  const [audioDuration, setAudioDuration] = useState(0);
+
+  // Cloudflare Turnstile anti-bot state (optional)
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileWidgetRef = useRef<HTMLDivElement | null>(null);
+
+  const activePreset = TAB_PRESETS[activeTab] || TAB_PRESETS.all;
+
+  // Initialize Turnstile widget if site key is configured
+  useEffect(() => {
+    if (!turnstileSiteKey || typeof window === "undefined") return;
+
+    const scriptId = "cf-turnstile-script";
+    if (!document.getElementById(scriptId)) {
+      const script = document.createElement("script");
+      script.id = scriptId;
+      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+      script.async = true;
+      script.defer = true;
+      document.body.appendChild(script);
+
+      script.onload = () => {
+        const win = window as unknown as {
+          turnstile?: {
+            render: (
+              container: HTMLElement | string,
+              params: Record<string, unknown>
+            ) => string;
+          };
+        };
+        if (win.turnstile && turnstileWidgetRef.current) {
+          try {
+            win.turnstile.render(turnstileWidgetRef.current, {
+              sitekey: turnstileSiteKey,
+              callback: (token: string) => setTurnstileToken(token),
+              "error-callback": () => setTurnstileToken(null),
+              "expired-callback": () => setTurnstileToken(null),
+              theme: "auto",
+            });
+          } catch {
+            // Widget render error handled safely
+          }
+        }
+      };
+    }
+  }, [turnstileSiteKey]);
+
+  // Stop audio on unmount
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+    };
+  }, []);
+
+  const handleReset = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+    setIsPlayingAudio(false);
+    setResult(null);
+    setUrl("");
+    setError(null);
+    setSelectedQualityIndex(0);
+    setCarouselSelectedQualities({});
+    setActiveShowcaseSlide(0);
+
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      setTimeout(() => {
+        document.getElementById("instagram-url-input")?.focus();
+      }, 350);
+    }
+  };
+
+  const handlePaste = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text) {
+        setUrl(text);
+        setError(null);
+        setPasteSuccess(true);
+        setTimeout(() => setPasteSuccess(false), 2000);
+      }
+    } catch {
+      setError("Please paste the link manually into the input box.");
+    }
+  };
+
+  const handleClear = () => {
+    setUrl("");
+    setError(null);
+    setResult(null);
+  };
+
+  const handleCopyLink = (textToCopy: string) => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(textToCopy);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2000);
+    }
+  };
+
+  const fetchMedia = async (targetUrl: string, isSample = false) => {
+    setLoading(true);
+    setError(null);
+
+    // Smoothly center the viewport on the loading state
+    setTimeout(() => {
+      const loadingEl = document.getElementById("extract-loading-box");
+      if (loadingEl) {
+        loadingEl.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }, 40);
+
+    try {
+      const res = await fetch("/api/fetch-media", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: targetUrl, isSample, turnstileToken }),
+      });
+
+      const json: FetchMediaResponse = await res.json();
+
+      if (!res.ok || !json.success || !json.data) {
+        throw new Error(json.error || "Failed to fetch media from Instagram.");
+      }
+
+      setResult(json.data);
+
+      // Auto-select quality toggle
+      if (activeTab === "audio" || json.data.type === "audio") {
+        const audioIdx = json.data.resolutions.findIndex((r) => r.type === "mp3");
+        setSelectedQualityIndex(audioIdx !== -1 ? audioIdx : 0);
+      } else {
+        setSelectedQualityIndex(0);
+      }
+
+      // Initialize carousel slide quality choices
+      if (json.data.carouselItems && json.data.carouselItems.length > 0) {
+        const initMap: Record<number, number> = {};
+        json.data.carouselItems.forEach((item) => {
+          initMap[item.index] = 0;
+        });
+        setCarouselSelectedQualities(initMap);
+        setActiveShowcaseSlide(0);
+      }
+
+      // Smoothly center the viewport on the fetched result card
+      setTimeout(() => {
+        const resultEl = document.getElementById("media-result-preview");
+        if (resultEl) {
+          resultEl.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }, 80);
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Something went wrong while resolving the link.";
+      setError(message);
+      setResult(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!url.trim()) {
+      setError("Please paste a valid Instagram video or photo link.");
+      return;
+    }
+    fetchMedia(url.trim());
+  };
+
+  /**
+   * Triggers download via the local attachment streaming proxy (/api/download)
+   * to guarantee immediate file saving and bypass Instagram hotlink/CORS restrictions.
+   */
+  const triggerDownload = (rawDownloadUrl: string, filename: string) => {
+    setDownloadingFile(filename);
+    setDownloadProgress(15);
+
+    const interval = setInterval(() => {
+      setDownloadProgress((prev) => {
+        if (prev >= 90) {
+          clearInterval(interval);
+          return 90;
+        }
+        return prev + 25;
+      });
+    }, 120);
+
+    const proxyDownloadUrl = rawDownloadUrl.startsWith("http")
+      ? `/api/download?url=${encodeURIComponent(rawDownloadUrl)}&filename=${encodeURIComponent(filename)}`
+      : rawDownloadUrl;
+
+    const iframe = document.createElement("iframe");
+    iframe.style.display = "none";
+    iframe.src = proxyDownloadUrl;
+    document.body.appendChild(iframe);
+
+    setTimeout(() => {
+      setDownloadProgress(100);
+      setTimeout(() => {
+        setDownloadingFile(null);
+        setDownloadProgress(0);
+        if (document.body.contains(iframe)) {
+          document.body.removeChild(iframe);
+        }
+      }, 1500);
+    }, 800);
+  };
+
+  /**
+   * Sequentially triggers download for all carousel slides
+   */
+  const handleDownloadAllCarousel = async () => {
+    if (!result?.carouselItems || result.carouselItems.length === 0) return;
+    setBatchDownloading(true);
+
+    for (let i = 0; i < result.carouselItems.length; i++) {
+      const item = result.carouselItems[i];
+      const selectedIndex = carouselSelectedQualities[item.index] ?? 0;
+      const chosenRes = item.resolutions[selectedIndex] || item.resolutions[0];
+
+      if (chosenRes) {
+        setBatchProgressText(`Triggering slide ${i + 1} of ${result.carouselItems.length}...`);
+        const cleanLabel = chosenRes.label.replace(/[^a-zA-Z0-9]/g, "_");
+        triggerDownload(
+          chosenRes.downloadUrl,
+          `instagram_${result.id}_slide_${item.index}_${cleanLabel}.${chosenRes.type}`
+        );
+        await new Promise((resolve) => setTimeout(resolve, 850));
+      }
+    }
+
+    setBatchProgressText(`All ${result.carouselItems.length} slides downloaded!`);
+    setTimeout(() => {
+      setBatchDownloading(false);
+      setBatchProgressText("");
+    }, 3000);
+  };
+
+  // Audio player controls
+  const toggleAudioPlay = () => {
+    if (!audioRef.current) return;
+    if (isPlayingAudio) {
+      audioRef.current.pause();
+      setIsPlayingAudio(false);
+    } else {
+      audioRef.current.play().then(() => setIsPlayingAudio(true)).catch(console.error);
+    }
+  };
+
+  const handleAudioSeek = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!audioRef.current || audioDuration <= 0) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const pct = Math.max(0, Math.min(1, clickX / rect.width));
+    audioRef.current.currentTime = pct * audioDuration;
+  };
+
+  const formatTime = (seconds: number) => {
+    if (isNaN(seconds) || seconds < 0) return "0:00";
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
+  };
+
+  // Determine current active resolution for single media
+  const currentResolution: MediaResolution | undefined =
+    result?.resolutions[selectedQualityIndex] || result?.resolutions[0];
+
+  const isAudioSelected =
+    currentResolution?.type === "mp3" ||
+    result?.type === "audio" ||
+    activeTab === "audio";
+
+  const isPhotoMedia = result?.type === "photo";
+  const isVideoMedia = result?.type === "video" || result?.type === "reel" || result?.type === "story";
+
+  // Audio streaming URL for the preview player
+  const audioPreviewUrl = result?.resolutions.find((r) => r.type === "mp3")?.downloadUrl || currentResolution?.downloadUrl || "";
+  const proxyAudioPreviewUrl = audioPreviewUrl.startsWith("http")
+    ? `/api/download?url=${encodeURIComponent(audioPreviewUrl)}&filename=preview.mp3`
+    : audioPreviewUrl;
+
+  return (
+    <section className="hero container" id="downloader">
+      {/* ========================================================================= */}
+      {/* 1. HERO & SEARCH BOX (HIDDEN when loading OR result is present)           */}
+      {/* ========================================================================= */}
+      {!loading && !result && (
+        <>
+          {/* Format Tabs as Direct Navigation Links */}
+          {showTabs && (
+            <div className="format-tabs" role="tablist" aria-label="Media format filters">
+              {(Object.keys(TAB_PRESETS) as MediaTab[]).map((tabKey) => {
+                const preset = TAB_PRESETS[tabKey];
+                const isActive = activeTab === tabKey;
+                return (
+                  <Link
+                    key={tabKey}
+                    href={preset.pageHref}
+                    id={`tab-${tabKey}`}
+                    className={`format-tab-btn tab-${tabKey} ${isActive ? "active" : ""}`}
+                    aria-selected={isActive}
+                    role="tab"
+                  >
+                    <span>{preset.icon}</span>
+                    <span>{preset.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Hero Headings */}
+          <div key={activeTab} className="hero-anim-box">
+            <div className="hero-pill">
+              <span className="hero-pill-indicator"></span>
+              <span>{activePreset.badge}</span>
+            </div>
+
+            <h1 className="hero-title">
+              {activePreset.titlePrefix}
+              <span className="gradient-text">{activePreset.titleHighlight}</span>
+              {activePreset.titleSuffix}
+            </h1>
+
+            <p className="hero-subtitle">{activePreset.subtitle}</p>
+          </div>
+
+          {/* Input Form Box */}
+          <div className="downloader-box">
+            <form onSubmit={handleSubmit}>
+              <div className="input-row">
+                <div className="input-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                  </svg>
+                </div>
+
+                <input
+                  id="instagram-url-input"
+                  type="text"
+                  className="url-input"
+                  placeholder={activePreset.placeholder}
+                  value={url}
+                  onChange={(e) => {
+                    setUrl(e.target.value);
+                    if (error) setError(null);
+                  }}
+                  autoComplete="off"
+                />
+
+                {url && (
+                  <button
+                    type="button"
+                    className="clear-btn"
+                    id="clear-input-btn"
+                    onClick={handleClear}
+                    title="Clear URL"
+                  >
+                    ✕
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  id="paste-clipboard-btn"
+                  className="paste-btn"
+                  onClick={handlePaste}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                  </svg>
+                  {pasteSuccess ? "Pasted!" : "Paste"}
+                </button>
+
+                <button
+                  id="download-submit-btn"
+                  type="submit"
+                  className="submit-btn"
+                  disabled={loading}
+                >
+                  <span>Download</span>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <polyline points="19 12 12 19 5 12"></polyline>
+                  </svg>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          {/* Optional Cloudflare Turnstile Container */}
+          {turnstileSiteKey && (
+            <div
+              ref={turnstileWidgetRef}
+              id="cf-turnstile-box"
+              style={{ marginTop: "14px", minHeight: "65px", display: "flex", justifyContent: "center" }}
+            />
+          )}
+
+          {error && (
+            <div
+              style={{
+                marginTop: "20px",
+                maxWidth: "780px",
+                width: "100%",
+                background: error.includes("Too many requests")
+                  ? "rgba(245, 158, 11, 0.08)"
+                  : "rgba(239, 68, 68, 0.08)",
+                border: error.includes("Too many requests")
+                  ? "1px solid rgba(245, 158, 11, 0.3)"
+                  : "1px solid rgba(239, 68, 68, 0.25)",
+                borderRadius: "14px",
+                padding: "18px 22px",
+                textAlign: "left",
+                color: error.includes("Too many requests") ? "#fcd34d" : "#fca5a5",
+                fontSize: "0.93rem",
+                lineHeight: 1.6,
+                backdropFilter: "blur(10px)",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  fontWeight: "700",
+                  color: error.includes("Too many requests") ? "#fbbf24" : "#f87171",
+                  fontSize: "1.02rem",
+                  marginBottom: "6px",
+                }}
+              >
+                <span>{error.includes("Too many requests") ? "⏱️ Rate Limit Exceeded" : "⚠️ Download Notice"}</span>
+              </div>
+              <p style={{ color: "var(--text-primary)", fontSize: "0.95rem" }}>{error}</p>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 2. INSTANT LOADING STATE (REPLACES EVERYTHING ON CLICK)                   */}
+      {/* ========================================================================= */}
+      {loading && (
+        <div className="extract-loading-container" id="extract-loading-box">
+          <div className="extract-spinner-wrapper">
+            <div className="extract-spinner-glow"></div>
+            <div className="extract-spinner-ring"></div>
+          </div>
+          <h2 className="loading-title">Resolving Instagram Stream...</h2>
+          <p className="loading-subtitle">
+            Extracting direct high-speed 1080p media buffers from Instagram CDN edge servers.
+          </p>
+          <div className="loading-bar-wrapper">
+            <div className="loading-bar-indeterminate"></div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 2. LIVE DOWNLOAD PROGRESS NOTIFICATION TOAST                              */}
+      {/* ========================================================================= */}
+      {downloadingFile && (
+        <div className="download-progress-box" style={{ width: "100%", maxWidth: "860px", marginBottom: "20px" }}>
+          <div className="progress-header">
+            <span>
+              {downloadProgress < 100 ? "⏳ Downloading Stream:" : "✅ Download Started:"}{" "}
+              <strong style={{ color: "#f472b6" }}>{downloadingFile}</strong>
+            </span>
+            <span>{downloadProgress}%</span>
+          </div>
+          <div className="progress-bar-bg">
+            <div className="progress-bar-fill" style={{ width: `${downloadProgress}%` }}></div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 3. DEDICATED RESULT VIEW (ONLY SHOWN WHEN MEDIA IS READY)                */}
+      {/* ========================================================================= */}
+      {!loading && result && (
+        <div className="result-view-container" id="media-result-preview">
+          {/* Top Action Bar */}
+          <div className="result-top-action-bar">
+            <button type="button" className="back-search-btn" onClick={handleReset}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+              <span>Download Another Video</span>
+            </button>
+
+            <span className="media-ready-badge">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              <span>{result.isCarousel ? `${result.carouselItems?.length || 0} Slides Ready` : "Media Ready for Download"}</span>
+            </span>
+          </div>
+
+          {/* ===================================================================== */}
+          {/* A. SPECIALIZED SINGLE PHOTO RESULT VIEW                               */}
+          {/* ===================================================================== */}
+          {!result.isCarousel && isPhotoMedia && (
+            <div className="result-card-v2">
+              {/* Photo Showcase Column */}
+              <div className="result-media-col">
+                <div className="photo-showcase-frame">
+                  <div className="photo-badge-row">
+                    <span className="photo-tag-chip">📸 HIGH-RES PHOTO</span>
+                    {currentResolution?.width && (
+                      <span className="photo-tag-chip" style={{ background: "rgba(131, 58, 180, 0.85)" }}>
+                        {currentResolution.width}×{currentResolution.height}
+                      </span>
+                    )}
+                  </div>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={currentResolution?.downloadUrl || result.thumbnailUrl}
+                    alt={result.caption || "Instagram Photo"}
+                    className="photo-showcase-img"
+                  />
+                </div>
+
+                {/* Quick utility actions */}
+                <div className="photo-quick-actions">
+                  <a
+                    href={currentResolution?.downloadUrl || result.thumbnailUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="photo-action-btn"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M15 3h6v6"></path>
+                      <path d="M10 14L21 3"></path>
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                    </svg>
+                    <span>Full Size</span>
+                  </a>
+                  <button
+                    type="button"
+                    className="photo-action-btn"
+                    onClick={() => handleCopyLink(currentResolution?.downloadUrl || result.thumbnailUrl)}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    <span>{copiedLink ? "Copied Link!" : "Copy Link"}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Photo Info & Quality Toggle Column */}
+              <div className="result-info-col">
+                <div>
+                  {/* Creator Card */}
+                  <div className="creator-profile-card">
+                    <div className="creator-avatar">
+                      {result.author ? result.author.charAt(0).toUpperCase() : "I"}
+                    </div>
+                    <div className="creator-meta">
+                      <div className="creator-name-row">
+                        <span className="creator-name">{result.author || "Instagram Creator"}</span>
+                        <svg className="verified-icon" width="16" height="16" viewBox="0 0 24 24" fill="#38bdf8">
+                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                        </svg>
+                      </div>
+                      <div className="creator-handle">
+                        {result.authorHandle || "@instagram_user"}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Caption */}
+                  {result.caption && (
+                    <div className="caption-box">
+                      <p>{result.caption}</p>
+                    </div>
+                  )}
+
+                  {/* Segmented Quality Toggle */}
+                  <div className="quality-toggle-container">
+                    <div className="quality-toggle-label">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                      </svg>
+                      <span>Choose Photo Resolution:</span>
+                    </div>
+
+                    <div className="quality-toggle-bar">
+                      {result.resolutions.map((res, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          className={`quality-toggle-pill ${selectedQualityIndex === idx ? "active" : ""}`}
+                          onClick={() => setSelectedQualityIndex(idx)}
+                        >
+                          <span>{res.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Technical Specs Strip */}
+                  {currentResolution && (
+                    <div className="specs-strip">
+                      <div className="spec-item">
+                        <span className="spec-title">Format</span>
+                        <span className="spec-value">JPG (Photo)</span>
+                      </div>
+                      <div className="spec-item">
+                        <span className="spec-title">Resolution</span>
+                        <span className="spec-value">
+                          {currentResolution.width && currentResolution.height
+                            ? `${currentResolution.width} × ${currentResolution.height} px`
+                            : "1080p High-Res"}
+                        </span>
+                      </div>
+                      <div className="spec-item">
+                        <span className="spec-title">Quality</span>
+                        <span className="spec-value">{currentResolution.quality}</span>
+                      </div>
+                      {currentResolution.size && (
+                        <div className="spec-item">
+                          <span className="spec-title">Approx Size</span>
+                          <span className="spec-value">{currentResolution.size}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Primary Download CTA */}
+                {currentResolution && (
+                  <button
+                    type="button"
+                    className="primary-dl-card-btn"
+                    onClick={() =>
+                      triggerDownload(
+                        currentResolution.downloadUrl,
+                        `instagram_${result.id}_${currentResolution.label.replace(/\s+/g, "_")}.${currentResolution.type}`
+                      )
+                    }
+                  >
+                    <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                      <span style={{ fontWeight: 800, fontSize: "1.05rem" }}>
+                        📸 Download {currentResolution.label} (JPG)
+                      </span>
+                      <span style={{ fontSize: "0.78rem", opacity: 0.9, fontWeight: 500 }}>
+                        {currentResolution.quality} • Direct Uncompressed CDN File
+                      </span>
+                    </div>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="7 10 12 15 17 10"></polyline>
+                      <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ===================================================================== */}
+          {/* B. SPECIALIZED DEDICATED AUDIO RESULT VIEW                            */}
+          {/* ===================================================================== */}
+          {!result.isCarousel && isAudioSelected && (
+            <div className="result-card-v2">
+              {/* Vinyl Player Showcase */}
+              <div className="result-media-col">
+                <div className="vinyl-showcase-box">
+                  <div className={`vinyl-disk ${isPlayingAudio ? "spinning" : ""}`}>
+                    <div
+                      className="vinyl-center-art"
+                      style={{ backgroundImage: `url(${result.thumbnailUrl})` }}
+                    >
+                      <div className="vinyl-center-spindle"></div>
+                    </div>
+                  </div>
+
+                  <div className="sound-bars-indicator">
+                    <span className="sound-bar"></span>
+                    <span className="sound-bar"></span>
+                    <span className="sound-bar"></span>
+                    <span className="sound-bar"></span>
+                    <span className="sound-bar"></span>
+                    <span className="sound-bar"></span>
+                  </div>
+
+                  <span style={{ marginTop: "10px", fontSize: "0.8rem", fontWeight: 700, color: "#ec4899" }}>
+                    🎵 320 KBPS STEREO AUDIO
+                  </span>
+                </div>
+              </div>
+
+              {/* Audio Controls & Download */}
+              <div className="result-info-col">
+                <div>
+                  {/* Creator Card */}
+                  <div className="creator-profile-card">
+                    <div className="creator-avatar" style={{ background: "linear-gradient(135deg, #f97316 0%, #ec4899 100%)" }}>
+                      🎵
+                    </div>
+                    <div className="creator-meta">
+                      <div className="creator-name-row">
+                        <span className="creator-name">{result.author || "Instagram Audio Track"}</span>
+                        <svg className="verified-icon" width="16" height="16" viewBox="0 0 24 24" fill="#38bdf8">
+                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                        </svg>
+                      </div>
+                      <div className="creator-handle">
+                        {result.authorHandle || "@instagram_audio"} • MP3 Audio Track
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Caption / Title */}
+                  {result.caption && (
+                    <div className="caption-box">
+                      <p>{result.caption}</p>
+                    </div>
+                  )}
+
+                  {/* Built-in HTML5 Audio Preview Player */}
+                  <div className="audio-player-custom">
+                    <audio
+                      ref={audioRef}
+                      src={proxyAudioPreviewUrl}
+                      onTimeUpdate={() => {
+                        if (audioRef.current) {
+                          setAudioCurrentTime(audioRef.current.currentTime);
+                        }
+                      }}
+                      onLoadedMetadata={() => {
+                        if (audioRef.current) {
+                          setAudioDuration(audioRef.current.duration);
+                        }
+                      }}
+                      onEnded={() => setIsPlayingAudio(false)}
+                      preload="metadata"
+                    />
+
+                    <div className="audio-controls-row">
+                      <button
+                        type="button"
+                        className="audio-play-toggle-btn"
+                        onClick={toggleAudioPlay}
+                        title={isPlayingAudio ? "Pause Audio Preview" : "Play Audio Preview"}
+                      >
+                        {isPlayingAudio ? (
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <rect x="6" y="4" width="4" height="16"></rect>
+                            <rect x="14" y="4" width="4" height="16"></rect>
+                          </svg>
+                        ) : (
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: "2px" }}>
+                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                          </svg>
+                        )}
+                      </button>
+
+                      <div className="audio-progress-bar-container" onClick={handleAudioSeek}>
+                        <div
+                          className="audio-progress-fill"
+                          style={{
+                            width: `${audioDuration > 0 ? (audioCurrentTime / audioDuration) * 100 : 0}%`,
+                          }}
+                        ></div>
+                      </div>
+
+                      <span className="audio-time-label">
+                        {formatTime(audioCurrentTime)} / {formatTime(audioDuration || 30)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Bitrate Toggle */}
+                  <div className="quality-toggle-container">
+                    <div className="quality-toggle-label">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                      </svg>
+                      <span>Select MP3 Audio Bitrate:</span>
+                    </div>
+
+                    <div className="quality-toggle-bar">
+                      {result.resolutions.map((res, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          className={`quality-toggle-pill ${selectedQualityIndex === idx ? "active" : ""}`}
+                          onClick={() => setSelectedQualityIndex(idx)}
+                        >
+                          <span>{res.type === "mp3" ? "🎵 " : ""}{res.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Specs Strip */}
+                  <div className="specs-strip">
+                    <div className="spec-item">
+                      <span className="spec-title">Audio Format</span>
+                      <span className="spec-value">MP3 Stereo (320kbps)</span>
+                    </div>
+                    <div className="spec-item">
+                      <span className="spec-title">Quality</span>
+                      <span className="spec-value">{currentResolution?.quality || "Ultra HD Fidelity"}</span>
+                    </div>
+                    <div className="spec-item">
+                      <span className="spec-title">Channels</span>
+                      <span className="spec-value">2.0 Dual Stereo</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Primary Download Button */}
+                {currentResolution && (
+                  <button
+                    type="button"
+                    className="primary-dl-card-btn"
+                    style={{ background: "linear-gradient(135deg, #f97316 0%, #ec4899 100%)" }}
+                    onClick={() =>
+                      triggerDownload(
+                        currentResolution.downloadUrl,
+                        `instagram_${result.id}_${currentResolution.label.replace(/\s+/g, "_")}.${currentResolution.type}`
+                      )
+                    }
+                  >
+                    <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                      <span style={{ fontWeight: 800, fontSize: "1.05rem" }}>
+                        🎵 Download {currentResolution.label}
+                      </span>
+                      <span style={{ fontSize: "0.78rem", opacity: 0.9, fontWeight: 500 }}>
+                        Original Bitrate • Lossless Transcode • Instant MP3
+                      </span>
+                    </div>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="7 10 12 15 17 10"></polyline>
+                      <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ===================================================================== */}
+          {/* C. SPECIALIZED VIDEO / REEL / STORY RESULT VIEW                       */}
+          {/* ===================================================================== */}
+          {!result.isCarousel && isVideoMedia && !isAudioSelected && (
+            <div className="result-card-v2">
+              {/* Video Player Column */}
+              <div className="result-media-col">
+                <div className="video-player-frame">
+                  <span className="thumb-type-tag">
+                    {result.type === "reel" ? "🎬 REEL" : result.type === "story" ? "⚡ STORY" : "🎥 VIDEO"}
+                  </span>
+                  {result.duration && (
+                    <span className="thumb-duration-tag">⏱ {result.duration}</span>
+                  )}
+
+                  <video
+                    controls
+                    playsInline
+                    poster={result.thumbnailUrl}
+                    src={currentResolution?.downloadUrl}
+                    className="video-player-element"
+                  />
+                </div>
+              </div>
+
+              {/* Video Info & Quality Toggle */}
+              <div className="result-info-col">
+                <div>
+                  {/* Creator Card */}
+                  <div className="creator-profile-card">
+                    <div className="creator-avatar">
+                      {result.author ? result.author.charAt(0).toUpperCase() : "I"}
+                    </div>
+                    <div className="creator-meta">
+                      <div className="creator-name-row">
+                        <span className="creator-name">{result.author || "Instagram Creator"}</span>
+                        <svg className="verified-icon" width="16" height="16" viewBox="0 0 24 24" fill="#38bdf8">
+                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                        </svg>
+                      </div>
+                      <div className="creator-handle">
+                        {result.authorHandle || "@instagram_user"}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Caption */}
+                  {result.caption && (
+                    <div className="caption-box">
+                      <p>{result.caption}</p>
+                    </div>
+                  )}
+
+                  {/* Segmented Quality Toggle */}
+                  <div className="quality-toggle-container">
+                    <div className="quality-toggle-label">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                        <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                      </svg>
+                      <span>Choose Download Quality & Format:</span>
+                    </div>
+
+                    <div className="quality-toggle-bar">
+                      {result.resolutions.map((res, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          className={`quality-toggle-pill ${selectedQualityIndex === idx ? "active" : ""}`}
+                          onClick={() => setSelectedQualityIndex(idx)}
+                        >
+                          <span>{res.type === "mp3" ? "🎵 " : "⚡ "}{res.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Specs Strip */}
+                  {currentResolution && (
+                    <div className="specs-strip">
+                      <div className="spec-item">
+                        <span className="spec-title">Format</span>
+                        <span className="spec-value">{currentResolution.type === "mp3" ? "MP3 Audio" : "MP4 Video"}</span>
+                      </div>
+                      <div className="spec-item">
+                        <span className="spec-title">Quality Tier</span>
+                        <span className="spec-value">{currentResolution.quality}</span>
+                      </div>
+                      <div className="spec-item">
+                        <span className="spec-title">Resolution / Codec</span>
+                        <span className="spec-value">
+                          {currentResolution.type === "mp3"
+                            ? "320 kbps Stereo"
+                            : currentResolution.width && currentResolution.height
+                            ? `${currentResolution.width}×${currentResolution.height} (H.264)`
+                            : "1080p HD (H.264)"}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Primary Download Button */}
+                {currentResolution && (
+                  <button
+                    type="button"
+                    className="primary-dl-card-btn"
+                    onClick={() =>
+                      triggerDownload(
+                        currentResolution.downloadUrl,
+                        `instagram_${result.id}_${currentResolution.label.replace(/\s+/g, "_")}.${currentResolution.type}`
+                      )
+                    }
+                  >
+                    <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                      <span style={{ fontWeight: 800, fontSize: "1.05rem" }}>
+                        {currentResolution.type === "mp3" ? "🎵 " : "⚡ "}
+                        Download {currentResolution.label} ({currentResolution.type.toUpperCase()})
+                      </span>
+                      <span style={{ fontSize: "0.78rem", opacity: 0.9, fontWeight: 500 }}>
+                        {currentResolution.quality} • No Watermark • Direct Stream
+                      </span>
+                    </div>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="7 10 12 15 17 10"></polyline>
+                      <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ===================================================================== */}
+          {/* D. SPECIALIZED CAROUSEL ALBUM VIEW (WITH MIXED SLIDES & TOGGLES)      */}
+          {/* ===================================================================== */}
+          {result.isCarousel && result.carouselItems && (
+            <div style={{ width: "100%" }}>
+              {/* Overview Header Card */}
+              <div className="carousel-overview-header">
+                <div className="creator-profile-card" style={{ marginBottom: "12px" }}>
+                  <div className="creator-avatar">
+                    {result.author ? result.author.charAt(0).toUpperCase() : "I"}
+                  </div>
+                  <div className="creator-meta">
+                    <div className="creator-name-row">
+                      <span className="creator-name">{result.author || "Instagram Creator"}</span>
+                      <svg className="verified-icon" width="16" height="16" viewBox="0 0 24 24" fill="#38bdf8">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                      </svg>
+                    </div>
+                    <div className="creator-handle">
+                      {result.authorHandle || "@instagram_user"}
+                    </div>
+                  </div>
+                </div>
+
+                {result.caption && (
+                  <div className="caption-box" style={{ marginBottom: "12px" }}>
+                    <p>{result.caption}</p>
+                  </div>
+                )}
+
+                {/* Summary Stats Pill */}
+                <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
+                  <span className="carousel-stats-pill">
+                    <span>📦</span>
+                    <span>{result.carouselItems.length} Total Slides</span>
+                  </span>
+                  <span className="carousel-stats-pill" style={{ background: "rgba(236, 72, 153, 0.12)", color: "#f472b6", borderColor: "rgba(236, 72, 153, 0.3)" }}>
+                    <span>📸</span>
+                    <span>{result.carouselItems.filter((i) => i.type === "photo").length} Photos</span>
+                  </span>
+                  <span className="carousel-stats-pill" style={{ background: "rgba(56, 189, 248, 0.12)", color: "#38bdf8", borderColor: "rgba(56, 189, 248, 0.3)" }}>
+                    <span>🎬</span>
+                    <span>{result.carouselItems.filter((i) => i.type === "video").length} Videos</span>
+                  </span>
+                </div>
+
+                {/* Toolbar */}
+                <div className="carousel-toolbar">
+                  {/* View Mode Switcher */}
+                  <div className="view-mode-toggle">
+                    <button
+                      type="button"
+                      className={`view-mode-btn ${carouselViewMode === "grid" ? "active" : ""}`}
+                      onClick={() => setCarouselViewMode("grid")}
+                    >
+                      <span>▦ Grid View</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`view-mode-btn ${carouselViewMode === "showcase" ? "active" : ""}`}
+                      onClick={() => setCarouselViewMode("showcase")}
+                    >
+                      <span>🎞️ Slide Showcase</span>
+                    </button>
+                  </div>
+
+                  {/* Batch Download Button */}
+                  <button
+                    type="button"
+                    className="batch-download-all-btn"
+                    disabled={batchDownloading}
+                    onClick={handleDownloadAllCarousel}
+                  >
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="7 10 12 15 17 10"></polyline>
+                      <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    <span>
+                      {batchDownloading
+                        ? batchProgressText || "Downloading All Slides..."
+                        : `Download All ${result.carouselItems.length} Slides`}
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {/* 1. GRID VIEW MODE */}
+              {carouselViewMode === "grid" && (
+                <div className="carousel-grid">
+                  {result.carouselItems.map((item) => {
+                    const selectedIdx = carouselSelectedQualities[item.index] ?? 0;
+                    const chosenRes = item.resolutions[selectedIdx] || item.resolutions[0];
+
+                    return (
+                      <div key={item.index} className="carousel-card">
+                        {/* Slide Thumbnail */}
+                        <div
+                          className="carousel-slide-thumb"
+                          style={{ backgroundImage: `url(${item.thumbnailUrl})` }}
+                        >
+                          <span className="carousel-slide-badge">
+                            {item.type === "video" ? "🎬 VIDEO" : "📸 PHOTO"}
+                          </span>
+                          <span className="carousel-slide-counter">Slide #{item.index}</span>
+                          {item.duration && (
+                            <span className="carousel-slide-duration">⏱ {item.duration}</span>
+                          )}
+                        </div>
+
+                        {/* Slide Quality Toggle */}
+                        {item.resolutions.length > 1 && (
+                          <div className="slide-toggle-row">
+                            {item.resolutions.map((res, rIdx) => (
+                              <button
+                                key={rIdx}
+                                type="button"
+                                className={`slide-toggle-btn ${selectedIdx === rIdx ? "active" : ""}`}
+                                onClick={() =>
+                                  setCarouselSelectedQualities((prev) => ({
+                                    ...prev,
+                                    [item.index]: rIdx,
+                                  }))
+                                }
+                              >
+                                {res.type === "mp3" ? "🎵 MP3" : res.label.includes("1080") ? "1080p" : res.label.includes("720") ? "720p" : res.label}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Slide Download CTA */}
+                        <div className="carousel-card-body">
+                          <button
+                            type="button"
+                            className="slide-dl-btn"
+                            onClick={() =>
+                              triggerDownload(
+                                chosenRes.downloadUrl,
+                                `instagram_${result.id}_slide_${item.index}_${chosenRes.label.replace(/[^a-zA-Z0-9]/g, "_")}.${chosenRes.type}`
+                              )
+                            }
+                          >
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                              <polyline points="7 10 12 15 17 10"></polyline>
+                              <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            <span>Download {chosenRes.label}</span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* 2. SHOWCASE SLIDER VIEW MODE */}
+              {carouselViewMode === "showcase" && (
+                <div className="showcase-slider-box">
+                  {(() => {
+                    const activeItem = result.carouselItems[activeShowcaseSlide] || result.carouselItems[0];
+                    const selectedIdx = carouselSelectedQualities[activeItem.index] ?? 0;
+                    const chosenRes = activeItem.resolutions[selectedIdx] || activeItem.resolutions[0];
+
+                    return (
+                      <>
+                        {/* Main Featured Frame with Nav Arrows */}
+                        <div className="showcase-featured-frame">
+                          {/* Previous button */}
+                          <button
+                            type="button"
+                            className="showcase-nav-btn prev"
+                            onClick={() =>
+                              setActiveShowcaseSlide((prev) =>
+                                prev > 0 ? prev - 1 : (result.carouselItems?.length || 1) - 1
+                              )
+                            }
+                            title="Previous Slide"
+                          >
+                            ‹
+                          </button>
+
+                          {/* Media Display */}
+                          {activeItem.type === "video" ? (
+                            <video
+                              controls
+                              playsInline
+                              poster={activeItem.thumbnailUrl}
+                              src={chosenRes.downloadUrl}
+                              className="showcase-featured-video"
+                            />
+                          ) : (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={chosenRes.downloadUrl || activeItem.thumbnailUrl}
+                              alt={`Slide ${activeItem.index}`}
+                              className="showcase-featured-img"
+                            />
+                          )}
+
+                          {/* Next button */}
+                          <button
+                            type="button"
+                            className="showcase-nav-btn next"
+                            onClick={() =>
+                              setActiveShowcaseSlide((prev) =>
+                                prev < (result.carouselItems?.length || 1) - 1 ? prev + 1 : 0
+                              )
+                            }
+                            title="Next Slide"
+                          >
+                            ›
+                          </button>
+                        </div>
+
+                        {/* Slide Quality Toggle */}
+                        <div className="quality-toggle-container" style={{ margin: "4px 0" }}>
+                          <div className="quality-toggle-label">
+                            <span>Slide #{activeItem.index} Quality Options:</span>
+                          </div>
+                          <div className="quality-toggle-bar">
+                            {activeItem.resolutions.map((res, rIdx) => (
+                              <button
+                                key={rIdx}
+                                type="button"
+                                className={`quality-toggle-pill ${selectedIdx === rIdx ? "active" : ""}`}
+                                onClick={() =>
+                                  setCarouselSelectedQualities((prev) => ({
+                                    ...prev,
+                                    [activeItem.index]: rIdx,
+                                  }))
+                                }
+                              >
+                                <span>{res.type === "mp3" ? "🎵 " : ""}{res.label}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Download Active Slide Button */}
+                        <button
+                          type="button"
+                          className="primary-dl-card-btn"
+                          style={{ marginBottom: "10px" }}
+                          onClick={() =>
+                            triggerDownload(
+                              chosenRes.downloadUrl,
+                              `instagram_${result.id}_slide_${activeItem.index}.${chosenRes.type}`
+                            )
+                          }
+                        >
+                          <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                            <span style={{ fontWeight: 800, fontSize: "1.02rem" }}>
+                              Download Slide #{activeItem.index} ({chosenRes.label})
+                            </span>
+                            <span style={{ fontSize: "0.78rem", opacity: 0.9 }}>
+                              {chosenRes.quality} • Slide {activeShowcaseSlide + 1} of {result.carouselItems.length}
+                            </span>
+                          </div>
+                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                          </svg>
+                        </button>
+
+                        {/* Filmstrip thumbnails row */}
+                        <div className="filmstrip-row">
+                          {result.carouselItems.map((item, idx) => (
+                            <div
+                              key={idx}
+                              className={`filmstrip-thumb ${activeShowcaseSlide === idx ? "active" : ""}`}
+                              style={{ backgroundImage: `url(${item.thumbnailUrl})` }}
+                              onClick={() => setActiveShowcaseSlide(idx)}
+                              title={`Slide ${item.index}`}
+                            />
+                          ))}
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Bottom Reset Button */}
+          <div style={{ textAlign: "center", marginTop: "32px" }}>
+            <button type="button" className="back-search-btn" onClick={handleReset} style={{ fontSize: "1rem", padding: "12px 28px" }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+              <span>Download Another Video / Paste New URL</span>
+            </button>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
