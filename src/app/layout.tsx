@@ -20,6 +20,11 @@ export const metadata: Metadata = {
     "Instagram to MP4",
     "Instagram audio downloader",
     "save Instagram post",
+    "descargar reels instagram",
+    "baixar videos do instagram",
+    "telecharger video instagram",
+    "download reels without watermark",
+    "instagram video download 1080p full hd",
   ],
   authors: [{ name: "GramSave Team" }],
   creator: "GramSave",
@@ -43,12 +48,26 @@ export const metadata: Metadata = {
     description:
       "Instant high-quality Instagram video & reels downloader. 100% free, safe and works on iPhone, Android, and PC.",
     siteName: "GramSave",
+    images: [
+      {
+        url: "https://gramsave.site/og-image.jpg",
+        width: 1280,
+        height: 720,
+        alt: "GramSave - Free Instagram Video & Reels Downloader",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "GramSave - Free Instagram Video Downloader",
+    title: "GramSave - Free Instagram Video Downloader (1080p Full HD)",
     description:
       "Download Instagram Reels, Stories, and Videos in Full HD 1080p. Fast, free, no login needed.",
+    images: ["https://gramsave.site/og-image.jpg"],
+  },
+  appleWebApp: {
+    capable: true,
+    title: "GramSave",
+    statusBarStyle: "black-translucent",
   },
   alternates: {
     canonical: "https://gramsave.site",
@@ -132,8 +151,29 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="dns-prefetch" href="https://challenges.cloudflare.com" />
         <link rel="preconnect" href="https://challenges.cloudflare.com" crossOrigin="anonymous" />
+        {process.env.NEXT_PUBLIC_GA_ID && (
+          <>
+            <script
+              async
+              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
+            />
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag('js', new Date());
+                  gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}', {
+                    page_path: window.location.pathname,
+                  });
+                `,
+              }}
+            />
+          </>
+        )}
         <script
           dangerouslySetInnerHTML={{
             __html: `

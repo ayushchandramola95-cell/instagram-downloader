@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import ThemeToggle from "@/components/ThemeToggle";
+import InstallAppButton from "@/components/InstallAppButton";
 
 interface HeaderProps {
   activeTab?: string;
@@ -55,8 +56,10 @@ export default function Header({ activeTab }: HeaderProps) {
           <Link href="/#faq" className="nav-link">FAQ</Link>
         </nav>
 
-        {/* Desktop Right Actions (Status + Theme Switcher) */}
+        {/* Desktop Right Actions (Status + PWA Install + Theme Switcher) */}
         <div className="nav-right-actions">
+          <InstallAppButton />
+
           <div className="nav-pill-badge">
             <span className="nav-pill-dot"></span>
             <span>v1.2 Live</span>
