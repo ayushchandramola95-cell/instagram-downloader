@@ -40,4 +40,5 @@ cookies.txt
 
 # scratch / temp scripts
 scratch/
+*.tsbuildinfo
 
