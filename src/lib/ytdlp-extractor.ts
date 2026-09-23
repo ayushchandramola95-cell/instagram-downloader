@@ -53,32 +53,35 @@ function buildResolutionsFromOutput(item: YtDlpOutput): MediaResolution[] {
   if (isVideo) {
     const allFormats = item.formats || [];
 
-    // 1. Prioritize formats that contain BOTH video AND audio
-    const formatsWithAudio = allFormats
-      .filter((f) => f.url && f.vcodec && f.vcodec !== "none" && f.acodec && f.acodec !== "none")
-      .sort((a, b) => (b.height || 0) - (a.height || 0));
-
-    // 2. All video formats (fallback in case only DASH video-only exists)
-    const allVideoFormats = allFormats
-      .filter((f) => f.url && f.vcodec && f.vcodec !== "none")
-      .sort((a, b) => (b.height || 0) - (a.height || 0));
-
-    // 3. Audio-only tracks for standalone MP3 download
+    // 1. Separate audio-only tracks for standalone MP3 or muxing
     const audioFormats = allFormats
       .filter((f) => f.url && f.acodec && f.acodec !== "none" && (!f.vcodec || f.vcodec === "none"))
       .sort((a, b) => (b.abr || 0) - (a.abr || 0));
 
-    // 4. Any format with audio
+    // 2. Any format with audio
     const anyAudioFormat = allFormats
       .filter((f) => f.url && f.acodec && f.acodec !== "none")
       .sort((a, b) => (b.abr || 0) - (a.abr || 0))[0];
 
-    // Use formats with audio first so video preview & downloads are NOT muted!
-    const videoFormats = formatsWithAudio.length > 0 ? formatsWithAudio : allVideoFormats;
+    const bestAudioUrl = audioFormats[0]?.url || anyAudioFormat?.url;
+
+    // 3. Formats that contain BOTH video AND audio
+    const formatsWithAudio = allFormats
+      .filter((f) => f.url && f.vcodec && f.vcodec !== "none" && f.acodec && f.acodec !== "none")
+      .sort((a, b) => (b.height || 0) - (a.height || 0));
+
+    // 4. All video formats (including DASH video-only) sorted highest resolution first
+    const allVideoFormats = allFormats
+      .filter((f) => f.url && f.vcodec && f.vcodec !== "none")
+      .sort((a, b) => (b.height || 0) - (a.height || 0));
+
+    // Prefer allVideoFormats so user gets 1080p / 1440p DASH streams (which we mux with bestAudioUrl)
+    const videoFormats = allVideoFormats.length > 0 ? allVideoFormats : formatsWithAudio;
 
     if (videoFormats.length > 0) {
       // 1080p or highest
       const bestFmt = videoFormats[0];
+      const bestHasAudio = Boolean(bestFmt.acodec && bestFmt.acodec !== "none");
       resolutions.push({
         label: (bestFmt.height && bestFmt.height >= 1080) ? "1080p Full HD" : `${bestFmt.height || "HD"} Video`,
         quality: "Original HD MP4 • Best Quality",
@@ -88,11 +91,15 @@ function buildResolutionsFromOutput(item: YtDlpOutput): MediaResolution[] {
         width: bestFmt.width,
         height: bestFmt.height,
         isBest: true,
+        hasAudio: bestHasAudio,
+        audioUrl: bestHasAudio ? undefined : bestAudioUrl,
       });
 
       // 720p HD
-      const midFmt = videoFormats.find((f) => f.height && f.height <= 720 && f.height >= 540) || (videoFormats[1] !== bestFmt ? videoFormats[1] : undefined);
+      const midFmt = videoFormats.find((f) => f.height && f.height <= 720 && f.height >= 540) ||
+        (videoFormats[1] && videoFormats[1].url !== bestFmt.url ? videoFormats[1] : undefined);
       if (midFmt && midFmt.url !== bestFmt.url) {
+        const midHasAudio = Boolean(midFmt.acodec && midFmt.acodec !== "none");
         resolutions.push({
           label: `${midFmt.height || 720}p HD`,
           quality: "Standard Quality MP4",
@@ -101,12 +108,16 @@ function buildResolutionsFromOutput(item: YtDlpOutput): MediaResolution[] {
           downloadUrl: midFmt.url,
           width: midFmt.width,
           height: midFmt.height,
+          hasAudio: midHasAudio,
+          audioUrl: midHasAudio ? undefined : bestAudioUrl,
         });
       }
 
       // 480p SD
-      const lowFmt = videoFormats.find((f) => f.height && f.height <= 480) || (videoFormats[2] && videoFormats[2].url !== bestFmt.url && videoFormats[2].url !== midFmt?.url ? videoFormats[2] : undefined);
+      const lowFmt = videoFormats.find((f) => f.height && f.height <= 480) ||
+        (videoFormats[2] && videoFormats[2].url !== bestFmt.url && videoFormats[2].url !== midFmt?.url ? videoFormats[2] : undefined);
       if (lowFmt && lowFmt.url !== bestFmt.url && lowFmt.url !== midFmt?.url) {
+        const lowHasAudio = Boolean(lowFmt.acodec && lowFmt.acodec !== "none");
         resolutions.push({
           label: `${lowFmt.height || 480}p SD`,
           quality: "Compressed Mobile Video",
@@ -115,11 +126,13 @@ function buildResolutionsFromOutput(item: YtDlpOutput): MediaResolution[] {
           downloadUrl: lowFmt.url,
           width: lowFmt.width,
           height: lowFmt.height,
+          hasAudio: lowHasAudio,
+          audioUrl: lowHasAudio ? undefined : bestAudioUrl,
         });
       }
 
       // MP3 Audio Track Options: Use actual audio stream if available
-      const audioUrl = audioFormats[0]?.url || anyAudioFormat?.url || bestFmt.url || directVideoUrl || "";
+      const audioUrl = bestAudioUrl || bestFmt.url || directVideoUrl || "";
       resolutions.push({
         label: "320 kbps Studio Audio",
         quality: "High Fidelity Stereo MP3",

@@ -8,6 +8,8 @@ export interface MediaResolution {
   width?: number;
   height?: number;
   bitrate?: string;
+  audioUrl?: string;
+  hasAudio?: boolean;
 }
 
 export interface MediaChildItem {

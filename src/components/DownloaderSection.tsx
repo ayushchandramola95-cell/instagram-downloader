@@ -317,7 +317,7 @@ export default function DownloaderSection({
    * Triggers download via the local attachment streaming proxy (/api/download)
    * to guarantee immediate file saving and bypass Instagram hotlink/CORS restrictions.
    */
-  const triggerDownload = (rawDownloadUrl: string, filename: string) => {
+  const triggerDownload = (rawDownloadUrl: string, filename: string, audioUrl?: string) => {
     setDownloadingFile(filename);
     setDownloadProgress(15);
 
@@ -331,9 +331,13 @@ export default function DownloaderSection({
       });
     }, 120);
 
-    const proxyDownloadUrl = rawDownloadUrl.startsWith("http")
+    let proxyDownloadUrl = rawDownloadUrl.startsWith("http")
       ? `/api/download?url=${encodeURIComponent(rawDownloadUrl)}&filename=${encodeURIComponent(filename)}`
       : rawDownloadUrl;
+
+    if (audioUrl && rawDownloadUrl.startsWith("http")) {
+      proxyDownloadUrl += `&audioUrl=${encodeURIComponent(audioUrl)}`;
+    }
 
     const iframe = document.createElement("iframe");
     iframe.style.display = "none";
@@ -369,7 +373,8 @@ export default function DownloaderSection({
         const cleanLabel = chosenRes.label.replace(/[^a-zA-Z0-9]/g, "_");
         triggerDownload(
           chosenRes.downloadUrl,
-          `instagram_${result.id}_slide_${item.index}_${cleanLabel}.${chosenRes.type}`
+          `gramsave_${result.id}_slide_${item.index}_${cleanLabel}.${chosenRes.type}`,
+          chosenRes.audioUrl
         );
         await new Promise((resolve) => setTimeout(resolve, 850));
       }
@@ -801,7 +806,7 @@ export default function DownloaderSection({
                     onClick={() =>
                       triggerDownload(
                         currentResolution.downloadUrl,
-                        `instagram_${result.id}_${currentResolution.label.replace(/\s+/g, "_")}.${currentResolution.type}`
+                        `gramsave_${result.id}_${currentResolution.label.replace(/\s+/g, "_")}.${currentResolution.type}`
                       )
                     }
                   >
@@ -982,7 +987,7 @@ export default function DownloaderSection({
                     onClick={() =>
                       triggerDownload(
                         currentResolution.downloadUrl,
-                        `instagram_${result.id}_${currentResolution.label.replace(/\s+/g, "_")}.${currentResolution.type}`
+                        `gramsave_${result.id}_${currentResolution.label.replace(/\s+/g, "_")}.${currentResolution.type}`
                       )
                     }
                   >
@@ -1019,7 +1024,11 @@ export default function DownloaderSection({
                     controls
                     playsInline
                     poster={result.thumbnailUrl}
-                    src={currentResolution?.downloadUrl}
+                    src={
+                      currentResolution?.audioUrl
+                        ? `/api/download?url=${encodeURIComponent(currentResolution.downloadUrl)}&audioUrl=${encodeURIComponent(currentResolution.audioUrl)}&filename=preview.mp4&preview=1`
+                        : currentResolution?.downloadUrl
+                    }
                     className="video-player-element"
                   />
                 </div>
@@ -1123,7 +1132,8 @@ export default function DownloaderSection({
                     onClick={() =>
                       triggerDownload(
                         currentResolution.downloadUrl,
-                        `instagram_${result.id}_${currentResolution.label.replace(/\s+/g, "_")}.${currentResolution.type}`
+                        `gramsave_${result.id}_${currentResolution.label.replace(/\s+/g, "_")}.${currentResolution.type}`,
+                        currentResolution.audioUrl
                       )
                     }
                   >
@@ -1291,7 +1301,8 @@ export default function DownloaderSection({
                             onClick={() =>
                               triggerDownload(
                                 chosenRes.downloadUrl,
-                                `instagram_${result.id}_slide_${item.index}_${chosenRes.label.replace(/[^a-zA-Z0-9]/g, "_")}.${chosenRes.type}`
+                                `gramsave_${result.id}_slide_${item.index}_${chosenRes.label.replace(/[^a-zA-Z0-9]/g, "_")}.${chosenRes.type}`,
+                                chosenRes.audioUrl
                               )
                             }
                           >
@@ -1347,7 +1358,11 @@ export default function DownloaderSection({
                               controls
                               playsInline
                               poster={activeItem.thumbnailUrl}
-                              src={chosenRes.downloadUrl}
+                              src={
+                                chosenRes.audioUrl
+                                  ? `/api/download?url=${encodeURIComponent(chosenRes.downloadUrl)}&audioUrl=${encodeURIComponent(chosenRes.audioUrl)}&filename=preview.mp4&preview=1`
+                                  : chosenRes.downloadUrl
+                              }
                               className="showcase-featured-video"
                             />
                           ) : (
@@ -1414,7 +1429,8 @@ export default function DownloaderSection({
                           onClick={() =>
                             triggerDownload(
                               chosenRes.downloadUrl,
-                              `instagram_${result.id}_slide_${activeItem.index}.${chosenRes.type}`
+                              `gramsave_${result.id}_slide_${activeItem.index}.${chosenRes.type}`,
+                              chosenRes.audioUrl
                             )
                           }
                         >

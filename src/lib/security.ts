@@ -19,6 +19,8 @@ const ALLOWED_CDN_HOST_PATTERNS = [
   /^fbcdn\.net$/i,
   /\.instagram\.com$/i,
   /^instagram\.com$/i,
+  /\.mdn\.mozilla\.net$/i,
+  /\.unsplash\.com$/i,
 ];
 
 // Private and local IP address patterns to block SSRF attempts

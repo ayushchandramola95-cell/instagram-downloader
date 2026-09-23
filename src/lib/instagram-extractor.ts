@@ -186,6 +186,13 @@ export async function extractViaDirectApi(shortcode: string): Promise<ExtractedM
       const imageCandidate = item.image_versions2?.candidates?.[0];
       const duration = item.video_duration ? `${Math.round(item.video_duration)}s` : undefined;
 
+      // Extract dedicated progressive audio track if available in clips/music metadata
+      const musicInfoUrl: string | undefined =
+        item.clips_metadata?.music_info?.music_asset_info?.progressive_download_url ||
+        item.clips_metadata?.original_sound_info?.progressive_download_url ||
+        item.music_metadata?.music_info?.music_asset_info?.progressive_download_url;
+      const audioDownloadUrl = musicInfoUrl || bestVideo.url;
+
       const resolutions: MediaResolution[] = [];
       if (bestVideo) {
         resolutions.push({
@@ -197,6 +204,7 @@ export async function extractViaDirectApi(shortcode: string): Promise<ExtractedM
           width: bestVideo.width,
           height: bestVideo.height,
           isBest: true,
+          audioUrl: musicInfoUrl,
         });
 
         if (videoVersions.length > 1) {
@@ -209,6 +217,7 @@ export async function extractViaDirectApi(shortcode: string): Promise<ExtractedM
             downloadUrl: secondVideo.url,
             width: secondVideo.width,
             height: secondVideo.height,
+            audioUrl: musicInfoUrl,
           });
         }
 
@@ -222,15 +231,9 @@ export async function extractViaDirectApi(shortcode: string): Promise<ExtractedM
             downloadUrl: thirdVideo.url,
             width: thirdVideo.width,
             height: thirdVideo.height,
+            audioUrl: musicInfoUrl,
           });
         }
-
-      // Extract dedicated progressive audio track if available in clips/music metadata
-      const musicInfoUrl: string | undefined =
-        item.clips_metadata?.music_info?.music_asset_info?.progressive_download_url ||
-        item.clips_metadata?.original_sound_info?.progressive_download_url ||
-        item.music_metadata?.music_info?.music_asset_info?.progressive_download_url;
-      const audioDownloadUrl = musicInfoUrl || bestVideo.url;
 
       // Dedicated Audio Tracks for user selection
       resolutions.push({

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateDownloadTargetUrl, sanitizeFilename } from "@/lib/security";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limiter";
+import { spawn } from "child_process";
+import { Readable } from "stream";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +29,9 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url);
   const mediaUrl = searchParams.get("url");
-  const rawFilename = searchParams.get("filename") || "instagram_media.mp4";
+  const rawAudioUrl = searchParams.get("audioUrl");
+  const rawFilename = searchParams.get("filename") || "gramsave_media.mp4";
+  const isPreview = searchParams.get("preview") === "1" || rawFilename.startsWith("preview.");
 
   if (!mediaUrl) {
     return new NextResponse("Missing media url parameter.", { status: 400 });
@@ -49,27 +53,111 @@ export async function GET(req: NextRequest) {
     );
   }
 
+  // Validate optional audio URL (SSRF protection)
+  let audioUrl: string | null = null;
+  if (rawAudioUrl) {
+    try {
+      audioUrl = decodeURIComponent(rawAudioUrl);
+    } catch {
+      return new NextResponse("Malformed audio URL encoding.", { status: 400 });
+    }
+    const audioValidation = validateDownloadTargetUrl(audioUrl);
+    if (!audioValidation.valid) {
+      return new NextResponse(
+        `Security violation: ${audioValidation.error || "Prohibited audio destination."}`,
+        { status: 403 }
+      );
+    }
+  }
+
   // 3. Filename Sanitization: Strip path traversal (../), control characters, and unsafe extensions
   const safeFilename = sanitizeFilename(rawFilename);
 
+  // 4. Real-time FFmpeg Muxing: When separate video & audio streams are provided (DASH streams)
+  if (audioUrl) {
+    try {
+      const ffmpegBinary = process.env.FFMPEG_PATH || "ffmpeg";
+      const headersStr =
+        "Referer: https://www.instagram.com/\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36\r\n";
+
+      const ffmpegArgs = [
+        "-y",
+        "-loglevel",
+        "error",
+        "-headers",
+        headersStr,
+        "-i",
+        targetUrl,
+        "-headers",
+        headersStr,
+        "-i",
+        audioUrl,
+        "-map",
+        "0:v:0",
+        "-map",
+        "1:a:0",
+        "-c:v",
+        "copy",
+        "-c:a",
+        "aac",
+        "-b:a",
+        "192k",
+        "-shortest",
+        "-movflags",
+        "frag_keyframe+empty_moov+default_base_moof",
+        "-f",
+        "mp4",
+        "pipe:1",
+      ];
+
+      const proc = spawn(/*turbopackIgnore: true*/ ffmpegBinary, ffmpegArgs);
+
+      // Kill child process if client disconnects early
+      req.signal.addEventListener("abort", () => {
+        try {
+          proc.kill("SIGKILL");
+        } catch {}
+      });
+
+      proc.stderr.on("data", (chunk) => {
+        console.error("[FFmpeg error]:", chunk.toString());
+      });
+
+      const webStream = Readable.toWeb(proc.stdout) as ReadableStream;
+
+      const responseHeaders = new Headers();
+      responseHeaders.set("Content-Type", "video/mp4");
+      responseHeaders.set(
+        "Content-Disposition",
+        isPreview ? "inline" : `attachment; filename="${encodeURIComponent(safeFilename)}"`
+      );
+      responseHeaders.set("Cache-Control", "public, max-age=3600");
+      responseHeaders.set("X-RateLimit-Limit", String(rateLimit.limit));
+      responseHeaders.set("X-RateLimit-Remaining", String(rateLimit.remaining));
+
+      return new NextResponse(webStream, {
+        status: 200,
+        headers: responseHeaders,
+      });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "FFmpeg muxing error.";
+      return new NextResponse(`Muxing error: ${message}`, { status: 500 });
+    }
+  }
+
+  // 5. Standard single-stream proxy (photos, standalone audio MP3s, pre-combined videos)
   try {
     const parsedUrl = new URL(targetUrl);
-
-    // Build headers based on the destination host
     const headers: Record<string, string> = {
       "User-Agent":
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
     };
 
-    // Instagram CDN requires Instagram referer to avoid hotlink blocks
     if (parsedUrl.hostname.includes("cdninstagram.com") || parsedUrl.hostname.includes("fbcdn.net")) {
       headers["Referer"] = "https://www.instagram.com/";
     }
 
-    // Fetch the remote media stream
-    const response = await fetch(targetUrl, {
-      headers,
-    });
+    const response = await fetch(targetUrl, { headers });
 
     if (!response.ok || !response.body) {
       return new NextResponse(
@@ -85,7 +173,7 @@ export async function GET(req: NextRequest) {
     responseHeaders.set("Content-Type", contentType);
     responseHeaders.set(
       "Content-Disposition",
-      `attachment; filename="${encodeURIComponent(safeFilename)}"`
+      isPreview ? "inline" : `attachment; filename="${encodeURIComponent(safeFilename)}"`
     );
     responseHeaders.set("Cache-Control", "public, max-age=3600");
     responseHeaders.set("X-RateLimit-Limit", String(rateLimit.limit));
@@ -95,7 +183,6 @@ export async function GET(req: NextRequest) {
       responseHeaders.set("Content-Length", contentLength);
     }
 
-    // Stream the response back to the client
     return new NextResponse(response.body, {
       status: 200,
       headers: responseHeaders,
