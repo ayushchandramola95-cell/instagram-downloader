@@ -157,33 +157,35 @@ function buildResolutionsFromOutput(item: YtDlpOutput): MediaResolution[] {
     }
   } else {
     // Photos
-    const photoFormats = (item.formats || []).filter((f) => f.url);
-    if (photoFormats.length > 0) {
-      const bestPhoto = photoFormats[photoFormats.length - 1];
-      resolutions.push({
-        label: "1080p Original Photo",
-        quality: "Original Lossless JPG",
-        size: bestPhoto.filesize ? `${(bestPhoto.filesize / (1024 * 1024)).toFixed(1)} MB` : "Lossless",
-        type: "jpg",
-        downloadUrl: bestPhoto.url,
-        width: bestPhoto.width,
-        height: bestPhoto.height,
-        isBest: true,
-      });
-      if (photoFormats.length > 1) {
-        const midPhoto = photoFormats[Math.floor(photoFormats.length / 2)];
-        if (midPhoto && midPhoto.url !== bestPhoto.url) {
-          resolutions.push({
-            label: "720p Compressed Photo",
-            quality: "Optimized Mobile JPG",
-            size: midPhoto.filesize ? `${(midPhoto.filesize / (1024 * 1024)).toFixed(1)} MB` : "Standard",
-            type: "jpg",
-            downloadUrl: midPhoto.url,
-            width: midPhoto.width,
-            height: midPhoto.height,
-          });
-        }
+    const photoFormats = (item.formats || [])
+      .filter((f) => f.url && (f.vcodec === "none" || !f.vcodec))
+      .sort((a, b) => ((b.width || 0) * (b.height || 0)) - ((a.width || 0) * (a.height || 0)));
+
+    const seenDimensions = new Set<string>();
+    const uniquePhotos: YtDlpFormat[] = [];
+    for (const pf of photoFormats) {
+      const dim = pf.width && pf.height ? `${pf.width}x${pf.height}` : pf.url;
+      if (!seenDimensions.has(dim)) {
+        seenDimensions.add(dim);
+        uniquePhotos.push(pf);
       }
+    }
+
+    if (uniquePhotos.length > 0) {
+      uniquePhotos.forEach((pf, pIdx) => {
+        const isBest = pIdx === 0;
+        const label = pf.width && pf.height ? `${pf.width}x${pf.height}` : (isBest ? "1080p Original" : `Photo #${pIdx + 1}`);
+        resolutions.push({
+          label,
+          quality: isBest ? "Original Lossless JPG" : "Compressed Photo",
+          size: pf.filesize ? `${(pf.filesize / (1024 * 1024)).toFixed(1)} MB` : (isBest ? "Lossless" : "Standard"),
+          type: "jpg",
+          downloadUrl: pf.url,
+          width: pf.width,
+          height: pf.height,
+          isBest,
+        });
+      });
     } else if (directVideoUrl || item.thumbnail) {
       resolutions.push({
         label: "1080p Original Photo",
@@ -191,12 +193,6 @@ function buildResolutionsFromOutput(item: YtDlpOutput): MediaResolution[] {
         type: "jpg",
         downloadUrl: directVideoUrl || item.thumbnail || "",
         isBest: true,
-      });
-      resolutions.push({
-        label: "720p Compressed Photo",
-        quality: "Standard JPG",
-        type: "jpg",
-        downloadUrl: directVideoUrl || item.thumbnail || "",
       });
     }
   }

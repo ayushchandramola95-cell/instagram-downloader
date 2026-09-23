@@ -2537,38 +2537,128 @@ button, input {
   z-index: 2;
 }
 
-.slide-toggle-row {
-  display: flex;
-  gap: 4px;
-  padding: 8px 10px;
+/* Quality Dropdown Selectors */
+.carousel-select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.carousel-quality-select {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
   background: var(--bg-tertiary);
-  border-bottom: 1px solid var(--card-border);
-}
-
-.slide-toggle-btn {
-  flex: 1;
-  padding: 6px 8px;
-  border-radius: 6px;
-  font-size: 0.76rem;
-  font-weight: 700;
-  border: 1px solid transparent;
-  background: transparent;
-  color: var(--text-secondary);
-  cursor: pointer;
-  text-align: center;
-  transition: all 0.15s ease;
-  white-space: nowrap;
-}
-
-.slide-toggle-btn.active {
-  background: var(--card-bg);
+  border: 1px solid var(--card-border);
   color: var(--text-primary);
-  border-color: rgba(236, 72, 153, 0.4);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  font-size: 0.84rem;
+  font-weight: 700;
+  padding: 8px 30px 8px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  outline: none;
+  text-align: center;
+  text-align-last: center;
+  transition: all 0.2s ease;
+}
+
+[data-theme="light"] .carousel-quality-select {
+  background: #f0f7ff;
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+}
+
+.carousel-quality-select:hover {
+  border-color: #3b82f6;
+}
+
+.carousel-quality-select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+}
+
+.carousel-select-chevron {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+}
+
+[data-theme="light"] .carousel-select-chevron {
+  color: #3b82f6;
+}
+
+/* Main Quality Dropdown for Single Result Cards */
+.main-quality-select-box {
+  margin: 14px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.main-quality-select-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.main-select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.main-quality-select {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--card-border);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 12px 38px 12px 16px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+[data-theme="light"] .main-quality-select {
+  background: #f0f7ff;
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+}
+
+.main-quality-select:hover,
+.main-quality-select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.main-select-chevron {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+}
+
+[data-theme="light"] .main-select-chevron {
+  color: #3b82f6;
 }
 
 .carousel-card-body {
-  padding: 12px 14px 16px 14px;
+  padding: 10px 12px 14px 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -2578,25 +2668,27 @@ button, input {
 
 .slide-dl-btn {
   width: 100%;
-  background: var(--insta-gradient);
+  background: #2563eb;
+  background-image: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
   border: none;
   color: #ffffff;
   padding: 10px 14px;
   border-radius: var(--radius-sm);
   font-weight: 700;
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(253, 29, 29, 0.3);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
 .slide-dl-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(253, 29, 29, 0.45);
+  background-image: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.45);
 }
 
 /* Showcase Slider View */

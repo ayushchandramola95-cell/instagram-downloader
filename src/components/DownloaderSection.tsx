@@ -737,18 +737,31 @@ export default function DownloaderSection({
                       <span>Choose Photo Resolution:</span>
                     </div>
 
-                    <div className="quality-toggle-bar">
-                      {result.resolutions.map((res, idx) => (
-                        <button
-                          key={idx}
-                          type="button"
-                          className={`quality-toggle-pill ${selectedQualityIndex === idx ? "active" : ""}`}
-                          onClick={() => setSelectedQualityIndex(idx)}
-                        >
-                          <span>{res.label}</span>
-                        </button>
-                      ))}
-                    </div>
+                    {result.resolutions.length > 1 && (
+                      <div className="main-quality-select-box">
+                        <span className="main-quality-select-label">Choose Resolution:</span>
+                        <div className="main-select-wrapper">
+                          <select
+                            className="main-quality-select"
+                            value={selectedQualityIndex}
+                            onChange={(e) => setSelectedQualityIndex(Number(e.target.value))}
+                          >
+                            {result.resolutions.map((res, idx) => (
+                              <option key={idx} value={idx}>
+                                {res.width && res.height
+                                  ? `${res.width} × ${res.height} px ${res.isBest ? "(Original Quality)" : ""}`
+                                  : res.label}
+                              </option>
+                            ))}
+                          </select>
+                          <div className="main-select-chevron">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                              <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Technical Specs Strip */}
@@ -792,19 +805,14 @@ export default function DownloaderSection({
                       )
                     }
                   >
-                    <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                      <span style={{ fontWeight: 800, fontSize: "1.05rem" }}>
-                        📸 Download {currentResolution.label} (JPG)
-                      </span>
-                      <span style={{ fontSize: "0.78rem", opacity: 0.9, fontWeight: 500 }}>
-                        {currentResolution.quality} • Direct Uncompressed CDN File
-                      </span>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" }}>
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                      </svg>
+                      <span style={{ fontWeight: 800, fontSize: "1.08rem" }}>Download Photo</span>
                     </div>
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                      <polyline points="7 10 12 15 17 10"></polyline>
-                      <line x1="12" y1="15" x2="12" y2="3"></line>
-                    </svg>
                   </button>
                 )}
               </div>
@@ -978,19 +986,14 @@ export default function DownloaderSection({
                       )
                     }
                   >
-                    <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                      <span style={{ fontWeight: 800, fontSize: "1.05rem" }}>
-                        🎵 Download {currentResolution.label}
-                      </span>
-                      <span style={{ fontSize: "0.78rem", opacity: 0.9, fontWeight: 500 }}>
-                        Original Bitrate • Lossless Transcode • Instant MP3
-                      </span>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" }}>
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                      </svg>
+                      <span style={{ fontWeight: 800, fontSize: "1.08rem" }}>Download Audio</span>
                     </div>
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                      <polyline points="7 10 12 15 17 10"></polyline>
-                      <line x1="12" y1="15" x2="12" y2="3"></line>
-                    </svg>
                   </button>
                 )}
               </div>
@@ -1060,18 +1063,31 @@ export default function DownloaderSection({
                       <span>Choose Download Quality & Format:</span>
                     </div>
 
-                    <div className="quality-toggle-bar">
-                      {result.resolutions.map((res, idx) => (
-                        <button
-                          key={idx}
-                          type="button"
-                          className={`quality-toggle-pill ${selectedQualityIndex === idx ? "active" : ""}`}
-                          onClick={() => setSelectedQualityIndex(idx)}
-                        >
-                          <span>{res.type === "mp3" ? "🎵 " : "⚡ "}{res.label}</span>
-                        </button>
-                      ))}
-                    </div>
+                    {result.resolutions.length > 1 && (
+                      <div className="main-quality-select-box">
+                        <span className="main-quality-select-label">Choose Quality & Format:</span>
+                        <div className="main-select-wrapper">
+                          <select
+                            className="main-quality-select"
+                            value={selectedQualityIndex}
+                            onChange={(e) => setSelectedQualityIndex(Number(e.target.value))}
+                          >
+                            {result.resolutions.map((res, idx) => (
+                              <option key={idx} value={idx}>
+                                {res.type === "mp3"
+                                  ? `🎵 ${res.label} (Audio MP3)`
+                                  : `🎥 ${res.label} ${res.width && res.height ? `(${res.width}×${res.height})` : ""}`}
+                              </option>
+                            ))}
+                          </select>
+                          <div className="main-select-chevron">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                              <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Specs Strip */}
@@ -1111,20 +1127,16 @@ export default function DownloaderSection({
                       )
                     }
                   >
-                    <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                      <span style={{ fontWeight: 800, fontSize: "1.05rem" }}>
-                        {currentResolution.type === "mp3" ? "🎵 " : "⚡ "}
-                        Download {currentResolution.label} ({currentResolution.type.toUpperCase()})
-                      </span>
-                      <span style={{ fontSize: "0.78rem", opacity: 0.9, fontWeight: 500 }}>
-                        {currentResolution.quality} • No Watermark • Direct Stream
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" }}>
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                      </svg>
+                      <span style={{ fontWeight: 800, fontSize: "1.08rem" }}>
+                        {currentResolution.type === "mp3" ? "Download Audio" : "Download Video"}
                       </span>
                     </div>
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                      <polyline points="7 10 12 15 17 10"></polyline>
-                      <line x1="12" y1="15" x2="12" y2="3"></line>
-                    </svg>
                   </button>
                 )}
               </div>
@@ -1241,29 +1253,38 @@ export default function DownloaderSection({
                           )}
                         </div>
 
-                        {/* Slide Quality Toggle */}
-                        {item.resolutions.length > 1 && (
-                          <div className="slide-toggle-row">
-                            {item.resolutions.map((res, rIdx) => (
-                              <button
-                                key={rIdx}
-                                type="button"
-                                className={`slide-toggle-btn ${selectedIdx === rIdx ? "active" : ""}`}
-                                onClick={() =>
+                        {/* Slide Card Body with Dropdown and Clean Button */}
+                        <div className="carousel-card-body">
+                          {/* Quality Dropdown when multiple options exist */}
+                          {item.resolutions.length > 1 && (
+                            <div className="carousel-select-wrapper">
+                              <select
+                                className="carousel-quality-select"
+                                value={selectedIdx}
+                                onChange={(e) =>
                                   setCarouselSelectedQualities((prev) => ({
                                     ...prev,
-                                    [item.index]: rIdx,
+                                    [item.index]: Number(e.target.value),
                                   }))
                                 }
                               >
-                                {res.type === "mp3" ? "🎵 MP3" : res.label.includes("1080") ? "1080p" : res.label.includes("720") ? "720p" : res.label}
-                              </button>
-                            ))}
-                          </div>
-                        )}
+                                {item.resolutions.map((res, rIdx) => (
+                                  <option key={rIdx} value={rIdx}>
+                                    {res.width && res.height
+                                      ? `${res.width}x${res.height}`
+                                      : res.label}
+                                  </option>
+                                ))}
+                              </select>
+                              <div className="carousel-select-chevron">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                  <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                              </div>
+                            </div>
+                          )}
 
-                        {/* Slide Download CTA */}
-                        <div className="carousel-card-body">
+                          {/* Short, Clean Download Button */}
                           <button
                             type="button"
                             className="slide-dl-btn"
@@ -1274,12 +1295,18 @@ export default function DownloaderSection({
                               )
                             }
                           >
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                               <polyline points="7 10 12 15 17 10"></polyline>
                               <line x1="12" y1="15" x2="12" y2="3"></line>
                             </svg>
-                            <span>Download {chosenRes.label}</span>
+                            <span>
+                              {item.type === "video"
+                                ? chosenRes.type === "mp3"
+                                  ? "Download Audio"
+                                  : "Download Video"
+                                : "Download Photo"}
+                            </span>
                           </button>
                         </div>
                       </div>
@@ -1347,29 +1374,37 @@ export default function DownloaderSection({
                           </button>
                         </div>
 
-                        {/* Slide Quality Toggle */}
-                        <div className="quality-toggle-container" style={{ margin: "4px 0" }}>
-                          <div className="quality-toggle-label">
-                            <span>Slide #{activeItem.index} Quality Options:</span>
-                          </div>
-                          <div className="quality-toggle-bar">
-                            {activeItem.resolutions.map((res, rIdx) => (
-                              <button
-                                key={rIdx}
-                                type="button"
-                                className={`quality-toggle-pill ${selectedIdx === rIdx ? "active" : ""}`}
-                                onClick={() =>
+                        {/* Slide Quality Dropdown */}
+                        {activeItem.resolutions.length > 1 && (
+                          <div className="main-quality-select-box" style={{ margin: "4px 0" }}>
+                            <span className="main-quality-select-label">Slide #{activeItem.index} Resolution:</span>
+                            <div className="main-select-wrapper">
+                              <select
+                                className="main-quality-select"
+                                value={selectedIdx}
+                                onChange={(e) =>
                                   setCarouselSelectedQualities((prev) => ({
                                     ...prev,
-                                    [activeItem.index]: rIdx,
+                                    [activeItem.index]: Number(e.target.value),
                                   }))
                                 }
                               >
-                                <span>{res.type === "mp3" ? "🎵 " : ""}{res.label}</span>
-                              </button>
-                            ))}
+                                {activeItem.resolutions.map((res, rIdx) => (
+                                  <option key={rIdx} value={rIdx}>
+                                    {res.width && res.height
+                                      ? `${res.width}x${res.height}`
+                                      : res.label}
+                                  </option>
+                                ))}
+                              </select>
+                              <div className="main-select-chevron">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                  <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                              </div>
+                            </div>
                           </div>
-                        </div>
+                        )}
 
                         {/* Download Active Slide Button */}
                         <button
@@ -1383,19 +1418,20 @@ export default function DownloaderSection({
                             )
                           }
                         >
-                          <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                            <span style={{ fontWeight: 800, fontSize: "1.02rem" }}>
-                              Download Slide #{activeItem.index} ({chosenRes.label})
-                            </span>
-                            <span style={{ fontSize: "0.78rem", opacity: 0.9 }}>
-                              {chosenRes.quality} • Slide {activeShowcaseSlide + 1} of {result.carouselItems.length}
+                          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" }}>
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                              <polyline points="7 10 12 15 17 10"></polyline>
+                              <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            <span style={{ fontWeight: 800, fontSize: "1.08rem" }}>
+                              {activeItem.type === "video"
+                                ? chosenRes.type === "mp3"
+                                  ? "Download Audio"
+                                  : "Download Video"
+                                : "Download Photo"}
                             </span>
                           </div>
-                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="7 10 12 15 17 10"></polyline>
-                            <line x1="12" y1="15" x2="12" y2="3"></line>
-                          </svg>
                         </button>
 
                         {/* Filmstrip thumbnails row */}

@@ -148,32 +148,20 @@ export async function extractViaDirectApi(shortcode: string): Promise<ExtractedM
 
     // 1. Single Photo (media_type === 1)
     if (item.media_type === 1) {
-      const candidates = item.image_versions2?.candidates || [];
+      const allCandidates = (item.image_versions2?.candidates || [])
+        .filter((c: { width: number; height: number; url: string }) => c.url && c.width && c.width >= 200)
+        .sort((a: { width: number; height: number }, b: { width: number; height: number }) => (b.width * b.height) - (a.width * a.height));
+      const candidates = allCandidates.length > 0 ? allCandidates : (item.image_versions2?.candidates || []).slice(0, 1);
       const bestCandidate = candidates[0];
-      const resolutions: MediaResolution[] = candidates.slice(0, 3).map((c: { width: number; height: number; url: string }, idx: number) => {
-        let label = "1080p Original";
-        let quality = "Original Resolution • Lossless JPG";
-        let size = "Lossless HD";
-        if (idx === 0) {
-          label = (c.height >= 1080 || c.width >= 1080) ? "1080p Original" : `${c.width}x${c.height} Original`;
-          quality = "Original Resolution • Lossless JPG";
-          size = "~1.8 MB";
-        } else if (idx === 1) {
-          label = "720p HD";
-          quality = "Optimized Mobile • Standard JPG";
-          size = "~850 KB";
-        } else {
-          label = "480p Web";
-          quality = "Fast Download • Web Quality";
-          size = "~350 KB";
-        }
+      const resolutions: MediaResolution[] = candidates.map((c: { width: number; height: number; url: string }, idx: number) => {
+        const isBest = idx === 0;
         return {
-          label,
-          quality,
-          size,
+          label: `${c.width}x${c.height}`,
+          quality: isBest ? "Original Resolution • Lossless JPG" : `${c.width}x${c.height} Compressed JPG`,
+          size: isBest ? "Original Lossless" : "Optimized Size",
           type: "jpg" as const,
           downloadUrl: c.url,
-          isBest: idx === 0,
+          isBest,
           width: c.width,
           height: c.height,
         };
@@ -285,66 +273,51 @@ export async function extractViaDirectApi(shortcode: string): Promise<ExtractedM
         const isChildVideo = child.media_type === 2;
         const childResolutions: MediaResolution[] = [];
 
-        if (isChildVideo && child.video_versions?.[0]) {
-          const bestV = child.video_versions[0];
-          childResolutions.push({
-            label: (bestV.height && bestV.height >= 1080) ? "1080p HD Video" : `${bestV.height || "HD"} Video`,
-            quality: "Original Quality MP4",
-            size: "HD Video",
-            type: "mp4" as const,
-            downloadUrl: bestV.url,
-            width: bestV.width,
-            height: bestV.height,
-            isBest: true,
-          });
-
-          if (child.video_versions[1]) {
-            const secondV = child.video_versions[1];
+        if (isChildVideo && child.video_versions && child.video_versions.length > 0) {
+          const sortedVideos = [...child.video_versions].sort((a: any, b: any) => (b.height || 0) - (a.height || 0));
+          sortedVideos.forEach((v: any, vIdx: number) => {
+            const isBest = vIdx === 0;
             childResolutions.push({
-              label: `${secondV.height || "720"}p Video`,
-              quality: "Standard Quality MP4",
-              size: "Fast Mobile",
+              label: v.height ? `${v.height}p Video` : `Video Stream #${vIdx + 1}`,
+              quality: isBest ? "Original Quality MP4" : `${v.height || "SD"}p Compressed MP4`,
+              size: isBest ? "HD Video" : "Standard",
               type: "mp4" as const,
-              downloadUrl: secondV.url,
-              width: secondV.width,
-              height: secondV.height,
+              downloadUrl: v.url,
+              width: v.width,
+              height: v.height,
+              isBest,
             });
-          }
-
-          childResolutions.push({
-            label: "Audio Track (MP3)",
-            quality: "320 kbps Stereo Audio",
-            size: "320 kbps",
-            type: "mp3" as const,
-            downloadUrl: bestV.url,
-            bitrate: "320 kbps",
-          });
-        } else if (child.image_versions2?.candidates?.[0]) {
-          const candidates = child.image_versions2.candidates;
-          const bestImg = candidates[0];
-          childResolutions.push({
-            label: "1080p Original Photo",
-            quality: "Original Uncompressed JPG",
-            size: "Full HD",
-            type: "jpg" as const,
-            downloadUrl: bestImg.url,
-            width: bestImg.width,
-            height: bestImg.height,
-            isBest: true,
           });
 
-          if (candidates[1]) {
-            const secondImg = candidates[1];
+          if (sortedVideos[0]) {
             childResolutions.push({
-              label: "720p Compressed Photo",
-              quality: "Optimized Mobile JPG",
-              size: "Standard",
-              type: "jpg" as const,
-              downloadUrl: secondImg.url,
-              width: secondImg.width,
-              height: secondImg.height,
+              label: "Audio Track (MP3)",
+              quality: "320 kbps Stereo Audio",
+              size: "320 kbps",
+              type: "mp3" as const,
+              downloadUrl: sortedVideos[0].url,
+              bitrate: "320 kbps",
             });
           }
+        } else if (child.image_versions2?.candidates?.[0]) {
+          const allCandidates = (child.image_versions2.candidates || [])
+            .filter((c: any) => c.url && c.width && c.width >= 200)
+            .sort((a: any, b: any) => (b.width * b.height) - (a.width * a.height));
+          const candidatesToUse = allCandidates.length > 0 ? allCandidates : [child.image_versions2.candidates[0]];
+
+          candidatesToUse.forEach((c: any, cIdx: number) => {
+            const isOriginal = cIdx === 0;
+            childResolutions.push({
+              label: `${c.width}x${c.height}`,
+              quality: isOriginal ? "Original Resolution • Lossless JPG" : `${c.width}x${c.height} Standard`,
+              size: isOriginal ? "Original JPG" : "Compressed JPG",
+              type: "jpg" as const,
+              downloadUrl: c.url,
+              width: c.width,
+              height: c.height,
+              isBest: isOriginal,
+            });
+          });
         }
 
         return {
