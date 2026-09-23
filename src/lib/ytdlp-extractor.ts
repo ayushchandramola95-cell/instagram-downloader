@@ -230,10 +230,36 @@ export async function extractWithYtDlp(targetUrl: string): Promise<ExtractedMedi
     // Optional cookies file (Netscape format) to bypass Instagram login walls
     const cookiesEnv = process.env.YT_DLP_COOKIES_PATH;
     const defaultCookies = path.join(process.cwd(), "cookies.txt");
+    const tmpCookies = path.join(process.platform === "win32" ? process.cwd() : "/tmp", "instasnap_cookies.txt");
+
     if (cookiesEnv && fs.existsSync(cookiesEnv)) {
       args.push("--cookies", cookiesEnv);
     } else if (fs.existsSync(defaultCookies)) {
       args.push("--cookies", defaultCookies);
+    } else if (process.env.INSTAGRAM_COOKIE) {
+      try {
+        if (!fs.existsSync(tmpCookies)) {
+          const lines = [
+            "# Netscape HTTP Cookie File",
+            "# Generated automatically from INSTAGRAM_COOKIE environment variable",
+          ];
+          const parts = process.env.INSTAGRAM_COOKIE.split(";").map((p) => p.trim()).filter(Boolean);
+          for (const part of parts) {
+            const eqIdx = part.indexOf("=");
+            if (eqIdx !== -1) {
+              const name = part.slice(0, eqIdx).trim();
+              const value = part.slice(eqIdx + 1).trim();
+              lines.push(`.instagram.com\tTRUE\t/\tTRUE\t2147483647\t${name}\t${value}`);
+            }
+          }
+          fs.writeFileSync(tmpCookies, lines.join("\n"), "utf8");
+        }
+        if (fs.existsSync(tmpCookies)) {
+          args.push("--cookies", tmpCookies);
+        }
+      } catch {
+        args.push("--add-header", `Cookie: ${process.env.INSTAGRAM_COOKIE}`);
+      }
     }
 
     // Optional residential or rotating proxy
