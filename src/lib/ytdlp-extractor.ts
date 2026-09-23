@@ -17,6 +17,7 @@ interface YtDlpFormat {
   filesize?: number;
   filesize_approx?: number;
   format_note?: string;
+  abr?: number;
 }
 
 interface YtDlpOutput {
@@ -50,9 +51,30 @@ function buildResolutionsFromOutput(item: YtDlpOutput): MediaResolution[] {
   const directVideoUrl = item.url;
 
   if (isVideo) {
-    const videoFormats = (item.formats || [])
+    const allFormats = item.formats || [];
+
+    // 1. Prioritize formats that contain BOTH video AND audio
+    const formatsWithAudio = allFormats
+      .filter((f) => f.url && f.vcodec && f.vcodec !== "none" && f.acodec && f.acodec !== "none")
+      .sort((a, b) => (b.height || 0) - (a.height || 0));
+
+    // 2. All video formats (fallback in case only DASH video-only exists)
+    const allVideoFormats = allFormats
       .filter((f) => f.url && f.vcodec && f.vcodec !== "none")
       .sort((a, b) => (b.height || 0) - (a.height || 0));
+
+    // 3. Audio-only tracks for standalone MP3 download
+    const audioFormats = allFormats
+      .filter((f) => f.url && f.acodec && f.acodec !== "none" && (!f.vcodec || f.vcodec === "none"))
+      .sort((a, b) => (b.abr || 0) - (a.abr || 0));
+
+    // 4. Any format with audio
+    const anyAudioFormat = allFormats
+      .filter((f) => f.url && f.acodec && f.acodec !== "none")
+      .sort((a, b) => (b.abr || 0) - (a.abr || 0))[0];
+
+    // Use formats with audio first so video preview & downloads are NOT muted!
+    const videoFormats = formatsWithAudio.length > 0 ? formatsWithAudio : allVideoFormats;
 
     if (videoFormats.length > 0) {
       // 1080p or highest
@@ -96,8 +118,8 @@ function buildResolutionsFromOutput(item: YtDlpOutput): MediaResolution[] {
         });
       }
 
-      // MP3 Audio Track Options
-      const audioUrl = bestFmt.url || directVideoUrl || "";
+      // MP3 Audio Track Options: Use actual audio stream if available
+      const audioUrl = audioFormats[0]?.url || anyAudioFormat?.url || bestFmt.url || directVideoUrl || "";
       resolutions.push({
         label: "320 kbps Studio Audio",
         quality: "High Fidelity Stereo MP3",

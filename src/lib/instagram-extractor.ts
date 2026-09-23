@@ -225,31 +225,38 @@ export async function extractViaDirectApi(shortcode: string): Promise<ExtractedM
           });
         }
 
-        // Dedicated Audio Tracks for user selection
-        resolutions.push({
-          label: "320 kbps Studio Audio",
-          quality: "Ultra High Fidelity Stereo",
-          size: "320 kbps MP3",
-          type: "mp3" as const,
-          downloadUrl: bestVideo.url,
-          bitrate: "320 kbps",
-        });
+      // Extract dedicated progressive audio track if available in clips/music metadata
+      const musicInfoUrl: string | undefined =
+        item.clips_metadata?.music_info?.music_asset_info?.progressive_download_url ||
+        item.clips_metadata?.original_sound_info?.progressive_download_url ||
+        item.music_metadata?.music_info?.music_asset_info?.progressive_download_url;
+      const audioDownloadUrl = musicInfoUrl || bestVideo.url;
 
-        resolutions.push({
-          label: "256 kbps High Audio",
-          quality: "High Definition MP3",
-          size: "256 kbps MP3",
-          type: "mp3" as const,
-          downloadUrl: bestVideo.url,
-          bitrate: "256 kbps",
-        });
+      // Dedicated Audio Tracks for user selection
+      resolutions.push({
+        label: "320 kbps Studio Audio",
+        quality: "Ultra High Fidelity Stereo",
+        size: "320 kbps MP3",
+        type: "mp3" as const,
+        downloadUrl: audioDownloadUrl,
+        bitrate: "320 kbps",
+      });
 
-        resolutions.push({
-          label: "128 kbps Standard Audio",
-          quality: "Compressed Mobile MP3",
-          size: "128 kbps MP3",
-          type: "mp3" as const,
-          downloadUrl: bestVideo.url,
+      resolutions.push({
+        label: "256 kbps High Audio",
+        quality: "High Definition MP3",
+        size: "256 kbps MP3",
+        type: "mp3" as const,
+        downloadUrl: audioDownloadUrl,
+        bitrate: "256 kbps",
+      });
+
+      resolutions.push({
+        label: "128 kbps Standard Audio",
+        quality: "Compressed Mobile MP3",
+        size: "128 kbps MP3",
+        type: "mp3" as const,
+        downloadUrl: audioDownloadUrl,
           bitrate: "128 kbps",
         });
       }
