@@ -9,8 +9,8 @@ WORKDIR /app
 
 # Stage 2: Install dependencies
 FROM base AS deps
-COPY package.json package-lock.json ./
-RUN npm ci
+COPY package.json package-lock.json* ./
+RUN npm install
 
 # Stage 3: Build application
 FROM base AS builder

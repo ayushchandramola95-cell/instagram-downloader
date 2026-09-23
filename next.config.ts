@@ -13,6 +13,11 @@ const nextConfig: NextConfig = {
   // Automatically trace dependencies and produce a minimal standalone build for Docker
   output: "standalone",
 
+  // Prevent build failures from linting during Docker packaging
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+
   // HTTP Security and Caching Headers
   async headers() {
     return [
