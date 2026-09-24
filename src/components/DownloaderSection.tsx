@@ -5,6 +5,7 @@ import Link from "next/link";
 import JSZip from "jszip";
 import { useTranslation } from "@/lib/i18n";
 import { ExtractedMedia, FetchMediaResponse, MediaResolution } from "@/lib/types";
+import { trackGAEvent } from "@/lib/ga";
 
 export type MediaTab = "all" | "reels" | "stories" | "photos" | "profile" | "audio" | "carousel";
 
@@ -327,6 +328,7 @@ export default function DownloaderSection({
     if (navigator.clipboard) {
       navigator.clipboard.writeText(captionText);
       setCopiedCaption(true);
+      trackGAEvent("copy_caption", "creator_tool", "caption");
       setTimeout(() => setCopiedCaption(false), 2000);
     }
   };
@@ -345,11 +347,13 @@ export default function DownloaderSection({
       }
       navigator.clipboard.writeText(tags);
       setCopiedHashtags(true);
+      trackGAEvent("copy_hashtags", "creator_tool", "hashtags");
       setTimeout(() => setCopiedHashtags(false), 2000);
     }
   };
 
   const handleShareMedia = async (title: string, text: string, shareUrl: string) => {
+    trackGAEvent("share_media", "engagement", title || "GramSave Downloader");
     if (typeof navigator !== "undefined" && navigator.share) {
       try {
         await navigator.share({
@@ -366,6 +370,7 @@ export default function DownloaderSection({
   };
 
   const handleDownloadTrimmedVideo = (targetRes: MediaResolution) => {
+    trackGAEvent("trim_video", "creator_tool", `${trimStart}s-${trimStart + trimDuration}s`);
     const cleanName = `gramsave_clip_${trimStart}s-${trimStart + trimDuration}s_${result?.id || "video"}.mp4`;
     let dlUrl = `/api/download?url=${encodeURIComponent(targetRes.downloadUrl)}&filename=${encodeURIComponent(cleanName)}&start=${trimStart}&duration=${trimDuration}`;
     if (targetRes.audioUrl) {
@@ -375,6 +380,7 @@ export default function DownloaderSection({
   };
 
   const handleDownloadRingtone = (targetRes: MediaResolution, durationSec: number) => {
+    trackGAEvent("extract_ringtone", "creator_tool", `${durationSec}s`);
     const cleanName = `gramsave_ringtone_${durationSec}s_${result?.id || "audio"}.mp3`;
     const dlUrl = `/api/download?url=${encodeURIComponent(targetRes.downloadUrl)}&filename=${encodeURIComponent(cleanName)}&start=0&duration=${durationSec}`;
     triggerDownload(dlUrl, cleanName);
@@ -456,6 +462,7 @@ export default function DownloaderSection({
    * to guarantee immediate file saving and bypass Instagram hotlink/CORS restrictions.
    */
   const triggerDownload = (rawDownloadUrl: string, filename: string, audioUrl?: string) => {
+    trackGAEvent("file_download", "media", filename, undefined, { file_name: filename });
     setDownloadingFile(filename);
     setDownloadProgress(15);
 
