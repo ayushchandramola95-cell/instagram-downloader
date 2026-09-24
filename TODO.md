@@ -48,18 +48,17 @@ This checklist outlines all tasks categorized by phase, importance, and status. 
   - [x] `/story-saver` — Target: *"Download Instagram Stories Anonymously"*
   - [x] `/audio-downloader` — Target: *"Convert Instagram Reels to MP3"*
   - [x] `/photo-downloader` — Target: *"Instagram Photo & Profile Picture Downloader"*
-  - [x] `/carousel-downloader` — Target: *"Download Instagram Carousel Slides"*
+  - [x] `/profile-downloader` — Target: *"Instagram Profile Picture Downloader 1080p"*
+  - [x] `/dp-viewer` — Target: *"Instagram DP Viewer & Full-Size DP Zoom"*
 - [x] **Search Engine Indexing Files**:
-  - [x] `src/app/sitemap.ts` — Dynamic XML sitemap generator for all pages.
-  - [x] `src/app/robots.ts` — Directives allowing Googlebot and Bingbot indexing.
-- [ ] **Dynamic OpenGraph Images (`opengraph-image.tsx`)**:
-  - [ ] Auto-generated branded preview cards for social media sharing.
-- [ ] **Internationalization (i18n) for Global Traffic**:
-  - [ ] Add subpaths for high-volume non-English queries:
-    - `/es/` (Spanish) — *Descargar videos de Instagram*
-    - `/pt/` (Portuguese) — *Baixar vídeos do Instagram*
-    - `/hi/` (Hindi) — *Instagram video download kaise kare*
-    - `/id/` (Indonesian) — *Download video IG tanpa aplikasi*
+  - [x] `src/app/sitemap.ts` — Dynamic XML sitemap generator with `hreflang` alternates for 8 languages.
+  - [x] `src/app/robots.ts` — Directives allowing Googlebot/Bingbot while disallowing `/developer` and `/api/`.
+- [x] **Branded OpenGraph Image**:
+  - [x] High-resolution preview card `public/og-image.jpg` configured with meta tags.
+- [x] **Internationalization (i18n) for Global Traffic**:
+  - [x] 8-language engine (English, Spanish, Portuguese, Indonesian, Hindi, French, Arabic, German).
+  - [x] `hreflang` alternate annotations in metadata and sitemap.xml.
+  - [x] Full developer CMS to edit translations and add new languages live.
 
 ---
 

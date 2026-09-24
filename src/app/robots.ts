@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/api/"],
+        disallow: ["/api/", "/developer"],
       },
     ],
     sitemap: "https://gramsave.site/sitemap.xml",
