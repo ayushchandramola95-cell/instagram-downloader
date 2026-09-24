@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateDownloadTargetUrl, sanitizeFilename } from "@/lib/security";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limiter";
+import { recordDownloadEvent } from "@/lib/analytics-store";
 import { spawn } from "child_process";
 import { Readable } from "stream";
 
@@ -32,6 +33,16 @@ export async function GET(req: NextRequest) {
   const rawAudioUrl = searchParams.get("audioUrl");
   const rawFilename = searchParams.get("filename") || "gramsave_media.mp4";
   const isPreview = searchParams.get("preview") === "1" || rawFilename.startsWith("preview.");
+
+  // Record analytics for authentic downloads
+  if (!isPreview) {
+    let format = "reel";
+    if (rawFilename.endsWith(".mp3")) format = "audio";
+    else if (rawFilename.endsWith(".jpg") || rawFilename.endsWith(".png")) format = "photo";
+    else if (rawFilename.includes("story")) format = "story";
+    else if (rawFilename.includes("carousel") || rawFilename.includes("slide")) format = "carousel";
+    recordDownloadEvent(format, rawFilename, clientIp).catch(() => {});
+  }
 
   if (!mediaUrl) {
     return new NextResponse("Missing media url parameter.", { status: 400 });

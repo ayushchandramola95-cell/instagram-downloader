@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import JSZip from "jszip";
+import { useTranslation } from "@/lib/i18n";
 import { ExtractedMedia, FetchMediaResponse, MediaResolution } from "@/lib/types";
 
 export type MediaTab = "all" | "reels" | "stories" | "photos" | "audio" | "carousel";
@@ -109,12 +111,14 @@ export default function DownloaderSection({
   defaultTab = "all",
   showTabs = true,
 }: DownloaderSectionProps) {
+  const { t } = useTranslation();
   const [activeTab] = useState<MediaTab>(defaultTab);
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ExtractedMedia | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pasteSuccess, setPasteSuccess] = useState(false);
+  const [showBookmarkletModal, setShowBookmarkletModal] = useState(false);
 
   // Quality toggle selection for single media (index in result.resolutions)
   const [selectedQualityIndex, setSelectedQualityIndex] = useState<number>(0);
@@ -138,6 +142,18 @@ export default function DownloaderSection({
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [audioCurrentTime, setAudioCurrentTime] = useState(0);
   const [audioDuration, setAudioDuration] = useState(0);
+
+  // Auto-fetch if ?url=... query param is provided
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const queryUrl = params.get("url");
+      if (queryUrl && !url) {
+        setUrl(queryUrl);
+        fetchMedia(queryUrl);
+      }
+    }
+  }, []);
 
   // Cloudflare Turnstile anti-bot state (optional)
   const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
@@ -387,6 +403,73 @@ export default function DownloaderSection({
     }, 3000);
   };
 
+  /**
+   * Bundles all carousel slides into a single .ZIP archive in-browser via JSZip
+   */
+  const handleDownloadAllZip = async () => {
+    if (!result?.carouselItems || result.carouselItems.length === 0) return;
+    setBatchDownloading(true);
+    setBatchProgressText("Initializing ZIP bundle...");
+
+    try {
+      const zip = new JSZip();
+      const folderName = `gramsave_${result.shortcode || result.id || "carousel"}`;
+      const folder = zip.folder(folderName) || zip;
+
+      for (let i = 0; i < result.carouselItems.length; i++) {
+        const item = result.carouselItems[i];
+        const selectedIndex = carouselSelectedQualities[item.index] ?? 0;
+        const chosenRes = item.resolutions[selectedIndex] || item.resolutions[0];
+
+        if (!chosenRes) continue;
+
+        setBatchProgressText(`Fetching slide ${i + 1} of ${result.carouselItems.length}...`);
+
+        const cleanLabel = chosenRes.label.replace(/[^a-zA-Z0-9]/g, "_");
+        const filename = `slide_${item.index}_${cleanLabel}.${chosenRes.type}`;
+
+        let fetchUrl = chosenRes.downloadUrl.startsWith("http")
+          ? `/api/download?url=${encodeURIComponent(chosenRes.downloadUrl)}&filename=${encodeURIComponent(filename)}`
+          : chosenRes.downloadUrl;
+
+        if (chosenRes.audioUrl && chosenRes.downloadUrl.startsWith("http")) {
+          fetchUrl += `&audioUrl=${encodeURIComponent(chosenRes.audioUrl)}`;
+        }
+
+        const res = await fetch(fetchUrl);
+        if (!res.ok) throw new Error(`Slide ${i + 1} fetch failed`);
+        const blob = await res.blob();
+        folder.file(filename, blob);
+      }
+
+      setBatchProgressText("Compiling ZIP bundle...");
+      const content = await zip.generateAsync({ type: "blob" }, (meta) => {
+        setBatchProgressText(`Packaging ZIP: ${Math.round(meta.percent)}%`);
+      });
+
+      const zipUrl = URL.createObjectURL(content);
+      const a = document.createElement("a");
+      a.href = zipUrl;
+      a.download = `${folderName}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(zipUrl);
+
+      setBatchProgressText("✓ ZIP Saved Successfully!");
+      setTimeout(() => {
+        setBatchDownloading(false);
+        setBatchProgressText("");
+      }, 2500);
+    } catch (err: any) {
+      setBatchProgressText(`ZIP Error: ${err.message || "Failed"}`);
+      setTimeout(() => {
+        setBatchDownloading(false);
+        setBatchProgressText("");
+      }, 3000);
+    }
+  };
+
   // Audio player controls
   const toggleAudioPlay = () => {
     if (!audioRef.current) return;
@@ -465,16 +548,20 @@ export default function DownloaderSection({
           <div key={activeTab} className="hero-anim-box">
             <div className="hero-pill">
               <span className="hero-pill-indicator"></span>
-              <span>{activePreset.badge}</span>
+              <span>{activeTab === "all" ? t("hero_badge", activePreset.badge) : activePreset.badge}</span>
             </div>
 
             <h1 className="hero-title">
-              {activePreset.titlePrefix}
-              <span className="gradient-text">{activePreset.titleHighlight}</span>
-              {activePreset.titleSuffix}
+              {activeTab === "all" ? t("hero_title_prefix", activePreset.titlePrefix) : activePreset.titlePrefix}
+              <span className="gradient-text">
+                {activeTab === "all" ? t("hero_title_highlight", activePreset.titleHighlight) : activePreset.titleHighlight}
+              </span>
+              {activeTab === "all" ? t("hero_title_suffix", activePreset.titleSuffix) : activePreset.titleSuffix}
             </h1>
 
-            <p className="hero-subtitle">{activePreset.subtitle}</p>
+            <p className="hero-subtitle">
+              {activeTab === "all" ? t("hero_subtitle", activePreset.subtitle) : activePreset.subtitle}
+            </p>
           </div>
 
           {/* Input Form Box */}
@@ -492,7 +579,7 @@ export default function DownloaderSection({
                   id="instagram-url-input"
                   type="text"
                   className="url-input"
-                  placeholder={activePreset.placeholder}
+                  placeholder={activeTab === "all" ? t("input_placeholder", activePreset.placeholder) : activePreset.placeholder}
                   value={url}
                   onChange={(e) => {
                     setUrl(e.target.value);
@@ -523,7 +610,7 @@ export default function DownloaderSection({
                     <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
                     <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
                   </svg>
-                  {pasteSuccess ? "Pasted!" : "Paste"}
+                  {pasteSuccess ? "Pasted!" : t("btn_paste", "Paste")}
                 </button>
 
                 <button
@@ -532,7 +619,7 @@ export default function DownloaderSection({
                   className="submit-btn"
                   disabled={loading}
                 >
-                  <span>Download</span>
+                  <span>{loading ? t("btn_fetching", "Fetching...") : t("btn_download", "Download")}</span>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
                     <polyline points="19 12 12 19 5 12"></polyline>
@@ -540,6 +627,32 @@ export default function DownloaderSection({
                 </button>
               </div>
             </form>
+          </div>
+
+          {/* 1-Click Bookmarklet Trigger Pill */}
+          <div style={{ marginTop: "14px", display: "flex", justifyContent: "center" }}>
+            <button
+              type="button"
+              onClick={() => setShowBookmarkletModal(true)}
+              style={{
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid var(--card-border, rgba(255,255,255,0.1))",
+                color: "var(--text-secondary, #a1a1aa)",
+                padding: "6px 14px",
+                borderRadius: "var(--radius-full, 9999px)",
+                fontSize: "0.8rem",
+                fontWeight: 600,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                transition: "all 0.2s ease",
+              }}
+            >
+              <span>🔖</span>
+              <span>{t("bookmarklet_title", "1-Click Browser Bookmarklet")}</span>
+              <span style={{ color: "#ec4899", fontWeight: 700 }}>→</span>
+            </button>
           </div>
 
           {/* Optional Cloudflare Turnstile Container */}
@@ -1219,24 +1332,48 @@ export default function DownloaderSection({
                     </button>
                   </div>
 
-                  {/* Batch Download Button */}
-                  <button
-                    type="button"
-                    className="batch-download-all-btn"
-                    disabled={batchDownloading}
-                    onClick={handleDownloadAllCarousel}
-                  >
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                      <polyline points="7 10 12 15 17 10"></polyline>
-                      <line x1="12" y1="15" x2="12" y2="3"></line>
-                    </svg>
-                    <span>
-                      {batchDownloading
-                        ? batchProgressText || "Downloading All Slides..."
-                        : `Download All ${result.carouselItems.length} Slides`}
-                    </span>
-                  </button>
+                  {/* Action Buttons Row */}
+                  <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
+                    {/* Primary ZIP Archive Download */}
+                    <button
+                      type="button"
+                      className="batch-download-all-btn"
+                      disabled={batchDownloading}
+                      onClick={handleDownloadAllZip}
+                      style={{
+                        background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                        boxShadow: "0 6px 16px -4px rgba(16, 185, 129, 0.45)",
+                        border: "none",
+                      }}
+                    >
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                      </svg>
+                      <span>
+                        {batchDownloading
+                          ? batchProgressText || "Packaging ZIP..."
+                          : t("result_download_zip", `📦 Download All as ZIP (${result.carouselItems.length})`)}
+                      </span>
+                    </button>
+
+                    {/* Sequential Individual Files Download */}
+                    <button
+                      type="button"
+                      className="batch-download-all-btn"
+                      disabled={batchDownloading}
+                      onClick={handleDownloadAllCarousel}
+                      style={{
+                        background: "rgba(255, 255, 255, 0.06)",
+                        border: "1px solid var(--card-border, rgba(255,255,255,0.12))",
+                        color: "var(--text-secondary, #a1a1aa)",
+                      }}
+                      title="Download each slide as an individual file"
+                    >
+                      <span>Individual Files</span>
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -1479,6 +1616,146 @@ export default function DownloaderSection({
               </svg>
               <span>Download Another Video / Paste New URL</span>
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 1-CLICK BOOKMARKLET MODAL                                                 */}
+      {/* ========================================================================= */}
+      {showBookmarkletModal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.75)",
+            backdropFilter: "blur(10px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+            padding: "20px",
+            animation: "fadeIn 0.2s ease",
+          }}
+          onClick={() => setShowBookmarkletModal(false)}
+        >
+          <div
+            style={{
+              background: "var(--card-bg-elevated, #16181f)",
+              border: "1px solid var(--card-border, rgba(255,255,255,0.12))",
+              borderRadius: "20px",
+              padding: "30px 26px",
+              maxWidth: "480px",
+              width: "100%",
+              boxShadow: "0 25px 60px rgba(0,0,0,0.8)",
+              position: "relative",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setShowBookmarkletModal(false)}
+              style={{
+                position: "absolute",
+                top: "16px",
+                right: "16px",
+                background: "rgba(255,255,255,0.06)",
+                border: "none",
+                color: "#fff",
+                borderRadius: "50%",
+                width: "32px",
+                height: "32px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "14px",
+              }}
+            >
+              ✕
+            </button>
+
+            <div style={{ textAlign: "center", marginBottom: "20px" }}>
+              <div
+                style={{
+                  width: "52px",
+                  height: "52px",
+                  borderRadius: "16px",
+                  background: "linear-gradient(135deg, #ec4899, #a855f7)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  margin: "0 auto 14px",
+                  fontSize: "24px",
+                  boxShadow: "0 8px 20px -4px rgba(236,72,153,0.5)",
+                }}
+              >
+                🔖
+              </div>
+              <h3 style={{ fontSize: "1.3rem", fontWeight: 800, color: "#fff", marginBottom: "6px" }}>
+                1-Click Browser Bookmarklet
+              </h3>
+              <p style={{ fontSize: "0.86rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                Download any Instagram Reel, Video or Post directly while browsing Instagram without copy-pasting links!
+              </p>
+            </div>
+
+            {/* Draggable Button Box */}
+            <div
+              style={{
+                background: "rgba(0,0,0,0.3)",
+                border: "2px dashed rgba(236,72,153,0.4)",
+                borderRadius: "14px",
+                padding: "20px",
+                textAlign: "center",
+                marginBottom: "20px",
+              }}
+            >
+              <span style={{ display: "block", fontSize: "0.78rem", color: "var(--text-muted)", marginBottom: "12px", textTransform: "uppercase", fontWeight: 700 }}>
+                👇 Drag this button to your Bookmarks Bar:
+              </span>
+
+              <a
+                href="javascript:(function(){var u=window.location.href;if(!u.includes('instagram.com')){alert('Please use this on an Instagram Reel or Post!');return;}window.open('https://gramsave.site/?url='+encodeURIComponent(u)+'&src=bookmarklet','_blank');})();"
+                onClick={(e) => {
+                  if (typeof window !== "undefined" && !window.location.href.includes("instagram.com")) {
+                    e.preventDefault();
+                    alert("Drag this button to your bookmarks bar! Then click it whenever you are on Instagram.");
+                  }
+                }}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  padding: "12px 24px",
+                  borderRadius: "var(--radius-full, 9999px)",
+                  background: "linear-gradient(135deg, #ec4899, #a855f7)",
+                  color: "#fff",
+                  fontWeight: 800,
+                  fontSize: "1rem",
+                  textDecoration: "none",
+                  cursor: "grab",
+                  boxShadow: "0 8px 20px -5px rgba(236,72,153,0.5)",
+                }}
+              >
+                <span>⬇ Save IG</span>
+              </a>
+            </div>
+
+            {/* Step Instructions */}
+            <div style={{ fontSize: "0.82rem", color: "var(--text-secondary)" }}>
+              <div style={{ display: "flex", gap: "10px", marginBottom: "8px" }}>
+                <span style={{ color: "#ec4899", fontWeight: 800 }}>1.</span>
+                <span>Ensure your browser bookmarks bar is visible (<kbd style={{ background: "rgba(255,255,255,0.1)", padding: "1px 5px", borderRadius: "4px" }}>Ctrl+Shift+B</kbd> or <kbd style={{ background: "rgba(255,255,255,0.1)", padding: "1px 5px", borderRadius: "4px" }}>Cmd+Shift+B</kbd>).</span>
+              </div>
+              <div style={{ display: "flex", gap: "10px", marginBottom: "8px" }}>
+                <span style={{ color: "#ec4899", fontWeight: 800 }}>2.</span>
+                <span>Drag the pink <strong>&quot;⬇ Save IG&quot;</strong> button up to your bookmarks bar.</span>
+              </div>
+              <div style={{ display: "flex", gap: "10px" }}>
+                <span style={{ color: "#ec4899", fontWeight: 800 }}>3.</span>
+                <span>Whenever viewing an Instagram post, click <strong>&quot;⬇ Save IG&quot;</strong> to start downloading instantly!</span>
+              </div>
+            </div>
           </div>
         </div>
       )}

@@ -1,8 +1,11 @@
+"use client";
+
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import DownloaderSection from "@/components/DownloaderSection";
 import FaqAccordion, { FaqItem } from "@/components/FaqAccordion";
+import { useTranslation } from "@/lib/i18n";
 
 const HOME_FAQS: FaqItem[] = [
   {
@@ -83,6 +86,8 @@ const SILO_TOOLS = [
 ];
 
 export default function Home() {
+  const { t } = useTranslation();
+
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -186,43 +191,43 @@ export default function Home() {
         {/* Feature Highlights Grid */}
         <section className="features-section container" id="features">
           <div className="section-header">
-            <div className="section-tag">Why Creators Choose GramSave</div>
-            <h2 className="section-title">Built for Speed, Quality & Privacy</h2>
+            <div className="section-tag">{t("features_badge", "Why Creators Choose GramSave")}</div>
+            <h2 className="section-title">{t("features_title", "Built for Speed, Quality & Privacy")}</h2>
             <p className="section-desc">
-              Engineered for maximum speed, crystal-clear 1080p resolution, and complete anonymity across all modern devices.
+              {t("features_subtitle", "Engineered for maximum speed, crystal-clear 1080p resolution, and complete anonymity across all modern devices.")}
             </p>
           </div>
 
           <div className="feature-cards-grid">
             <article className="feature-card" id="feature-card-speed">
               <div className="feature-icon-box purple">⚡</div>
-              <h3 className="feature-card-title">Lightning Fast Speeds</h3>
+              <h3 className="feature-card-title">{t("feature_speed_title", "Lightning Fast Speeds")}</h3>
               <p className="feature-card-desc">
-                High-bandwidth edge infrastructure fetches direct CDN video links within milliseconds with zero throttling.
+                {t("feature_speed_desc", "High-bandwidth edge infrastructure fetches direct CDN video links within milliseconds with zero throttling.")}
               </p>
             </article>
 
             <article className="feature-card" id="feature-card-quality">
               <div className="feature-icon-box pink">💎</div>
-              <h3 className="feature-card-title">Full HD 1080p & 60 FPS</h3>
+              <h3 className="feature-card-title">{t("feature_quality_title", "Full HD 1080p & 60 FPS")}</h3>
               <p className="feature-card-desc">
-                Never settle for pixelated videos. Download the highest source resolution uploaded by creators without compression.
+                {t("feature_quality_desc", "Never settle for pixelated videos. Download the highest source resolution uploaded by creators without compression.")}
               </p>
             </article>
 
             <article className="feature-card" id="feature-card-privacy">
               <div className="feature-icon-box orange">🛡️</div>
-              <h3 className="feature-card-title">100% Anonymous & Safe</h3>
+              <h3 className="feature-card-title">{t("feature_privacy_title", "100% Anonymous & Safe")}</h3>
               <p className="feature-card-desc">
-                No login, password, or account linking required. We do not track your downloads or retain any personal logs.
+                {t("feature_privacy_desc", "No login, password, or account linking required. We do not track your downloads or retain any personal logs.")}
               </p>
             </article>
 
             <article className="feature-card" id="feature-card-devices">
               <div className="feature-icon-box cyan">📱</div>
-              <h3 className="feature-card-title">All Devices Supported</h3>
+              <h3 className="feature-card-title">{t("feature_devices_title", "All Devices Supported")}</h3>
               <p className="feature-card-desc">
-                Fully responsive and compatible with iOS (iPhone/iPad), Android, Mac, Windows, Linux, and all modern web browsers.
+                {t("feature_devices_desc", "Fully responsive and compatible with iOS (iPhone/iPad), Android, Mac, Windows, Linux, and all modern web browsers.")}
               </p>
             </article>
           </div>
@@ -232,10 +237,10 @@ export default function Home() {
         <section className="steps-section" id="how-it-works">
           <div className="container">
             <div className="section-header">
-              <div className="section-tag">Simple 3-Step Process</div>
-              <h2 className="section-title">How to Download Instagram Videos</h2>
+              <div className="section-tag">{t("steps_badge", "Simple 3-Step Process")}</div>
+              <h2 className="section-title">{t("steps_title", "How to Download Instagram Videos")}</h2>
               <p className="section-desc">
-                It takes just three simple clicks to save any Instagram video directly to your photo album or download folder.
+                {t("steps_subtitle", "It takes just three simple clicks to save any Instagram video directly to your photo album or download folder.")}
               </p>
             </div>
 
@@ -243,27 +248,27 @@ export default function Home() {
               <div className="step-card" id="step-1">
                 <span className="step-number">01</span>
                 <span className="step-badge">Step 1</span>
-                <h3 className="step-title">Copy the Instagram Link</h3>
+                <h3 className="step-title">{t("step_1_title", "Copy the Instagram Link")}</h3>
                 <p className="step-text">
-                  Open the Instagram app or website, find the Reel, Video, or Story, tap the Share icon, and tap <strong>&quot;Copy Link&quot;</strong>.
+                  {t("step_1_desc", "Open the Instagram app or website, find the Reel, Video, or Story, tap the Share icon, and tap 'Copy Link'.")}
                 </p>
               </div>
 
               <div className="step-card" id="step-2">
                 <span className="step-number">02</span>
                 <span className="step-badge">Step 2</span>
-                <h3 className="step-title">Paste the URL</h3>
+                <h3 className="step-title">{t("step_2_title", "Paste the URL")}</h3>
                 <p className="step-text">
-                  Paste the copied link into the input box above and click the <strong>&quot;Download&quot;</strong> button to fetch the video data.
+                  {t("step_2_desc", "Paste the copied link into the input box above and click the 'Download' button to fetch the video data.")}
                 </p>
               </div>
 
               <div className="step-card" id="step-3">
                 <span className="step-number">03</span>
                 <span className="step-badge">Step 3</span>
-                <h3 className="step-title">Save to Your Device</h3>
+                <h3 className="step-title">{t("step_3_title", "Save to Your Device")}</h3>
                 <p className="step-text">
-                  Select your preferred video format (1080p, 720p, or MP3 Audio) and click to save the file instantly to your device.
+                  {t("step_3_desc", "Select your preferred video format (1080p, 720p, or MP3 Audio) and click to save the file instantly to your device.")}
                 </p>
               </div>
             </div>
@@ -417,8 +422,8 @@ export default function Home() {
         {/* FAQ Accordion */}
         <FaqAccordion
           items={HOME_FAQS}
-          title="Frequently Asked Questions"
-          subtitle="Clear, honest answers about saving Instagram media with GramSave."
+          title={t("faq_title", "Frequently Asked Questions")}
+          subtitle={t("faq_subtitle", "Clear, honest answers about saving Instagram media with GramSave.")}
         />
       </main>
 

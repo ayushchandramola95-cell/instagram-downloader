@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import ThemeToggle from "@/components/ThemeToggle";
 import InstallAppButton from "@/components/InstallAppButton";
+import LanguageSelector from "@/components/LanguageSelector";
+import { useTranslation } from "@/lib/i18n";
 
 interface HeaderProps {
   activeTab?: string;
@@ -13,14 +15,15 @@ interface HeaderProps {
 export default function Header({ activeTab }: HeaderProps) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { t } = useTranslation();
 
   const navItems = [
-    { label: "Home", href: "/" },
-    { label: "Reels", href: "/reels-downloader" },
-    { label: "Stories", href: "/story-saver" },
-    { label: "Photos", href: "/photo-downloader" },
-    { label: "Audio MP3", href: "/audio-downloader" },
-    { label: "Carousel", href: "/carousel-downloader" },
+    { label: t("nav_home", "Home"), href: "/" },
+    { label: t("nav_reels", "Reels"), href: "/reels-downloader" },
+    { label: t("nav_stories", "Stories"), href: "/story-saver" },
+    { label: t("nav_photos", "Photos"), href: "/photo-downloader" },
+    { label: t("nav_audio", "Audio MP3"), href: "/audio-downloader" },
+    { label: t("nav_carousel", "Carousel"), href: "/carousel-downloader" },
   ];
 
   return (
@@ -53,19 +56,38 @@ export default function Header({ activeTab }: HeaderProps) {
               </Link>
             );
           })}
-          <Link href="/#faq" className="nav-link">FAQ</Link>
+          <Link href="/#faq" className="nav-link">{t("nav_faq", "FAQ")}</Link>
         </nav>
 
-        {/* Desktop Right Actions (Status + PWA Install + Theme Switcher) */}
+        {/* Desktop Right Actions (Language Selector + PWA Install + Theme Switcher + Status) */}
         <div className="nav-right-actions">
+          <LanguageSelector />
+
           <InstallAppButton />
 
-          <div className="nav-pill-badge">
-            <span className="nav-pill-dot"></span>
-            <span>v1.2 Live</span>
-          </div>
-
           <ThemeToggle />
+
+          <Link
+            href="/developer"
+            className="nav-dev-btn"
+            title="Developer Dashboard & CMS"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "5px",
+              padding: "6px 10px",
+              borderRadius: "var(--radius-full, 9999px)",
+              background: "rgba(236,72,153,0.1)",
+              border: "1px solid rgba(236,72,153,0.3)",
+              color: "#ec4899",
+              fontSize: "0.78rem",
+              fontWeight: 700,
+              textDecoration: "none",
+              transition: "all 0.2s ease",
+            }}
+          >
+            <span>⚡ Dev</span>
+          </Link>
 
           {/* Mobile Hamburger Button */}
           <button
@@ -87,6 +109,11 @@ export default function Header({ activeTab }: HeaderProps) {
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
         <div className="mobile-menu" id="mobile-navigation-drawer">
+          <div style={{ paddingBottom: "12px", borderBottom: "1px solid var(--card-border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text-secondary)" }}>Language</span>
+            <LanguageSelector />
+          </div>
+
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             return (
@@ -108,7 +135,15 @@ export default function Header({ activeTab }: HeaderProps) {
             className="mobile-nav-link"
             onClick={() => setMobileMenuOpen(false)}
           >
-            <span>FAQ</span>
+            <span>{t("nav_faq", "FAQ")}</span>
+          </Link>
+          <Link
+            href="/developer"
+            className="mobile-nav-link"
+            onClick={() => setMobileMenuOpen(false)}
+            style={{ color: "#ec4899" }}
+          >
+            <span>⚡ Developer Dashboard</span>
           </Link>
           <div style={{ paddingTop: "12px", borderTop: "1px solid var(--card-border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span style={{ fontSize: "0.9rem", fontWeight: 600, color: "var(--text-secondary)" }}>Theme Mode</span>

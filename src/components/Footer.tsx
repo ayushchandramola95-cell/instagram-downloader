@@ -1,6 +1,11 @@
+"use client";
+
 import Link from "next/link";
+import { useTranslation } from "@/lib/i18n";
 
 export default function Footer() {
+  const { t } = useTranslation();
+
   return (
     <footer className="footer" id="footer">
       <div className="container footer-inner">
@@ -20,7 +25,7 @@ export default function Footer() {
               </span>
             </Link>
             <p className="footer-tagline">
-              The premier free online Instagram downloader. Save Reels, Videos, Stories, Carousel Albums, and Audio in Full HD 1080p without app installation or login credentials.
+              {t("footer_tagline", "The fastest, free, watermark-free Instagram media downloader. Save Reels, Stories, Photos, and Audio MP3 in 1080p Full HD.")}
             </p>
             <div className="footer-badges">
               <span className="ft-badge">⚡ Ultra Fast CDN</span>
@@ -80,7 +85,7 @@ export default function Footer() {
                 <Link href="/#faq" className="footer-link">Frequently Asked Questions</Link>
               </li>
               <li>
-                <Link href="/#how-it-works" className="footer-link">How to Download Guide</Link>
+                <Link href="/developer" className="footer-link" style={{ color: "#ec4899", fontWeight: 600 }}>⚡ Developer Portal &amp; CMS</Link>
               </li>
             </ul>
           </div>
@@ -96,7 +101,7 @@ export default function Footer() {
         {/* Bottom copyright row */}
         <div className="footer-bottom">
           <p className="copyright-text">
-            &copy; {new Date().getFullYear()} GramSave. All rights reserved. Built for creators and archiving.
+            &copy; {new Date().getFullYear()} GramSave. {t("footer_rights", "All rights reserved. GramSave is not affiliated with or endorsed by Instagram or Meta.")}
           </p>
           <div className="footer-status-pill">
             <span className="status-dot"></span>
