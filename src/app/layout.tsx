@@ -69,6 +69,12 @@ export const metadata: Metadata = {
     title: "GramSave",
     statusBarStyle: "black-translucent",
   },
+  verification: {
+    google: "C5UQ7HaQUxV7NEBuxeFfFJGSOQZHu8L0PNxRyLWYZvk",
+    other: {
+      "msvalidate.01": "2EA3528350FD8B03C8FEF1FA95AE624E",
+    },
+  },
   alternates: {
     canonical: "https://gramsave.site",
   },
