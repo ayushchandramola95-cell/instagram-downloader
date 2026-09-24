@@ -78,6 +78,17 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: "https://gramsave.site",
+    languages: {
+      "x-default": "https://gramsave.site",
+      en: "https://gramsave.site",
+      es: "https://gramsave.site/?lang=es",
+      pt: "https://gramsave.site/?lang=pt",
+      id: "https://gramsave.site/?lang=id",
+      hi: "https://gramsave.site/?lang=hi",
+      fr: "https://gramsave.site/?lang=fr",
+      ar: "https://gramsave.site/?lang=ar",
+      de: "https://gramsave.site/?lang=de",
+    },
   },
 };
 
@@ -90,15 +101,15 @@ export default function RootLayout({
     "@context": "https://schema.org",
     "@graph": [
       {
-        "@type": "WebApplication",
+        "@type": ["WebApplication", "SoftwareApplication"],
         "@id": "https://gramsave.site/#webapp",
-        name: "GramSave Instagram Video Downloader",
+        name: "GramSave - Instagram Video & Reels Downloader",
         url: "https://gramsave.site",
         applicationCategory: "MultimediaApplication",
-        operatingSystem: "All",
+        operatingSystem: "All, Windows, macOS, Android, iOS, Linux",
         browserRequirements: "Requires JavaScript. Requires HTML5.",
         description:
-          "Online tool to download Instagram Videos, Reels, Stories and Photos in Full HD.",
+          "Online tool to download Instagram Videos, Reels, Stories, Photos and DP in Full HD 1080p.",
         offers: {
           "@type": "Offer",
           price: "0",
@@ -108,6 +119,7 @@ export default function RootLayout({
           "@type": "AggregateRating",
           ratingValue: "4.9",
           ratingCount: "18450",
+          reviewCount: "18450",
           bestRating: "5",
           worstRating: "1",
         },

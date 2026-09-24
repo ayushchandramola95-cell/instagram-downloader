@@ -150,12 +150,53 @@ export default function DownloaderSection({
 
   // Copy link feedback
   const [copiedLink, setCopiedLink] = useState(false);
+  const [copiedCaption, setCopiedCaption] = useState(false);
+  const [copiedHashtags, setCopiedHashtags] = useState(false);
+
+  // Auto-clipboard detection state
+  const [clipboardDetectedUrl, setClipboardDetectedUrl] = useState<string | null>(null);
+  const [dismissedClipboardUrl, setDismissedClipboardUrl] = useState<string | null>(null);
+
+  // Video trimming state
+  const [showVideoTrimmer, setShowVideoTrimmer] = useState(false);
+  const [trimStart, setTrimStart] = useState<number>(0);
+  const [trimDuration, setTrimDuration] = useState<number>(15);
 
   // Interactive HTML5 Audio Player
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [audioCurrentTime, setAudioCurrentTime] = useState(0);
   const [audioDuration, setAudioDuration] = useState(0);
+
+  // Auto-clipboard inspection when switching back to tab
+  useEffect(() => {
+    const checkClipboardOnFocus = async () => {
+      if (typeof window === "undefined" || !navigator.clipboard?.readText) return;
+      try {
+        if (document.visibilityState !== "visible") return;
+        const text = await navigator.clipboard.readText();
+        if (!text) return;
+        const trimmed = text.trim();
+        if (
+          trimmed.startsWith("http") &&
+          (trimmed.includes("instagram.com/reel/") ||
+            trimmed.includes("instagram.com/p/") ||
+            trimmed.includes("instagram.com/stories/") ||
+            trimmed.includes("instagram.com/tv/") ||
+            trimmed.includes("instagram.com/share/"))
+        ) {
+          if (trimmed !== url && trimmed !== dismissedClipboardUrl && !result) {
+            setClipboardDetectedUrl(trimmed);
+          }
+        }
+      } catch {
+        // Silently ignore clipboard permission errors
+      }
+    };
+
+    window.addEventListener("focus", checkClipboardOnFocus);
+    return () => window.removeEventListener("focus", checkClipboardOnFocus);
+  }, [url, dismissedClipboardUrl, result]);
 
   // Auto-fetch if ?url=... query param is provided
   useEffect(() => {
@@ -270,6 +311,73 @@ export default function DownloaderSection({
       setCopiedLink(true);
       setTimeout(() => setCopiedLink(false), 2000);
     }
+  };
+
+  const handleApplyClipboardUrl = () => {
+    if (clipboardDetectedUrl) {
+      const target = clipboardDetectedUrl;
+      setUrl(target);
+      setClipboardDetectedUrl(null);
+      fetchMedia(target);
+    }
+  };
+
+  const handleCopyCaption = (captionText?: string) => {
+    if (!captionText) return;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(captionText);
+      setCopiedCaption(true);
+      setTimeout(() => setCopiedCaption(false), 2000);
+    }
+  };
+
+  const handleCopyHashtags = (captionText?: string) => {
+    if (navigator.clipboard) {
+      let tags = "";
+      if (captionText) {
+        const matches = captionText.match(/(#[a-zA-Z0-9_\u0080-\uffff]+)/g);
+        if (matches && matches.length > 0) {
+          tags = matches.join(" ");
+        }
+      }
+      if (!tags) {
+        tags = "#instagram #reels #viral #trending #explorepage #reelsvideo #instagood";
+      }
+      navigator.clipboard.writeText(tags);
+      setCopiedHashtags(true);
+      setTimeout(() => setCopiedHashtags(false), 2000);
+    }
+  };
+
+  const handleShareMedia = async (title: string, text: string, shareUrl: string) => {
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({
+          title: title || "GramSave Downloader",
+          text: text ? `${text.slice(0, 100)}...` : "Download Instagram Reels, Photos & Videos on GramSave",
+          url: shareUrl || window.location.href,
+        });
+      } catch {
+        // User aborted share modal
+      }
+    } else {
+      handleCopyLink(shareUrl || window.location.href);
+    }
+  };
+
+  const handleDownloadTrimmedVideo = (targetRes: MediaResolution) => {
+    const cleanName = `gramsave_clip_${trimStart}s-${trimStart + trimDuration}s_${result?.id || "video"}.mp4`;
+    let dlUrl = `/api/download?url=${encodeURIComponent(targetRes.downloadUrl)}&filename=${encodeURIComponent(cleanName)}&start=${trimStart}&duration=${trimDuration}`;
+    if (targetRes.audioUrl) {
+      dlUrl += `&audioUrl=${encodeURIComponent(targetRes.audioUrl)}`;
+    }
+    triggerDownload(dlUrl, cleanName);
+  };
+
+  const handleDownloadRingtone = (targetRes: MediaResolution, durationSec: number) => {
+    const cleanName = `gramsave_ringtone_${durationSec}s_${result?.id || "audio"}.mp3`;
+    const dlUrl = `/api/download?url=${encodeURIComponent(targetRes.downloadUrl)}&filename=${encodeURIComponent(cleanName)}&start=0&duration=${durationSec}`;
+    triggerDownload(dlUrl, cleanName);
   };
 
   const fetchMedia = async (targetUrl: string, isSample = false) => {
@@ -647,6 +755,94 @@ export default function DownloaderSection({
             </form>
           </div>
 
+          {/* Intelligent Auto-Clipboard Detection Pill Toast */}
+          {clipboardDetectedUrl && !result && (
+            <div
+              className="clipboard-detected-banner"
+              style={{
+                marginTop: "16px",
+                maxWidth: "760px",
+                margin: "16px auto 0",
+                background: "linear-gradient(135deg, rgba(236,72,153,0.18) 0%, rgba(139,92,246,0.18) 100%)",
+                border: "1px solid rgba(236,72,153,0.45)",
+                borderRadius: "14px",
+                padding: "10px 16px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "12px",
+                backdropFilter: "blur(12px)",
+                boxShadow: "0 8px 24px -6px rgba(236,72,153,0.35)",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", overflow: "hidden", textAlign: "left" }}>
+                <span style={{ fontSize: "1.2rem" }}>📋</span>
+                <div style={{ overflow: "hidden" }}>
+                  <div style={{ fontSize: "0.85rem", fontWeight: 700, color: "#fff" }}>
+                    Instagram Link Detected in Clipboard
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "0.78rem",
+                      color: "var(--text-secondary)",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      maxWidth: "420px",
+                    }}
+                  >
+                    {clipboardDetectedUrl}
+                  </div>
+                </div>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
+                <button
+                  type="button"
+                  onClick={handleApplyClipboardUrl}
+                  style={{
+                    background: "linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "8px",
+                    padding: "6px 14px",
+                    fontSize: "0.82rem",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    boxShadow: "0 4px 12px rgba(236,72,153,0.35)",
+                  }}
+                >
+                  <span>⚡ Paste &amp; Download</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDismissedClipboardUrl(clipboardDetectedUrl);
+                    setClipboardDetectedUrl(null);
+                  }}
+                  style={{
+                    background: "rgba(255,255,255,0.08)",
+                    color: "var(--text-secondary)",
+                    border: "none",
+                    borderRadius: "8px",
+                    width: "28px",
+                    height: "28px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                    fontSize: "0.85rem",
+                  }}
+                  title="Dismiss"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* 1-Click Bookmarklet Trigger Pill */}
           <div style={{ marginTop: "14px", display: "flex", justifyContent: "center" }}>
             <button
@@ -864,6 +1060,27 @@ export default function DownloaderSection({
                     </svg>
                     <span>{copiedLink ? "Copied!" : "Copy Link"}</span>
                   </button>
+                  <button
+                    type="button"
+                    className="photo-action-btn"
+                    onClick={() =>
+                      handleShareMedia(
+                        `Instagram Profile DP of ${result.author || result.authorHandle}`,
+                        result.profileDetails?.biography || result.caption,
+                        currentResolution?.downloadUrl || result.thumbnailUrl
+                      )
+                    }
+                    title="Share profile DP"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="18" cy="5" r="3"></circle>
+                      <circle cx="6" cy="12" r="3"></circle>
+                      <circle cx="18" cy="19" r="3"></circle>
+                      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                    </svg>
+                    <span>Share</span>
+                  </button>
                 </div>
               </div>
 
@@ -891,15 +1108,43 @@ export default function DownloaderSection({
                   </div>
 
                   {/* Bio or Caption */}
-                  {result.profileDetails?.biography ? (
+                  {(result.profileDetails?.biography || result.caption) && (
                     <div className="caption-box">
-                      <p>{result.profileDetails.biography}</p>
+                      <p>{result.profileDetails?.biography || result.caption}</p>
+                      <div className="caption-actions-row">
+                        <button
+                          type="button"
+                          className={`caption-action-pill ${copiedCaption ? "active" : ""}`}
+                          onClick={() => handleCopyCaption(result.profileDetails?.biography || result.caption)}
+                        >
+                          <span>📋</span>
+                          <span>{copiedCaption ? "Copied Bio!" : "Copy Bio"}</span>
+                        </button>
+                        <button
+                          type="button"
+                          className={`caption-action-pill ${copiedHashtags ? "active" : ""}`}
+                          onClick={() => handleCopyHashtags(result.profileDetails?.biography || result.caption)}
+                        >
+                          <span>🏷️</span>
+                          <span>{copiedHashtags ? "Copied Tags!" : "Copy Hashtags"}</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="caption-action-pill"
+                          onClick={() =>
+                            handleShareMedia(
+                              `Instagram Profile DP: ${result.author || result.authorHandle}`,
+                              result.profileDetails?.biography || result.caption,
+                              currentResolution?.downloadUrl || result.thumbnailUrl
+                            )
+                          }
+                        >
+                          <span>📤</span>
+                          <span>Share</span>
+                        </button>
+                      </div>
                     </div>
-                  ) : result.caption ? (
-                    <div className="caption-box">
-                      <p>{result.caption}</p>
-                    </div>
-                  ) : null}
+                  )}
 
                   {/* Quality Selector (if multiple resolutions exist) */}
                   {result.resolutions.length > 1 && (
@@ -1054,6 +1299,27 @@ export default function DownloaderSection({
                     </svg>
                     <span>{copiedLink ? "Copied Link!" : "Copy Link"}</span>
                   </button>
+                  <button
+                    type="button"
+                    className="photo-action-btn"
+                    onClick={() =>
+                      handleShareMedia(
+                        `Instagram Photo by ${result.author || result.authorHandle}`,
+                        result.caption,
+                        currentResolution?.downloadUrl || result.thumbnailUrl
+                      )
+                    }
+                    title="Share Photo"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="18" cy="5" r="3"></circle>
+                      <circle cx="6" cy="12" r="3"></circle>
+                      <circle cx="18" cy="19" r="3"></circle>
+                      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                    </svg>
+                    <span>Share</span>
+                  </button>
                 </div>
               </div>
 
@@ -1082,6 +1348,38 @@ export default function DownloaderSection({
                   {result.caption && (
                     <div className="caption-box">
                       <p>{result.caption}</p>
+                      <div className="caption-actions-row">
+                        <button
+                          type="button"
+                          className={`caption-action-pill ${copiedCaption ? "active" : ""}`}
+                          onClick={() => handleCopyCaption(result.caption)}
+                        >
+                          <span>📋</span>
+                          <span>{copiedCaption ? "Copied Caption!" : "Copy Caption"}</span>
+                        </button>
+                        <button
+                          type="button"
+                          className={`caption-action-pill ${copiedHashtags ? "active" : ""}`}
+                          onClick={() => handleCopyHashtags(result.caption)}
+                        >
+                          <span>🏷️</span>
+                          <span>{copiedHashtags ? "Copied Tags!" : "Copy Hashtags"}</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="caption-action-pill"
+                          onClick={() =>
+                            handleShareMedia(
+                              `Instagram Photo by ${result.author || result.authorHandle}`,
+                              result.caption,
+                              currentResolution?.downloadUrl || result.thumbnailUrl
+                            )
+                          }
+                        >
+                          <span>📤</span>
+                          <span>Share</span>
+                        </button>
+                      </div>
                     </div>
                   )}
 
@@ -1234,6 +1532,38 @@ export default function DownloaderSection({
                   {result.caption && (
                     <div className="caption-box">
                       <p>{result.caption}</p>
+                      <div className="caption-actions-row">
+                        <button
+                          type="button"
+                          className={`caption-action-pill ${copiedCaption ? "active" : ""}`}
+                          onClick={() => handleCopyCaption(result.caption)}
+                        >
+                          <span>📋</span>
+                          <span>{copiedCaption ? "Copied Title!" : "Copy Title"}</span>
+                        </button>
+                        <button
+                          type="button"
+                          className={`caption-action-pill ${copiedHashtags ? "active" : ""}`}
+                          onClick={() => handleCopyHashtags(result.caption)}
+                        >
+                          <span>🏷️</span>
+                          <span>{copiedHashtags ? "Copied Tags!" : "Copy Hashtags"}</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="caption-action-pill"
+                          onClick={() =>
+                            handleShareMedia(
+                              `Instagram Audio: ${result.author || "Trending Sound"}`,
+                              result.caption,
+                              currentResolution?.downloadUrl || result.thumbnailUrl
+                            )
+                          }
+                        >
+                          <span>📤</span>
+                          <span>Share</span>
+                        </button>
+                      </div>
                     </div>
                   )}
 
@@ -1354,6 +1684,82 @@ export default function DownloaderSection({
                     </div>
                   </button>
                 )}
+
+                {/* Ringtone & Viral Snippet Extractor */}
+                {currentResolution && (
+                  <div
+                    style={{
+                      marginTop: "16px",
+                      background: "rgba(255, 255, 255, 0.03)",
+                      border: "1px solid var(--card-border)",
+                      borderRadius: "14px",
+                      padding: "16px",
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+                      <span style={{ fontSize: "0.88rem", fontWeight: 700, color: "#fff", display: "flex", alignItems: "center", gap: "6px" }}>
+                        <span>✂️</span>
+                        <span>Ringtone &amp; Story Sound Snippets</span>
+                      </span>
+                      <span style={{ fontSize: "0.72rem", color: "#ec4899", fontWeight: 700, background: "rgba(236,72,153,0.12)", padding: "2px 8px", borderRadius: "9999px" }}>
+                        Fast Trim
+                      </span>
+                    </div>
+                    <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "12px" }}>
+                      Extract an instant trimmed 15s ringtone or 30s WhatsApp audio snippet from this track:
+                    </p>
+                    <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                      <button
+                        type="button"
+                        onClick={() => handleDownloadRingtone(currentResolution, 15)}
+                        style={{
+                          flex: 1,
+                          minWidth: "150px",
+                          background: "rgba(236,72,153,0.12)",
+                          border: "1px solid rgba(236,72,153,0.35)",
+                          color: "#f472b6",
+                          borderRadius: "10px",
+                          padding: "10px 14px",
+                          fontSize: "0.85rem",
+                          fontWeight: 700,
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: "6px",
+                          transition: "all 0.2s ease",
+                        }}
+                      >
+                        <span>🔔</span>
+                        <span>15s Ringtone (MP3)</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDownloadRingtone(currentResolution, 30)}
+                        style={{
+                          flex: 1,
+                          minWidth: "150px",
+                          background: "rgba(56,189,248,0.12)",
+                          border: "1px solid rgba(56,189,248,0.35)",
+                          color: "#38bdf8",
+                          borderRadius: "10px",
+                          padding: "10px 14px",
+                          fontSize: "0.85rem",
+                          fontWeight: 700,
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: "6px",
+                          transition: "all 0.2s ease",
+                        }}
+                      >
+                        <span>📱</span>
+                        <span>30s Story Sound (MP3)</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -1412,6 +1818,38 @@ export default function DownloaderSection({
                   {result.caption && (
                     <div className="caption-box">
                       <p>{result.caption}</p>
+                      <div className="caption-actions-row">
+                        <button
+                          type="button"
+                          className={`caption-action-pill ${copiedCaption ? "active" : ""}`}
+                          onClick={() => handleCopyCaption(result.caption)}
+                        >
+                          <span>📋</span>
+                          <span>{copiedCaption ? "Copied Caption!" : "Copy Caption"}</span>
+                        </button>
+                        <button
+                          type="button"
+                          className={`caption-action-pill ${copiedHashtags ? "active" : ""}`}
+                          onClick={() => handleCopyHashtags(result.caption)}
+                        >
+                          <span>🏷️</span>
+                          <span>{copiedHashtags ? "Copied Tags!" : "Copy Hashtags"}</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="caption-action-pill"
+                          onClick={() =>
+                            handleShareMedia(
+                              `Instagram Video by ${result.author || result.authorHandle}`,
+                              result.caption,
+                              currentResolution?.downloadUrl || result.thumbnailUrl
+                            )
+                          }
+                        >
+                          <span>📤</span>
+                          <span>Share</span>
+                        </button>
+                      </div>
                     </div>
                   )}
 
@@ -1502,6 +1940,169 @@ export default function DownloaderSection({
                     </div>
                   </button>
                 )}
+
+                {/* Video Quick Actions Row (Share & Trim Trigger) */}
+                <div style={{ display: "flex", gap: "10px", marginTop: "12px" }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowVideoTrimmer(!showVideoTrimmer)}
+                    style={{
+                      flex: 1,
+                      background: showVideoTrimmer ? "rgba(236,72,153,0.2)" : "rgba(255,255,255,0.06)",
+                      border: showVideoTrimmer ? "1px solid #ec4899" : "1px solid var(--card-border)",
+                      color: showVideoTrimmer ? "#f472b6" : "var(--text-primary)",
+                      borderRadius: "10px",
+                      padding: "10px 14px",
+                      fontSize: "0.86rem",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "6px",
+                      transition: "all 0.2s ease",
+                    }}
+                  >
+                    <span>✂️</span>
+                    <span>{showVideoTrimmer ? "Close Trimmer" : "Trim / Clip Video"}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleShareMedia(
+                        `Instagram Video by ${result.author || result.authorHandle}`,
+                        result.caption,
+                        currentResolution?.downloadUrl || result.thumbnailUrl
+                      )
+                    }
+                    style={{
+                      flex: 1,
+                      background: "rgba(255,255,255,0.06)",
+                      border: "1px solid var(--card-border)",
+                      color: "var(--text-primary)",
+                      borderRadius: "10px",
+                      padding: "10px 14px",
+                      fontSize: "0.86rem",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "6px",
+                      transition: "all 0.2s ease",
+                    }}
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="18" cy="5" r="3"></circle>
+                      <circle cx="6" cy="12" r="3"></circle>
+                      <circle cx="18" cy="19" r="3"></circle>
+                      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                    </svg>
+                    <span>Share Video</span>
+                  </button>
+                </div>
+
+                {/* Interactive Video Trimmer Drawer */}
+                {showVideoTrimmer && currentResolution && (
+                  <div className="video-trimmer-box">
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                      <span style={{ fontSize: "0.88rem", fontWeight: 700, color: "#fff", display: "flex", alignItems: "center", gap: "6px" }}>
+                        <span>✂️</span>
+                        <span>Trim Video Clip Before Download</span>
+                      </span>
+                      <span style={{ fontSize: "0.72rem", color: "#ec4899", fontWeight: 700, background: "rgba(236,72,153,0.12)", padding: "2px 8px", borderRadius: "9999px" }}>
+                        WhatsApp Status &amp; TikTok
+                      </span>
+                    </div>
+                    <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "12px" }}>
+                      Save only the exact snippet you need without downloading the entire full-length file:
+                    </p>
+
+                    {/* Trimmer Presets */}
+                    <div className="trimmer-presets-row">
+                      <button
+                        type="button"
+                        className={`trimmer-preset-chip ${trimStart === 0 && trimDuration === 15 ? "active" : ""}`}
+                        onClick={() => { setTrimStart(0); setTrimDuration(15); }}
+                      >
+                        ⚡ First 15s (Reel Highlight)
+                      </button>
+                      <button
+                        type="button"
+                        className={`trimmer-preset-chip ${trimStart === 0 && trimDuration === 30 ? "active" : ""}`}
+                        onClick={() => { setTrimStart(0); setTrimDuration(30); }}
+                      >
+                        📱 30s WhatsApp Status
+                      </button>
+                      <button
+                        type="button"
+                        className={`trimmer-preset-chip ${trimStart === 0 && trimDuration === 60 ? "active" : ""}`}
+                        onClick={() => { setTrimStart(0); setTrimDuration(60); }}
+                      >
+                        ⏱️ First 60s
+                      </button>
+                    </div>
+
+                    {/* Manual Sliders */}
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "14px" }}>
+                      <div>
+                        <label style={{ display: "block", fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "4px" }}>
+                          Start Second: <strong>{trimStart}s</strong>
+                        </label>
+                        <input
+                          type="range"
+                          min="0"
+                          max="120"
+                          value={trimStart}
+                          onChange={(e) => setTrimStart(Number(e.target.value))}
+                          style={{ width: "100%", accentColor: "#ec4899" }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ display: "block", fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "4px" }}>
+                          Clip Duration: <strong>{trimDuration}s</strong>
+                        </label>
+                        <input
+                          type="range"
+                          min="3"
+                          max="90"
+                          value={trimDuration}
+                          onChange={(e) => setTrimDuration(Number(e.target.value))}
+                          style={{ width: "100%", accentColor: "#ec4899" }}
+                        />
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleDownloadTrimmedVideo(currentResolution)}
+                      style={{
+                        width: "100%",
+                        background: "linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: "10px",
+                        padding: "11px 16px",
+                        fontWeight: 700,
+                        fontSize: "0.9rem",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "8px",
+                        boxShadow: "0 4px 14px rgba(236,72,153,0.35)",
+                      }}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                      </svg>
+                      <span>Download Trimmed Clip ({trimStart}s – {trimStart + trimDuration}s MP4)</span>
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -1533,6 +2134,38 @@ export default function DownloaderSection({
                 {result.caption && (
                   <div className="caption-box" style={{ marginBottom: "12px" }}>
                     <p>{result.caption}</p>
+                    <div className="caption-actions-row">
+                      <button
+                        type="button"
+                        className={`caption-action-pill ${copiedCaption ? "active" : ""}`}
+                        onClick={() => handleCopyCaption(result.caption)}
+                      >
+                        <span>📋</span>
+                        <span>{copiedCaption ? "Copied Caption!" : "Copy Caption"}</span>
+                      </button>
+                      <button
+                        type="button"
+                        className={`caption-action-pill ${copiedHashtags ? "active" : ""}`}
+                        onClick={() => handleCopyHashtags(result.caption)}
+                      >
+                        <span>🏷️</span>
+                        <span>{copiedHashtags ? "Copied Tags!" : "Copy Hashtags"}</span>
+                      </button>
+                      <button
+                        type="button"
+                        className="caption-action-pill"
+                        onClick={() =>
+                          handleShareMedia(
+                            `Instagram Carousel Album by ${result.author || result.authorHandle}`,
+                            result.caption,
+                            result.thumbnailUrl
+                          )
+                        }
+                      >
+                        <span>📤</span>
+                        <span>Share Album</span>
+                      </button>
+                    </div>
                   </div>
                 )}
 
@@ -1612,6 +2245,34 @@ export default function DownloaderSection({
                       title="Download each slide as an individual file"
                     >
                       <span>Individual Files</span>
+                    </button>
+
+                    {/* Share Album Button */}
+                    <button
+                      type="button"
+                      className="batch-download-all-btn"
+                      onClick={() =>
+                        handleShareMedia(
+                          `Instagram Carousel Album by ${result.author || result.authorHandle}`,
+                          result.caption,
+                          result.thumbnailUrl
+                        )
+                      }
+                      style={{
+                        background: "rgba(255, 255, 255, 0.06)",
+                        border: "1px solid var(--card-border, rgba(255,255,255,0.12))",
+                        color: "var(--text-secondary, #a1a1aa)",
+                      }}
+                      title="Share album to WhatsApp, Telegram or social media"
+                    >
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="18" cy="5" r="3"></circle>
+                        <circle cx="6" cy="12" r="3"></circle>
+                        <circle cx="18" cy="19" r="3"></circle>
+                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                      </svg>
+                      <span>Share</span>
                     </button>
                   </div>
                 </div>

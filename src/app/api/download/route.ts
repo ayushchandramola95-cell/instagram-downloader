@@ -81,45 +81,56 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  const rawStart = searchParams.get("start");
+  const rawDuration = searchParams.get("duration");
+  const startTime = rawStart !== null && !isNaN(parseFloat(rawStart)) ? Math.max(0, parseFloat(rawStart)) : null;
+  const durationTime = rawDuration !== null && !isNaN(parseFloat(rawDuration)) ? Math.max(1, Math.min(300, parseFloat(rawDuration))) : null;
+  const isTrimmed = startTime !== null || durationTime !== null;
+
   // 3. Filename Sanitization: Strip path traversal (../), control characters, and unsafe extensions
   const safeFilename = sanitizeFilename(rawFilename);
 
-  // 4. Real-time FFmpeg Muxing: When separate video & audio streams are provided (DASH streams)
-  if (audioUrl) {
+  // 4. Real-time FFmpeg Muxing or Trimming (Audio ringtone snippet, video trimmer, or DASH mux)
+  if (audioUrl || isTrimmed) {
     try {
       const ffmpegBinary = process.env.FFMPEG_PATH || "ffmpeg";
       const headersStr =
         "Referer: https://www.instagram.com/\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36\r\n";
 
-      const ffmpegArgs = [
-        "-y",
-        "-loglevel",
-        "error",
-        "-headers",
-        headersStr,
-        "-i",
-        targetUrl,
-        "-headers",
-        headersStr,
-        "-i",
-        audioUrl,
-        "-map",
-        "0:v:0",
-        "-map",
-        "1:a:0",
-        "-c:v",
-        "copy",
-        "-c:a",
-        "aac",
-        "-b:a",
-        "192k",
-        "-shortest",
-        "-movflags",
-        "frag_keyframe+empty_moov+default_base_moof",
-        "-f",
-        "mp4",
-        "pipe:1",
-      ];
+      const isAudio = safeFilename.endsWith(".mp3");
+      const ffmpegArgs: string[] = ["-y", "-loglevel", "error"];
+
+      if (startTime !== null) {
+        ffmpegArgs.push("-ss", String(startTime));
+      }
+
+      ffmpegArgs.push("-headers", headersStr, "-i", targetUrl);
+
+      if (audioUrl) {
+        if (startTime !== null) {
+          ffmpegArgs.push("-ss", String(startTime));
+        }
+        ffmpegArgs.push("-headers", headersStr, "-i", audioUrl);
+      }
+
+      if (durationTime !== null) {
+        ffmpegArgs.push("-t", String(durationTime));
+      }
+
+      if (isAudio) {
+        ffmpegArgs.push("-vn", "-c:a", "libmp3lame", "-b:a", "320k", "-f", "mp3", "pipe:1");
+      } else {
+        if (audioUrl) {
+          ffmpegArgs.push("-map", "0:v:0", "-map", "1:a:0");
+        }
+        // If trimming, transcode keyframes smoothly with ultrafast preset, else copy
+        if (isTrimmed) {
+          ffmpegArgs.push("-c:v", "libx264", "-preset", "ultrafast", "-c:a", "aac", "-b:a", "192k");
+        } else {
+          ffmpegArgs.push("-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-shortest");
+        }
+        ffmpegArgs.push("-movflags", "frag_keyframe+empty_moov+default_base_moof", "-f", "mp4", "pipe:1");
+      }
 
       const proc = spawn(/*turbopackIgnore: true*/ ffmpegBinary, ffmpegArgs);
 
@@ -137,7 +148,7 @@ export async function GET(req: NextRequest) {
       const webStream = Readable.toWeb(proc.stdout) as ReadableStream;
 
       const responseHeaders = new Headers();
-      responseHeaders.set("Content-Type", "video/mp4");
+      responseHeaders.set("Content-Type", isAudio ? "audio/mpeg" : "video/mp4");
       responseHeaders.set(
         "Content-Disposition",
         isPreview ? "inline" : `attachment; filename="${encodeURIComponent(safeFilename)}"`
@@ -151,8 +162,8 @@ export async function GET(req: NextRequest) {
         headers: responseHeaders,
       });
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "FFmpeg muxing error.";
-      return new NextResponse(`Muxing error: ${message}`, { status: 500 });
+      const message = err instanceof Error ? err.message : "FFmpeg processing error.";
+      return new NextResponse(`Processing error: ${message}`, { status: 500 });
     }
   }
 

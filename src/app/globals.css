@@ -996,8 +996,83 @@ button, input {
   color: var(--text-secondary);
   font-size: 0.9rem;
   line-height: 1.55;
-  max-height: 95px;
+  max-height: 140px;
   overflow-y: auto;
+}
+
+.caption-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  flex-wrap: wrap;
+}
+
+.caption-action-pill {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--card-border);
+  color: var(--text-primary);
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.caption-action-pill:hover {
+  background: rgba(236, 72, 153, 0.15);
+  border-color: rgba(236, 72, 153, 0.4);
+  color: #f472b6;
+}
+
+.caption-action-pill.active {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: #10b981;
+  color: #10b981;
+}
+
+/* Video Trimmer Drawer */
+.video-trimmer-box {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(236, 72, 153, 0.35);
+  border-radius: 14px;
+  padding: 16px;
+  margin-top: 14px;
+  margin-bottom: 14px;
+  backdrop-filter: blur(10px);
+}
+
+.trimmer-presets-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  margin-bottom: 12px;
+}
+
+.trimmer-preset-chip {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--card-border);
+  color: var(--text-secondary);
+  border-radius: var(--radius-full);
+  padding: 5px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.trimmer-preset-chip:hover,
+.trimmer-preset-chip.active {
+  background: rgba(236, 72, 153, 0.2);
+  border-color: #ec4899;
+  color: #fff;
 }
 
 .primary-dl-card-btn {

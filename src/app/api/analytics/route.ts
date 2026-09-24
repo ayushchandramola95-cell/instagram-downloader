@@ -26,17 +26,87 @@ export async function GET(req: NextRequest) {
 
     const analytics = await getAnalyticsData();
 
-    // Check system diagnostics
+    // Check system diagnostics & cookies health
     const cookiesPath = path.join(process.cwd(), "cookies.txt");
     const hasCookies = fs.existsSync(cookiesPath);
-    let cookiesInfo = { exists: false, sizeBytes: 0, lineCount: 0 };
+    let cookiesInfo: {
+      exists: boolean;
+      sizeBytes: number;
+      lineCount: number;
+      status: "HEALTHY" | "EXPIRING_SOON" | "EXPIRED" | "MISSING_SESSION" | "NOT_FOUND";
+      daysRemaining: number | null;
+      expiresAt: string | null;
+      userIdMasked: string | null;
+      hasSessionId: boolean;
+    } = {
+      exists: false,
+      sizeBytes: 0,
+      lineCount: 0,
+      status: "NOT_FOUND",
+      daysRemaining: null,
+      expiresAt: null,
+      userIdMasked: null,
+      hasSessionId: false,
+    };
+
     if (hasCookies) {
       const stats = fs.statSync(cookiesPath);
-      const lines = fs.readFileSync(cookiesPath, "utf-8").split("\n").filter((l) => l.trim().length > 0 && !l.startsWith("#"));
+      const fileContent = fs.readFileSync(cookiesPath, "utf-8");
+      const lines = fileContent.split("\n").filter((l) => l.trim().length > 0 && !l.startsWith("#"));
+
+      let foundSessionId = false;
+      let sessionExpiry: number | null = null;
+      let maskedUser: string | null = null;
+
+      for (const line of lines) {
+        const parts = line.split(/\t+/);
+        if (parts.length >= 7) {
+          const cookieName = parts[5]?.trim();
+          const cookieVal = parts[6]?.trim();
+          const expiryNum = parseInt(parts[4]?.trim() || "0", 10);
+
+          if (cookieName === "sessionid") {
+            foundSessionId = true;
+            if (expiryNum > 0) {
+              sessionExpiry = expiryNum;
+            }
+          }
+          if (cookieName === "ds_user_id" && cookieVal) {
+            maskedUser = cookieVal.length > 4 ? `${cookieVal.substring(0, 3)}****${cookieVal.slice(-2)}` : "logged_in";
+          }
+        }
+      }
+
+      const nowSec = Math.floor(Date.now() / 1000);
+      let status: "HEALTHY" | "EXPIRING_SOON" | "EXPIRED" | "MISSING_SESSION" | "NOT_FOUND" = "HEALTHY";
+      let daysRemaining: number | null = null;
+      let expiresAt: string | null = null;
+
+      if (!foundSessionId) {
+        status = "MISSING_SESSION";
+      } else if (sessionExpiry) {
+        const diffSec = sessionExpiry - nowSec;
+        daysRemaining = Math.max(0, Math.round(diffSec / 86400));
+        expiresAt = new Date(sessionExpiry * 1000).toISOString().split("T")[0];
+
+        if (diffSec <= 0) {
+          status = "EXPIRED";
+        } else if (daysRemaining <= 14) {
+          status = "EXPIRING_SOON";
+        } else {
+          status = "HEALTHY";
+        }
+      }
+
       cookiesInfo = {
         exists: true,
         sizeBytes: stats.size,
         lineCount: lines.length,
+        status,
+        daysRemaining,
+        expiresAt,
+        userIdMasked: maskedUser,
+        hasSessionId: foundSessionId,
       };
     }
 
@@ -86,6 +156,13 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const clientIp = getClientIp(req);
+    const country =
+      req.headers.get("cf-ipcountry") ||
+      req.headers.get("x-vercel-ip-country") ||
+      req.headers.get("x-country-code") ||
+      req.headers.get("cloudfront-viewer-country") ||
+      "GLOBAL";
+
     const body = await req.json().catch(() => ({}));
     const { event, action, secret, format, quality, source } = body;
 
@@ -98,12 +175,12 @@ export async function POST(req: NextRequest) {
     }
 
     if (event === "visit") {
-      await recordVisitEvent(source || "direct", clientIp);
+      await recordVisitEvent(source || "direct", clientIp, country);
       return NextResponse.json({ success: true });
     }
 
     if (event === "download") {
-      await recordDownloadEvent(format || "reel", quality || "standard", clientIp);
+      await recordDownloadEvent(format || "reel", quality || "standard", clientIp, country);
       return NextResponse.json({ success: true });
     }
 

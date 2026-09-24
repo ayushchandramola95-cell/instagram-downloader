@@ -10,7 +10,16 @@ interface SystemInfo {
   platform: string;
   memoryUsageMb: number;
   turnstileEnabled: boolean;
-  cookies: { exists: boolean; sizeBytes: number; lineCount: number };
+  cookies: {
+    exists: boolean;
+    sizeBytes: number;
+    lineCount: number;
+    status?: "HEALTHY" | "EXPIRING_SOON" | "EXPIRED" | "MISSING_SESSION" | "NOT_FOUND";
+    daysRemaining?: number | null;
+    expiresAt?: string | null;
+    userIdMasked?: string | null;
+    hasSessionId?: boolean;
+  };
   ytdlp: { available: boolean; version: string };
   ffmpeg: { available: boolean; version: string };
 }
@@ -20,6 +29,7 @@ interface AnalyticsData {
   totalDownloads: number;
   downloadsByType: Record<string, number>;
   trafficSources: Record<string, number>;
+  topCountries?: Record<string, number>;
   recentActivity: Array<{
     id: string;
     type: string;
@@ -848,6 +858,63 @@ export default function DeveloperPage() {
                     );
                   })}
               </div>
+
+              {/* Visitor Geographies */}
+              <div
+                style={{
+                  background: "var(--card-bg, rgba(255,255,255,0.04))",
+                  border: "1px solid var(--card-border, rgba(255,255,255,0.1))",
+                  borderRadius: "16px",
+                  padding: "24px",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                  <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "#fff" }}>
+                    🌍 Top Visitor Countries
+                  </h3>
+                  <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Edge Geo-IP</span>
+                </div>
+                {analytics?.topCountries &&
+                  Object.entries(analytics.topCountries)
+                    .sort(([, a], [, b]) => b - a)
+                    .slice(0, 6)
+                    .map(([countryCode, count]) => {
+                      const total = Object.values(analytics.topCountries || {}).reduce((acc, v) => acc + v, 0) || 1;
+                      const pct = Math.round((count / total) * 100);
+                      const countryMeta: Record<string, { name: string; flag: string }> = {
+                        US: { name: "United States", flag: "🇺🇸" },
+                        IN: { name: "India", flag: "🇮🇳" },
+                        BR: { name: "Brazil", flag: "🇧🇷" },
+                        ID: { name: "Indonesia", flag: "🇮🇩" },
+                        GB: { name: "United Kingdom", flag: "🇬🇧" },
+                        DE: { name: "Germany", flag: "🇩🇪" },
+                        FR: { name: "France", flag: "🇫🇷" },
+                        MX: { name: "Mexico", flag: "🇲🇽" },
+                        ES: { name: "Spain", flag: "🇪🇸" },
+                        IT: { name: "Italy", flag: "🇮🇹" },
+                        CA: { name: "Canada", flag: "🇨🇦" },
+                        OTHER: { name: "Other Countries", flag: "🌐" },
+                        GLOBAL: { name: "Global CDN", flag: "🌍" },
+                      };
+                      const meta = countryMeta[countryCode] || { name: countryCode, flag: "🌐" };
+                      return (
+                        <div key={countryCode} style={{ marginBottom: "14px" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.85rem", marginBottom: "4px" }}>
+                            <span style={{ fontWeight: 600, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "6px" }}>
+                              <span>{meta.flag}</span>
+                              <span>{meta.name}</span>
+                            </span>
+                            <span style={{ color: "var(--text-secondary)" }}>
+                              {count} visits ({pct}%)
+                            </span>
+                          </div>
+                          <div style={{ height: "8px", borderRadius: "4px", background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
+                            <div style={{ height: "100%", width: `${pct}%`, background: "linear-gradient(90deg, #10b981, #06b6d4)", borderRadius: "4px" }}></div>
+                          </div>
+                        </div>
+                      );
+                    })}
+              </div>
             </div>
 
             {/* Recent Live Activity Stream */}
@@ -1290,40 +1357,75 @@ export default function DeveloperPage() {
                 </p>
               </div>
 
-              {/* Instagram Session Cookies */}
+              {/* Instagram Session Cookies Health Monitor */}
               <div
                 style={{
                   background: "var(--card-bg, rgba(255,255,255,0.04))",
-                  border: "1px solid var(--card-border, rgba(255,255,255,0.1))",
+                  border:
+                    systemInfo?.cookies?.status === "EXPIRING_SOON"
+                      ? "1px solid rgba(245,158,11,0.5)"
+                      : systemInfo?.cookies?.status === "EXPIRED"
+                      ? "1px solid rgba(239,68,68,0.5)"
+                      : "1px solid var(--card-border, rgba(255,255,255,0.1))",
                   borderRadius: "16px",
                   padding: "24px",
                 }}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
-                  <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "#fff" }}>
-                    Instagram Session Cookies
+                  <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "#fff", display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span>🍪</span>
+                    <span>Instagram Session Cookies</span>
                   </h3>
                   <span
                     style={{
                       fontSize: "0.75rem",
                       fontWeight: 700,
-                      padding: "3px 8px",
+                      padding: "4px 10px",
                       borderRadius: "6px",
-                      background: systemInfo?.cookies?.exists ? "rgba(16,185,129,0.15)" : "rgba(245,158,11,0.15)",
-                      color: systemInfo?.cookies?.exists ? "#10b981" : "#f59e0b",
+                      background:
+                        systemInfo?.cookies?.status === "HEALTHY"
+                          ? "rgba(16,185,129,0.15)"
+                          : systemInfo?.cookies?.status === "EXPIRING_SOON"
+                          ? "rgba(245,158,11,0.15)"
+                          : "rgba(239,68,68,0.15)",
+                      color:
+                        systemInfo?.cookies?.status === "HEALTHY"
+                          ? "#10b981"
+                          : systemInfo?.cookies?.status === "EXPIRING_SOON"
+                          ? "#f59e0b"
+                          : "#ef4444",
                     }}
                   >
-                    {systemInfo?.cookies?.exists ? "● Configured" : "○ Optional / Public Mode"}
+                    {systemInfo?.cookies?.status === "HEALTHY"
+                      ? `● Healthy (${systemInfo.cookies.daysRemaining ?? "Active"}d left)`
+                      : systemInfo?.cookies?.status === "EXPIRING_SOON"
+                      ? `⚠️ Expiring Soon (${systemInfo.cookies.daysRemaining}d left)`
+                      : systemInfo?.cookies?.status === "EXPIRED"
+                      ? "✖ Expired Session"
+                      : systemInfo?.cookies?.status === "MISSING_SESSION"
+                      ? "⚠️ Missing sessionid"
+                      : "○ No cookies.txt"}
                   </span>
                 </div>
-                <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "6px" }}>
-                  Active Cookie Records: <strong>{systemInfo?.cookies?.lineCount || 0}</strong>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "14px" }}>
+                  <div style={{ background: "rgba(0,0,0,0.25)", padding: "10px 12px", borderRadius: "10px", border: "1px solid var(--card-border)" }}>
+                    <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", textTransform: "uppercase" }}>Account ID</div>
+                    <div style={{ fontSize: "0.9rem", fontWeight: 700, color: "#fff", marginTop: "2px" }}>
+                      {systemInfo?.cookies?.userIdMasked || "Session Active"}
+                    </div>
+                  </div>
+                  <div style={{ background: "rgba(0,0,0,0.25)", padding: "10px 12px", borderRadius: "10px", border: "1px solid var(--card-border)" }}>
+                    <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", textTransform: "uppercase" }}>Expires On</div>
+                    <div style={{ fontSize: "0.9rem", fontWeight: 700, color: systemInfo?.cookies?.daysRemaining && systemInfo.cookies.daysRemaining < 14 ? "#f59e0b" : "#38bdf8", marginTop: "2px" }}>
+                      {systemInfo?.cookies?.expiresAt || "Perpetual"}
+                    </div>
+                  </div>
+                </div>
+                <p style={{ fontSize: "0.82rem", color: "var(--text-secondary)", marginBottom: "6px" }}>
+                  Active Cookie Records: <strong>{systemInfo?.cookies?.lineCount || 0}</strong> ({systemInfo?.cookies?.sizeBytes ? `${Math.round(systemInfo.cookies.sizeBytes / 1024)} KB` : "0 KB"})
                 </p>
-                <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "12px" }}>
-                  File Size: <strong>{systemInfo?.cookies?.sizeBytes ? `${Math.round(systemInfo.cookies.sizeBytes / 1024)} KB` : "0 KB"}</strong>
-                </p>
-                <p style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
-                  Allows bypass of login walls and age restrictions for sensitive reels and stories.
+                <p style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>
+                  Health monitor warns you before cookies expire so you can paste fresh cookies without download interruptions.
                 </p>
               </div>
 
