@@ -1,10 +1,22 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useTranslation } from "@/lib/i18n";
 
 export default function Footer() {
   const { t } = useTranslation();
+  const [isDevMode, setIsDevMode] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const hasDev =
+        localStorage.getItem("gramsave_dev_mode") === "true" ||
+        Boolean(localStorage.getItem("gramsave_dev_secret")) ||
+        Boolean(sessionStorage.getItem("gramsave_dev_secret"));
+      setIsDevMode(hasDev);
+    }
+  }, []);
 
   return (
     <footer className="footer" id="footer">
@@ -87,9 +99,11 @@ export default function Footer() {
               <li>
                 <Link href="/#faq" className="footer-link">Frequently Asked Questions</Link>
               </li>
-              <li>
-                <Link href="/developer" className="footer-link" style={{ color: "#ec4899", fontWeight: 600 }}>⚡ Developer Portal &amp; CMS</Link>
-              </li>
+              {isDevMode && (
+                <li>
+                  <Link href="/developer" className="footer-link" style={{ color: "#ec4899", fontWeight: 600 }}>⚡ Developer Portal &amp; CMS</Link>
+                </li>
+              )}
             </ul>
           </div>
         </div>

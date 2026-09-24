@@ -1,5 +1,5 @@
 {
-  "totalVisits": 2,
+  "totalVisits": 5,
   "totalDownloads": 1,
   "downloadsByType": {
     "reel": 0,
@@ -10,7 +10,7 @@
     "carousel": 0
   },
   "trafficSources": {
-    "direct": 2,
+    "direct": 5,
     "google": 0,
     "bing": 0,
     "instagram": 0,
@@ -29,7 +29,7 @@
   "dailyStats": [
     {
       "date": "2026-09-24",
-      "visits": 2,
+      "visits": 5,
       "downloads": 1
     }
   ]

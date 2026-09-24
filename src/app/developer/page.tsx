@@ -106,6 +106,7 @@ export default function DeveloperPage() {
       setAnalytics(data.analytics);
       setSystemInfo(data.systemInfo);
 
+      localStorage.setItem("gramsave_dev_mode", "true");
       if (rememberMe) {
         localStorage.setItem("gramsave_dev_secret", secret);
       } else {
@@ -134,6 +135,7 @@ export default function DeveloperPage() {
   const handleLogout = () => {
     localStorage.removeItem("gramsave_dev_secret");
     sessionStorage.removeItem("gramsave_dev_secret");
+    localStorage.removeItem("gramsave_dev_mode");
     setIsAuthenticated(false);
     setPasscode("");
   };
