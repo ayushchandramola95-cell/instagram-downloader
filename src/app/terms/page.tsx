@@ -4,16 +4,65 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
-  title: "Terms of Service - GramSave",
-  description: "Read the Terms of Service for using GramSave's Instagram media downloading and archiving tool.",
+  title: "Terms of Service & Usage Policy | GramSave",
+  description:
+    "Read the Terms of Service for using GramSave's online Instagram media downloading and archiving tool.",
   alternates: {
     canonical: "https://gramsave.site/terms",
+  },
+  openGraph: {
+    title: "Terms of Service & Usage Policy | GramSave",
+    description:
+      "Read the Terms of Service for using GramSave's online Instagram media downloading and archiving tool.",
+    url: "https://gramsave.site/terms",
+    siteName: "GramSave",
+    images: [
+      {
+        url: "https://gramsave.site/og-image.jpg",
+        width: 1280,
+        height: 720,
+        alt: "GramSave Terms of Service",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Terms of Service & Usage Policy | GramSave",
+    description: "Read the Terms of Service and guidelines for using GramSave.",
+    images: ["https://gramsave.site/og-image.jpg"],
   },
 };
 
 export default function TermsPage() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: "https://gramsave.site",
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "Terms of Service",
+            item: "https://gramsave.site/terms",
+          },
+        ],
+      },
+    ],
+  };
+
   return (
     <div className="page-wrapper">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Header />
       <main id="main-content" className="container" style={{ padding: "60px 20px 100px" }}>
         <div className="legal-card-wrapper">

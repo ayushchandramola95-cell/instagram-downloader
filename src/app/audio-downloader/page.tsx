@@ -6,7 +6,7 @@ import DownloaderSection from "@/components/DownloaderSection";
 import FaqAccordion, { FaqItem } from "@/components/FaqAccordion";
 
 export const metadata: Metadata = {
-  title: "Instagram Audio Downloader - Convert Reels & Videos to MP3 (320kbps)",
+  title: "Instagram Audio Downloader - Convert to MP3 | GramSave",
   description:
     "Extract and download audio from Instagram Reels and Videos as high-quality 320kbps MP3 files. Free, fast, online audio converter with no software required.",
   keywords: [
@@ -21,10 +21,26 @@ export const metadata: Metadata = {
     canonical: "https://gramsave.site/audio-downloader",
   },
   openGraph: {
-    title: "Instagram Audio Downloader - Extract MP3 Audio Online",
+    title: "Instagram Audio Downloader - Convert to MP3 | GramSave",
     description:
       "Save audio tracks and trending songs from Instagram Reels directly in 320kbps MP3 format.",
     url: "https://gramsave.site/audio-downloader",
+    siteName: "GramSave",
+    images: [
+      {
+        url: "https://gramsave.site/og-image.jpg",
+        width: 1280,
+        height: 720,
+        alt: "Instagram Audio Downloader - GramSave",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Instagram Audio Downloader - Convert to MP3 | GramSave",
+    description:
+      "Extract and download clean 320kbps MP3 audio from Instagram Reels and Videos in 1 click.",
+    images: ["https://gramsave.site/og-image.jpg"],
   },
 };
 

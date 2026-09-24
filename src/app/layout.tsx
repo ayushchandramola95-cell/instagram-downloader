@@ -10,7 +10,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "GramSave - Free Instagram Video, Reels & Story Downloader (1080p HD)",
+  title: "GramSave - Instagram Video & Reels Downloader (1080p Full HD)",
   description:
     "Fast, free and anonymous online Instagram video downloader. Save Instagram Reels, Stories, Photos, and Audio in high quality 1080p MP4. No app or login required.",
   keywords: [
@@ -30,6 +30,20 @@ export const metadata: Metadata = {
   authors: [{ name: "GramSave Team" }],
   creator: "GramSave",
   publisher: "GramSave",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-48x48.png", sizes: "48x48", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
+  },
   robots: {
     index: true,
     follow: true,
@@ -155,14 +169,27 @@ export default function RootLayout({
         "@id": "https://gramsave.site/#organization",
         name: "GramSave",
         url: "https://gramsave.site",
-        logo: "https://gramsave.site/favicon.ico",
+        logo: "https://gramsave.site/icons/icon-512.png",
       },
       {
         "@type": "WebSite",
         "@id": "https://gramsave.site/#website",
         url: "https://gramsave.site",
         name: "GramSave",
+        alternateName: [
+          "GramSave",
+          "GramSave Instagram Downloader",
+          "GramSave.site",
+        ],
         publisher: { "@id": "https://gramsave.site/#organization" },
+        potentialAction: {
+          "@type": "SearchAction",
+          target: {
+            "@type": "EntryPoint",
+            urlTemplate: "https://gramsave.site/?url={search_term_string}",
+          },
+          "query-input": "required name=search_term_string",
+        },
       },
     ],
   };
@@ -170,6 +197,9 @@ export default function RootLayout({
   return (
     <html lang="en" data-theme="dark" suppressHydrationWarning>
       <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/favicon-48x48.png" sizes="48x48" type="image/png" />
+        <link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="dns-prefetch" href="https://challenges.cloudflare.com" />
         <link rel="preconnect" href="https://challenges.cloudflare.com" crossOrigin="anonymous" />

@@ -6,7 +6,7 @@ import DownloaderSection from "@/components/DownloaderSection";
 import FaqAccordion, { FaqItem } from "@/components/FaqAccordion";
 
 export const metadata: Metadata = {
-  title: "Instagram Reels Downloader - Download Reels in 1080p HD (Free & Fast)",
+  title: "Instagram Reels Downloader - 1080p Full HD | GramSave",
   description:
     "Download Instagram Reels in high-quality 1080p Full HD MP4 with audio. Free, fast, no watermark, and no login required. Works on iPhone, Android, and PC.",
   keywords: [
@@ -21,10 +21,26 @@ export const metadata: Metadata = {
     canonical: "https://gramsave.site/reels-downloader",
   },
   openGraph: {
-    title: "Instagram Reels Downloader - Save 1080p HD Reels Online",
+    title: "Instagram Reels Downloader - 1080p Full HD | GramSave",
     description:
       "Save high-definition Instagram Reels in 1080p MP4 with sound directly to your device. 100% free and anonymous.",
     url: "https://gramsave.site/reels-downloader",
+    siteName: "GramSave",
+    images: [
+      {
+        url: "https://gramsave.site/og-image.jpg",
+        width: 1280,
+        height: 720,
+        alt: "Instagram Reels Downloader - GramSave",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Instagram Reels Downloader - 1080p Full HD | GramSave",
+    description:
+      "Save Instagram Reels in high quality 1080p MP4 with audio. Free, fast, and no login required.",
+    images: ["https://gramsave.site/og-image.jpg"],
   },
 };
 

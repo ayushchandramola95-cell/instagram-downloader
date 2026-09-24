@@ -4,16 +4,65 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
-  title: "Contact & DMCA Removal - GramSave",
-  description: "Get in touch with the GramSave team or request DMCA content blocking and removal.",
+  title: "Contact & DMCA Removal Request | GramSave",
+  description:
+    "Get in touch with the GramSave support team or submit DMCA copyright removal requests.",
   alternates: {
     canonical: "https://gramsave.site/contact",
+  },
+  openGraph: {
+    title: "Contact & DMCA Removal Request | GramSave",
+    description:
+      "Get in touch with the GramSave support team or submit DMCA copyright removal requests.",
+    url: "https://gramsave.site/contact",
+    siteName: "GramSave",
+    images: [
+      {
+        url: "https://gramsave.site/og-image.jpg",
+        width: 1280,
+        height: 720,
+        alt: "Contact GramSave",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Contact & DMCA Removal Request | GramSave",
+    description: "Get in touch with the GramSave team or submit DMCA takedown requests.",
+    images: ["https://gramsave.site/og-image.jpg"],
   },
 };
 
 export default function ContactPage() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: "https://gramsave.site",
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "Contact & DMCA",
+            item: "https://gramsave.site/contact",
+          },
+        ],
+      },
+    ],
+  };
+
   return (
     <div className="page-wrapper">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Header />
       <main id="main-content" className="container" style={{ padding: "60px 20px 100px" }}>
         <div className="legal-card-wrapper">
