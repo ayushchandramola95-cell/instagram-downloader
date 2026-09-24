@@ -19,6 +19,8 @@ COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
+ARG NEXT_PUBLIC_GA_ID="G-T7K7C7RJV1"
+ENV NEXT_PUBLIC_GA_ID=$NEXT_PUBLIC_GA_ID
 
 # Next.js build creates .next/standalone
 RUN npm run build
@@ -32,6 +34,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=8080
 ENV HOSTNAME="0.0.0.0"
 ENV YT_DLP_BINARY_PATH="/usr/local/bin/yt-dlp"
+ENV NEXT_PUBLIC_GA_ID="G-T7K7C7RJV1"
 
 # 1. Install Python 3, FFmpeg, curl, and CA certificates
 RUN apt-get update && apt-get install -y --no-install-recommends \

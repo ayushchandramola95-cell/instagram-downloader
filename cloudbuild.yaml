@@ -9,6 +9,8 @@ steps:
     id: 'build-image'
     args:
       - 'build'
+      - '--build-arg'
+      - 'NEXT_PUBLIC_GA_ID=G-T7K7C7RJV1'
       - '-t'
       - 'gcr.io/$PROJECT_ID/instasnap:latest'
       - '.'
@@ -47,8 +49,8 @@ steps:
       - '0'
       - '--max-instances'
       - '10'
-      - '--set-env-vars'
-      - 'NODE_ENV=production,PORT=8080,RATE_LIMIT_FETCH_PER_MIN=30,RATE_LIMIT_DOWNLOAD_PER_MIN=60'
+      - '--update-env-vars'
+      - 'NODE_ENV=production,PORT=8080,RATE_LIMIT_FETCH_PER_MIN=30,RATE_LIMIT_DOWNLOAD_PER_MIN=60,NEXT_PUBLIC_GA_ID=G-T7K7C7RJV1'
 
 images:
   - 'gcr.io/$PROJECT_ID/instasnap:latest'
