@@ -48,6 +48,9 @@ export default function Footer() {
                 <Link href="/photo-downloader" className="footer-link">Instagram Photo Downloader</Link>
               </li>
               <li>
+                <Link href="/profile-downloader" className="footer-link">Instagram Profile Picture / DP</Link>
+              </li>
+              <li>
                 <Link href="/audio-downloader" className="footer-link">Instagram Audio & MP3 Converter</Link>
               </li>
               <li>

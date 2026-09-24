@@ -22,6 +22,7 @@ export default function Header({ activeTab }: HeaderProps) {
     { label: t("nav_reels", "Reels"), href: "/reels-downloader" },
     { label: t("nav_stories", "Stories"), href: "/story-saver" },
     { label: t("nav_photos", "Photos"), href: "/photo-downloader" },
+    { label: t("nav_profile", "Profile DP"), href: "/profile-downloader" },
     { label: t("nav_audio", "Audio MP3"), href: "/audio-downloader" },
     { label: t("nav_carousel", "Carousel"), href: "/carousel-downloader" },
   ];

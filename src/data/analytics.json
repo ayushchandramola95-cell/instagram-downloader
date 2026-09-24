@@ -1,21 +1,36 @@
 {
-  "totalVisits": 0,
-  "totalDownloads": 0,
+  "totalVisits": 2,
+  "totalDownloads": 1,
   "downloadsByType": {
     "reel": 0,
     "video": 0,
     "story": 0,
-    "photo": 0,
+    "photo": 1,
     "audio": 0,
     "carousel": 0
   },
   "trafficSources": {
-    "direct": 0,
+    "direct": 2,
     "google": 0,
     "bing": 0,
     "instagram": 0,
     "bookmarklet": 0
   },
-  "recentActivity": [],
-  "dailyStats": []
+  "recentActivity": [
+    {
+      "id": "ev_1790269720849_medd",
+      "type": "download",
+      "format": "photo",
+      "quality": "cristiano_dp.jpg",
+      "timestamp": "2026-09-24T17:08:40.849Z",
+      "ipMasked": "::1..."
+    }
+  ],
+  "dailyStats": [
+    {
+      "date": "2026-09-24",
+      "visits": 2,
+      "downloads": 1
+    }
+  ]
 }

@@ -44,17 +44,38 @@ export interface UrlValidationResult {
 }
 
 /**
- * Validates that an input URL is an authentic, public Instagram media URL.
+ * Validates that an input URL or username is an authentic, public Instagram media or profile target.
  * Protects against open-redirects, SSRF, and malformed inputs.
  */
 export function validateInstagramUrl(inputUrl: string): UrlValidationResult {
   if (!inputUrl || typeof inputUrl !== "string") {
-    return { valid: false, error: "Please enter an Instagram URL." };
+    return { valid: false, error: "Please enter an Instagram URL or username." };
   }
 
-  const trimmed = inputUrl.trim();
+  let trimmed = inputUrl.trim();
   if (trimmed.length > 2048) {
-    return { valid: false, error: "URL is excessively long." };
+    return { valid: false, error: "Input is excessively long." };
+  }
+
+  // Support @username or raw username directly (e.g. "@cristiano" or "cristiano")
+  const usernameOnlyMatch = trimmed.match(/^@?([a-zA-Z0-9._]{1,30})$/);
+  if (
+    usernameOnlyMatch &&
+    !trimmed.includes("/") &&
+    !trimmed.includes(":") &&
+    !trimmed.toLowerCase().endsWith(".com") &&
+    !trimmed.toLowerCase().endsWith(".org") &&
+    !trimmed.toLowerCase().endsWith(".net") &&
+    !trimmed.toLowerCase().endsWith(".site") &&
+    !trimmed.toLowerCase().endsWith(".io")
+  ) {
+    const cleanUser = usernameOnlyMatch[1].replace(/^\.+|\.+$/g, "");
+    if (cleanUser.length > 0) {
+      return {
+        valid: true,
+        normalizedUrl: `https://www.instagram.com/${cleanUser}/`,
+      };
+    }
   }
 
   let parsed: URL;
@@ -79,7 +100,7 @@ export function validateInstagramUrl(inputUrl: string): UrlValidationResult {
   if (!isAllowedHost) {
     return {
       valid: false,
-      error: "Please enter a valid Instagram URL (e.g., https://www.instagram.com/reel/...).",
+      error: "Please enter a valid Instagram URL (e.g., https://www.instagram.com/reel/... or https://www.instagram.com/username).",
     };
   }
 
@@ -90,9 +111,9 @@ export function validateInstagramUrl(inputUrl: string): UrlValidationResult {
     }
   }
 
-  // Validate Instagram content path
+  // Validate Instagram content or profile path
   const pathname = parsed.pathname;
-  const isRecognizedPath =
+  const isMediaPath =
     pathname.includes("/reel/") ||
     pathname.includes("/reels/") ||
     pathname.includes("/p/") ||
@@ -101,10 +122,43 @@ export function validateInstagramUrl(inputUrl: string): UrlValidationResult {
     pathname.includes("/share/") ||
     /^\/[\w.-]+\/(?:reel|p)\/[\w.-]+/.test(pathname);
 
-  if (!isRecognizedPath && pathname === "/") {
+  const pathParts = pathname.split("/").filter(Boolean);
+  const RESERVED_PREFIXES = new Set([
+    "reel",
+    "reels",
+    "p",
+    "stories",
+    "tv",
+    "share",
+    "explore",
+    "accounts",
+    "direct",
+    "about",
+    "developer",
+    "legal",
+    "terms",
+    "privacy",
+    "help",
+    "api",
+    "graphql",
+    "static",
+  ]);
+
+  const isProfilePath =
+    pathParts.length === 1 &&
+    !RESERVED_PREFIXES.has(pathParts[0].toLowerCase()) &&
+    /^[a-zA-Z0-9._]{1,30}$/.test(pathParts[0]);
+
+  if (!isMediaPath && !isProfilePath) {
+    if (pathname === "/" || pathParts.length === 0) {
+      return {
+        valid: false,
+        error: "Please provide a link to a specific Reel, Post, Story, or Profile username (not the homepage).",
+      };
+    }
     return {
       valid: false,
-      error: "Please provide a link to a specific Reel, Post, Story, or Video (not the homepage).",
+      error: "Please enter a valid Instagram URL or profile username.",
     };
   }
 
@@ -115,6 +169,63 @@ export function validateInstagramUrl(inputUrl: string): UrlValidationResult {
     valid: true,
     normalizedUrl,
   };
+}
+
+/**
+ * Checks whether an input URL represents an Instagram user profile (rather than media).
+ */
+export function isProfileTargetUrl(inputUrl: string): boolean {
+  if (!inputUrl) return false;
+  const trimmed = inputUrl.trim();
+  if (/^@?[a-zA-Z0-9._]{1,30}$/.test(trimmed) && !trimmed.includes("/") && !trimmed.includes(".")) {
+    return true;
+  }
+  try {
+    const url = new URL(trimmed.startsWith("http") ? trimmed : `https://${trimmed}`);
+    const pathParts = url.pathname.split("/").filter(Boolean);
+    const RESERVED_PREFIXES = new Set([
+      "reel", "reels", "p", "stories", "tv", "share", "explore",
+      "accounts", "direct", "about", "developer", "legal", "terms",
+      "privacy", "help", "api", "graphql", "static"
+    ]);
+    return (
+      pathParts.length === 1 &&
+      !RESERVED_PREFIXES.has(pathParts[0].toLowerCase()) &&
+      /^[a-zA-Z0-9._]{1,30}$/.test(pathParts[0])
+    );
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Extracts the clean username from an Instagram profile URL or handle string.
+ */
+export function extractProfileUsername(inputUrl: string): string | null {
+  if (!inputUrl) return null;
+  const trimmed = inputUrl.trim();
+  if (/^@?[a-zA-Z0-9._]{1,30}$/.test(trimmed) && !trimmed.includes("/") && !trimmed.includes(".")) {
+    return trimmed.replace(/^@/, "").replace(/^\.+|\.+$/g, "").toLowerCase();
+  }
+  try {
+    const url = new URL(trimmed.startsWith("http") ? trimmed : `https://${trimmed}`);
+    const pathParts = url.pathname.split("/").filter(Boolean);
+    const RESERVED_PREFIXES = new Set([
+      "reel", "reels", "p", "stories", "tv", "share", "explore",
+      "accounts", "direct", "about", "developer", "legal", "terms",
+      "privacy", "help", "api", "graphql", "static"
+    ]);
+    if (
+      pathParts.length === 1 &&
+      !RESERVED_PREFIXES.has(pathParts[0].toLowerCase()) &&
+      /^[a-zA-Z0-9._]{1,30}$/.test(pathParts[0])
+    ) {
+      return pathParts[0].replace(/^\.+|\.+$/g, "").toLowerCase();
+    }
+    return null;
+  } catch {
+    return null;
+  }
 }
 
 /**

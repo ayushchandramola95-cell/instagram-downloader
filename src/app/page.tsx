@@ -70,10 +70,18 @@ const SILO_TOOLS = [
   {
     title: "Photo Downloader",
     tag: "Original Quality",
-    desc: "Download high-resolution Instagram photography and profile pictures without lossy screenshot compression.",
+    desc: "Download high-resolution Instagram photography without lossy screenshot compression.",
     href: "/photo-downloader",
     icon: "📸",
     color: "#06b6d4",
+  },
+  {
+    title: "Profile DP Downloader",
+    tag: "Full HD 1080p",
+    desc: "View and download uncropped original 1080p Instagram profile pictures (DP) from any account in 1 click.",
+    href: "/profile-downloader",
+    icon: "👤",
+    color: "#e11d48",
   },
   {
     title: "Carousel Album Saver",

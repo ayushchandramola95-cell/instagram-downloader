@@ -4,6 +4,8 @@ import fs from "fs";
 import path from "path";
 import { ExtractedMedia, MediaChildItem, MediaResolution } from "./types";
 import { extractWithYtDlp } from "./ytdlp-extractor";
+import { isProfileTargetUrl } from "./security";
+import { extractInstagramProfile } from "./profile-extractor";
 
 /**
  * Reads cookie string from cookies.txt (Netscape format) or INSTAGRAM_COOKIE env
@@ -875,11 +877,19 @@ function createFallbackDemoMedia(shortcode: string, url: string): ExtractedMedia
 export async function extractInstagramMedia(inputUrl: string, isSample = false): Promise<ExtractedMedia> {
   // If user explicitly requested a sample preview
   if (isSample) {
+    if (isProfileTargetUrl(inputUrl)) {
+      return await extractInstagramProfile(inputUrl, true);
+    }
     const shortcode = extractShortcode(inputUrl) || "demo_sample";
     return createFallbackDemoMedia(shortcode, inputUrl);
   }
 
-  // 1. Check if it's a story profile URL (/stories/username/) without a specific story ID
+  // 1. Check if it's a user profile link or username (@username or instagram.com/username)
+  if (isProfileTargetUrl(inputUrl)) {
+    return await extractInstagramProfile(inputUrl);
+  }
+
+  // 2. Check if it's a story profile URL (/stories/username/) without a specific story ID
   if (isStoryProfileUrl(inputUrl)) {
     const username = extractStoryUsername(inputUrl);
     if (username) {

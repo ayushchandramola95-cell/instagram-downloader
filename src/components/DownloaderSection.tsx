@@ -6,7 +6,7 @@ import JSZip from "jszip";
 import { useTranslation } from "@/lib/i18n";
 import { ExtractedMedia, FetchMediaResponse, MediaResolution } from "@/lib/types";
 
-export type MediaTab = "all" | "reels" | "stories" | "photos" | "audio" | "carousel";
+export type MediaTab = "all" | "reels" | "stories" | "photos" | "profile" | "audio" | "carousel";
 
 interface TabPreset {
   id: MediaTab;
@@ -74,6 +74,19 @@ const TAB_PRESETS: Record<MediaTab, TabPreset> = {
     placeholder: "Paste Instagram Photo link (e.g., https://www.instagram.com/p/...)",
     pageHref: "/photo-downloader",
   },
+  profile: {
+    id: "profile",
+    label: "Profile DP",
+    icon: "👤",
+    badge: "100% Free Instagram HD Profile Picture & DP Viewer",
+    titlePrefix: "Download Instagram ",
+    titleHighlight: "Full-Size HD DP",
+    titleSuffix: " & Profile Picture",
+    subtitle:
+      "View and download uncropped original 1080p Full-HD Instagram profile pictures (DP) from any account in 1 click. 100% anonymous.",
+    placeholder: "Enter Instagram username or profile link (e.g., @cristiano or instagram.com/cristiano)...",
+    pageHref: "/profile-downloader",
+  },
   audio: {
     id: "audio",
     label: "Audio MP3",
@@ -119,6 +132,7 @@ export default function DownloaderSection({
   const [error, setError] = useState<string | null>(null);
   const [pasteSuccess, setPasteSuccess] = useState(false);
   const [showBookmarkletModal, setShowBookmarkletModal] = useState(false);
+  const [showDpZoomModal, setShowDpZoomModal] = useState(false);
 
   // Quality toggle selection for single media (index in result.resolutions)
   const [selectedQualityIndex, setSelectedQualityIndex] = useState<number>(0);
@@ -500,13 +514,17 @@ export default function DownloaderSection({
   const currentResolution: MediaResolution | undefined =
     result?.resolutions[selectedQualityIndex] || result?.resolutions[0];
 
-  const isAudioSelected =
-    currentResolution?.type === "mp3" ||
-    result?.type === "audio" ||
-    activeTab === "audio";
-
+  const isProfileMedia = result?.type === "profile";
   const isPhotoMedia = result?.type === "photo";
-  const isVideoMedia = result?.type === "video" || result?.type === "reel" || result?.type === "story";
+  const isVideoMedia =
+    !isProfileMedia &&
+    (result?.type === "video" || result?.type === "reel" || result?.type === "story");
+
+  const isAudioSelected =
+    !isProfileMedia &&
+    (currentResolution?.type === "mp3" ||
+      result?.type === "audio" ||
+      activeTab === "audio");
 
   // Audio streaming URL for the preview player
   const audioPreviewUrl = result?.resolutions.find((r) => r.type === "mp3")?.downloadUrl || currentResolution?.downloadUrl || "";
@@ -765,9 +783,231 @@ export default function DownloaderSection({
           </div>
 
           {/* ===================================================================== */}
+          {/* 0. SPECIALIZED INSTAGRAM PROFILE DP / AVATAR RESULT VIEW             */}
+          {/* ===================================================================== */}
+          {!result.isCarousel && isProfileMedia && (
+            <div className="result-card-v2 dp-result-card">
+              {/* Media Col: Avatar frame & zoom preview */}
+              <div className="result-media-col">
+                <div className="profile-dp-showcase-frame">
+                  <div
+                    className="profile-avatar-wrapper"
+                    onClick={() => setShowDpZoomModal(true)}
+                    title="Click to view full-size 1080p DP in HD zoom modal"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={currentResolution?.downloadUrl || result.thumbnailUrl}
+                      alt={result.caption || "Instagram Profile Picture"}
+                      className="profile-avatar-img"
+                    />
+                    <div className="profile-zoom-hint">🔍 Tap to Zoom</div>
+                  </div>
+
+                  <div className="profile-meta-chips">
+                    <span className="profile-chip profile-chip-status">
+                      ✨ {currentResolution?.width ? `${currentResolution.width}×${currentResolution.height} Full HD` : "1080p HD DP"}
+                    </span>
+                    {result.profileDetails?.followersCount && (
+                      <span className="profile-chip profile-chip-followers">
+                        👥 {result.profileDetails.followersCount}
+                      </span>
+                    )}
+                    {result.profileDetails?.isPrivate ? (
+                      <span className="profile-chip profile-chip-private">
+                        🔒 Private Account (DP is Public)
+                      </span>
+                    ) : (
+                      <span className="profile-chip profile-chip-status">
+                        🌐 Public Profile
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Quick utility actions */}
+                <div className="photo-quick-actions">
+                  <button
+                    type="button"
+                    className="photo-action-btn"
+                    onClick={() => setShowDpZoomModal(true)}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                      <line x1="11" y1="8" x2="11" y2="14"></line>
+                      <line x1="8" y1="11" x2="14" y2="11"></line>
+                    </svg>
+                    <span>Zoom HD</span>
+                  </button>
+                  <a
+                    href={currentResolution?.downloadUrl || result.thumbnailUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="photo-action-btn"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M15 3h6v6"></path>
+                      <path d="M10 14L21 3"></path>
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                    </svg>
+                    <span>Full Size</span>
+                  </a>
+                  <button
+                    type="button"
+                    className="photo-action-btn"
+                    onClick={() => handleCopyLink(currentResolution?.downloadUrl || result.thumbnailUrl)}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    <span>{copiedLink ? "Copied!" : "Copy Link"}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Info & Download Col */}
+              <div className="result-info-col">
+                <div>
+                  {/* Creator Card */}
+                  <div className="creator-profile-card">
+                    <div className="creator-avatar" style={{ background: "linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)" }}>
+                      {result.author ? result.author.charAt(0).toUpperCase() : "U"}
+                    </div>
+                    <div className="creator-meta">
+                      <div className="creator-name-row">
+                        <span className="creator-name">{result.author || result.authorHandle}</span>
+                        {result.profileDetails?.isVerified && (
+                          <svg className="verified-icon" width="18" height="18" viewBox="0 0 24 24" fill="#38bdf8" aria-label="Verified Account">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                          </svg>
+                        )}
+                      </div>
+                      <div className="creator-handle">
+                        {result.authorHandle}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bio or Caption */}
+                  {result.profileDetails?.biography ? (
+                    <div className="caption-box">
+                      <p>{result.profileDetails.biography}</p>
+                    </div>
+                  ) : result.caption ? (
+                    <div className="caption-box">
+                      <p>{result.caption}</p>
+                    </div>
+                  ) : null}
+
+                  {/* Quality Selector (if multiple resolutions exist) */}
+                  {result.resolutions.length > 1 && (
+                    <div className="quality-toggle-container">
+                      <div className="quality-toggle-label">
+                        <span>Select DP Resolution</span>
+                        <span className="quality-count-badge">
+                          {result.resolutions.length} Sizes Available
+                        </span>
+                      </div>
+                      <div className="quality-toggle-bar">
+                        {result.resolutions.map((resItem, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            className={`quality-chip-btn ${selectedQualityIndex === idx ? "active" : ""}`}
+                            onClick={() => setSelectedQualityIndex(idx)}
+                          >
+                            <span className="chip-res-tag">{resItem.label}</span>
+                            <span className="chip-size-tag">{resItem.quality}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Download Action Card */}
+                  <div className="download-action-card" style={{ marginTop: "20px" }}>
+                    <div className="download-target-summary">
+                      <div className="target-icon-wrap" style={{ background: "rgba(236,72,153,0.15)", color: "#ec4899" }}>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                          <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                      </div>
+                      <div className="target-details">
+                        <span className="target-format-name">
+                          {currentResolution?.label || "1080p Full HD Profile Picture"}
+                        </span>
+                        <span className="target-format-meta">
+                          Uncropped Master Quality • JPG Image • 100% Watermark-Free
+                        </span>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="download-stream-btn"
+                      id="download-profile-dp-btn"
+                      onClick={() => {
+                        const targetUrl = currentResolution?.downloadUrl || result.thumbnailUrl;
+                        const cleanUser = result.authorHandle.replace(/^@/, "") || "instagram";
+                        triggerDownload(targetUrl, `${cleanUser}_profile_dp_1080p.jpg`);
+                      }}
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                      </svg>
+                      <span>Download Full HD Profile Picture (1080p JPG)</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Fullscreen DP Zoom Modal */}
+          {showDpZoomModal && (
+            <div className="dp-zoom-modal-backdrop" onClick={() => setShowDpZoomModal(false)}>
+              <div className="dp-zoom-modal-content" onClick={(e) => e.stopPropagation()}>
+                <button
+                  type="button"
+                  className="dp-zoom-close-btn"
+                  onClick={() => setShowDpZoomModal(false)}
+                  title="Close Zoom Modal"
+                >
+                  ✕
+                </button>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={currentResolution?.downloadUrl || result.thumbnailUrl}
+                  alt={result.author || "Full Resolution DP"}
+                  className="dp-zoom-modal-img"
+                />
+                <div style={{ display: "flex", gap: "10px" }}>
+                  <button
+                    type="button"
+                    className="download-stream-btn"
+                    style={{ padding: "10px 24px", fontSize: "0.95rem" }}
+                    onClick={() => {
+                      const targetUrl = currentResolution?.downloadUrl || result.thumbnailUrl;
+                      const cleanUser = result.authorHandle.replace(/^@/, "") || "instagram";
+                      triggerDownload(targetUrl, `${cleanUser}_profile_dp_1080p.jpg`);
+                    }}
+                  >
+                    <span>⬇️ Download Full Size (1080p JPG)</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ===================================================================== */}
           {/* A. SPECIALIZED SINGLE PHOTO RESULT VIEW                               */}
           {/* ===================================================================== */}
-          {!result.isCarousel && isPhotoMedia && (
+          {!result.isCarousel && !isProfileMedia && isPhotoMedia && (
             <div className="result-card-v2">
               {/* Photo Showcase Column */}
               <div className="result-media-col">

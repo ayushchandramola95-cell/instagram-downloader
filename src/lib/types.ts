@@ -23,10 +23,24 @@ export interface MediaChildItem {
   resolutions: MediaResolution[];
 }
 
+export interface ProfileDetails {
+  username: string;
+  fullName: string;
+  biography?: string;
+  profilePicUrlHd: string;
+  profilePicUrlDefault?: string;
+  followersCount?: number | string;
+  followingCount?: number | string;
+  postsCount?: number | string;
+  isVerified?: boolean;
+  isPrivate?: boolean;
+  externalUrl?: string;
+}
+
 export interface ExtractedMedia {
   id: string;
   shortcode: string;
-  type: "reel" | "video" | "story" | "photo" | "album" | "audio";
+  type: "reel" | "video" | "story" | "photo" | "album" | "audio" | "profile";
   author: string;
   authorHandle: string;
   authorAvatar?: string;
@@ -37,6 +51,7 @@ export interface ExtractedMedia {
   isDemo?: boolean;
   isCarousel?: boolean;
   carouselItems?: MediaChildItem[];
+  profileDetails?: ProfileDetails;
 }
 
 export interface FetchMediaResponse {
@@ -44,3 +59,4 @@ export interface FetchMediaResponse {
   data?: ExtractedMedia;
   error?: string;
 }
+
