@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAnalyticsData, recordVisitEvent, recordDownloadEvent } from "@/lib/analytics-store";
+import { getAnalyticsData, recordVisitEvent, recordDownloadEvent, resetAnalyticsData } from "@/lib/analytics-store";
 import { getClientIp } from "@/lib/rate-limiter";
 import fs from "fs";
 import path from "path";
@@ -87,7 +87,15 @@ export async function POST(req: NextRequest) {
   try {
     const clientIp = getClientIp(req);
     const body = await req.json().catch(() => ({}));
-    const { event, format, quality, source } = body;
+    const { event, action, secret, format, quality, source } = body;
+
+    if (action === "reset") {
+      if (secret !== ADMIN_SECRET) {
+        return NextResponse.json({ success: false, error: "Unauthorized: Invalid secret." }, { status: 401 });
+      }
+      const cleanData = await resetAnalyticsData();
+      return NextResponse.json({ success: true, message: "Analytics reset to zero.", analytics: cleanData });
+    }
 
     if (event === "visit") {
       await recordVisitEvent(source || "direct", clientIp);
@@ -99,7 +107,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
-    return NextResponse.json({ success: false, error: "Invalid event" }, { status: 400 });
+    return NextResponse.json({ success: false, error: "Invalid event or action" }, { status: 400 });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Failed to record event";
     return NextResponse.json({ success: false, error: message }, { status: 500 });

@@ -355,6 +355,31 @@ export default function DeveloperPage() {
     }
   };
 
+  const handleResetAnalytics = async () => {
+    if (!confirm("Are you sure you want to reset all traffic and download counters back to 0? This will clear all initial demo seed data and track only real visitors and downloads from now on.")) {
+      return;
+    }
+    setLoadingStats(true);
+    try {
+      const res = await fetch("/api/analytics", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "reset", secret: passcode }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setAnalytics(data.analytics);
+        alert("Analytics reset to 0! Only real traffic will be counted from now on.");
+      } else {
+        alert(data.error || "Failed to reset analytics.");
+      }
+    } catch (e: any) {
+      alert("Error: " + e.message);
+    } finally {
+      setLoadingStats(false);
+    }
+  };
+
   // Filtered strings for CMS table
   const stringKeys = useMemo(() => {
     const enKeys = Object.keys(allStrings["en"] || {});
@@ -581,6 +606,22 @@ export default function DeveloperPage() {
               }}
             >
               🔄 Refresh
+            </button>
+            <button
+              onClick={handleResetAnalytics}
+              style={{
+                fontSize: "0.82rem",
+                background: "rgba(245,158,11,0.15)",
+                color: "#f59e0b",
+                border: "1px solid rgba(245,158,11,0.3)",
+                padding: "6px 12px",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontWeight: 600,
+              }}
+              title="Reset all baseline demo numbers to 0 to track purely real production traffic"
+            >
+              🗑️ Reset Stats to 0
             </button>
             <button
               onClick={handleLogout}

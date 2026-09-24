@@ -41,26 +41,52 @@ export async function getAnalyticsData(): Promise<AnalyticsData> {
   }
 
   return {
-    totalVisits: 1420,
-    totalDownloads: 860,
+    totalVisits: 0,
+    totalDownloads: 0,
     downloadsByType: {
-      reel: 490,
-      video: 120,
-      story: 85,
-      photo: 75,
-      audio: 60,
-      carousel: 30,
+      reel: 0,
+      video: 0,
+      story: 0,
+      photo: 0,
+      audio: 0,
+      carousel: 0,
     },
     trafficSources: {
-      direct: 720,
-      google: 380,
-      bing: 190,
-      instagram: 95,
-      bookmarklet: 35,
+      direct: 0,
+      google: 0,
+      bing: 0,
+      instagram: 0,
+      bookmarklet: 0,
     },
     recentActivity: [],
     dailyStats: [],
   };
+}
+
+export async function resetAnalyticsData(): Promise<AnalyticsData> {
+  const cleanData: AnalyticsData = {
+    totalVisits: 0,
+    totalDownloads: 0,
+    downloadsByType: {
+      reel: 0,
+      video: 0,
+      story: 0,
+      photo: 0,
+      audio: 0,
+      carousel: 0,
+    },
+    trafficSources: {
+      direct: 0,
+      google: 0,
+      bing: 0,
+      instagram: 0,
+      bookmarklet: 0,
+    },
+    recentActivity: [],
+    dailyStats: [],
+  };
+  await saveAnalyticsData(cleanData);
+  return cleanData;
 }
 
 export async function saveAnalyticsData(data: AnalyticsData): Promise<boolean> {
