@@ -19,9 +19,20 @@ export default function Header({ activeTab }: HeaderProps) {
   const [isDevMode, setIsDevMode] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [logoClicks, setLogoClicks] = useState(0);
+  const [scrolled, setScrolled] = useState(false);
   const logoTimerRef = useRef<NodeJS.Timeout | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
+
+  // Dynamic navbar scroll state
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 15);
+    };
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Primary top-level navigation links
   const primaryNavItems = [
@@ -158,7 +169,7 @@ export default function Header({ activeTab }: HeaderProps) {
   };
 
   return (
-    <header className="header" id="header">
+    <header className={`header ${scrolled ? "scrolled" : ""}`} id="header">
       <div className="container header-inner">
         {/* Brand Logo with secret 5-click easter egg */}
         <Link

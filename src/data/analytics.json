@@ -1,5 +1,5 @@
 {
-  "totalVisits": 5,
+  "totalVisits": 9,
   "totalDownloads": 1,
   "downloadsByType": {
     "reel": 0,
@@ -10,7 +10,7 @@
     "carousel": 0
   },
   "trafficSources": {
-    "direct": 5,
+    "direct": 9,
     "google": 0,
     "bing": 0,
     "instagram": 0,
@@ -29,8 +29,25 @@
   "dailyStats": [
     {
       "date": "2026-09-24",
-      "visits": 5,
+      "visits": 6,
       "downloads": 1
+    },
+    {
+      "date": "2026-09-25",
+      "visits": 3,
+      "downloads": 0
     }
-  ]
+  ],
+  "topCountries": {
+    "US": 42,
+    "IN": 35,
+    "BR": 18,
+    "ID": 12,
+    "GB": 9,
+    "DE": 8,
+    "FR": 6,
+    "MX": 5,
+    "OTHER": 14,
+    "GLOBAL": 4
+  }
 }

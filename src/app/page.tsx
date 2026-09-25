@@ -151,16 +151,11 @@ export default function Home() {
                 key={tool.href}
                 href={tool.href}
                 className="silo-tool-card"
-                style={{
-                  textDecoration: "none",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
-                }}
+                style={{ "--card-accent": tool.color } as React.CSSProperties}
               >
                 <div>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
-                    <span style={{ fontSize: "28px" }}>{tool.icon}</span>
+                    <span className="silo-tool-icon" style={{ fontSize: "28px" }}>{tool.icon}</span>
                     <span
                       style={{
                         fontSize: "0.75rem",
@@ -195,7 +190,7 @@ export default function Home() {
                   }}
                 >
                   <span>Launch Tool</span>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="silo-tool-launch-arrow">
                     <polyline points="9 18 15 12 9 6"></polyline>
                   </svg>
                 </div>

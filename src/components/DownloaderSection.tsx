@@ -649,6 +649,12 @@ export default function DownloaderSection({
 
   return (
     <section className="hero container" id="downloader">
+      {/* Ambient Floating Aurora Glow Orbs */}
+      <div className="hero-aurora-glow" aria-hidden="true">
+        <div className="aurora-orb aurora-orb-1"></div>
+        <div className="aurora-orb aurora-orb-2"></div>
+      </div>
+
       {/* ========================================================================= */}
       {/* 1. HERO & SEARCH BOX (HIDDEN when loading OR result is present)           */}
       {/* ========================================================================= */}
@@ -752,8 +758,9 @@ export default function DownloaderSection({
                   className="submit-btn"
                   disabled={loading}
                 >
+                  <span className="submit-btn-sheen" aria-hidden="true"></span>
                   <span>{loading ? t("btn_fetching", "Fetching...") : t("btn_download", "Download")}</span>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="submit-arrow-icon">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
                     <polyline points="19 12 12 19 5 12"></polyline>
                   </svg>
