@@ -717,24 +717,270 @@ async function extractViaGraphQL(shortcode: string): Promise<ExtractedMedia | nu
   return null;
 }
 
+function parseShortcodeMediaFromEmbedHtml(html: string): any {
+  if (typeof html !== "string") return null;
+
+  let idx = html.indexOf('"shortcode_media":');
+  let isEscaped = false;
+
+  if (idx === -1) {
+    idx = html.indexOf('\\"shortcode_media\\":');
+    isEscaped = true;
+  }
+
+  if (idx === -1) {
+    const gqlIdx = html.indexOf("gql_data");
+    if (gqlIdx !== -1) {
+      const sub = html.slice(gqlIdx);
+      const subIdx = sub.indexOf("shortcode_media");
+      if (subIdx !== -1) {
+        idx = gqlIdx + subIdx - 1;
+        if (html.slice(idx - 1, idx + 1) === '\\"') isEscaped = true;
+      }
+    }
+  }
+
+  if (idx === -1) return null;
+
+  let braceStart = -1;
+  for (let i = idx; i >= 0; i--) {
+    if (html[i] === "{") {
+      braceStart = i;
+      break;
+    }
+  }
+  if (braceStart === -1) return null;
+
+  let openBraces = 0;
+  let inString = false;
+  let escapeNext = false;
+  let braceEnd = -1;
+
+  for (let i = braceStart; i < html.length; i++) {
+    const char = html[i];
+    if (escapeNext) {
+      escapeNext = false;
+      continue;
+    }
+    if (char === "\\") {
+      escapeNext = true;
+      continue;
+    }
+    if (char === '"') {
+      inString = !inString;
+      continue;
+    }
+    if (!inString) {
+      if (char === "{") {
+        openBraces++;
+      } else if (char === "}") {
+        openBraces--;
+        if (openBraces === 0) {
+          braceEnd = i + 1;
+          break;
+        }
+      }
+    }
+  }
+
+  if (braceEnd === -1) return null;
+
+  let rawJson = html.slice(braceStart, braceEnd);
+  if (isEscaped) {
+    rawJson = rawJson.replace(/\\"/g, '"').replace(/\\\\/g, "\\");
+  }
+
+  try {
+    const parsed = JSON.parse(rawJson);
+    return parsed.shortcode_media || parsed;
+  } catch {
+    try {
+      const sanitized = rawJson.replace(/\\r/g, "").replace(/\\n/g, "");
+      const parsed = JSON.parse(sanitized);
+      return parsed.shortcode_media || parsed;
+    } catch {
+      return null;
+    }
+  }
+}
+
 /**
- * Strategy 3: Embed page scraping fallback
+ * Strategy 3: Embed page scraping & GraphQL payload extraction
+ * Publicly extracts full multi-slide carousels (photos & videos), single photos, and reels
+ * without requiring login cookies.
  */
 async function extractViaEmbed(shortcode: string): Promise<ExtractedMedia | null> {
-  try {
-    const embedUrl = `https://www.instagram.com/reel/${shortcode}/embed/captioned/`;
-    const res = await axios.get(embedUrl, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-      },
-      timeout: 8000,
-    });
+  const embedUrls = [
+    `https://www.instagram.com/p/${shortcode}/embed/captioned/`,
+    `https://www.instagram.com/reel/${shortcode}/embed/captioned/`,
+    `https://www.instagram.com/p/${shortcode}/embed/`,
+  ];
 
-    const html = res.data;
-    if (typeof html === "string") {
-      const videoMatch = html.match(/video_url\\?":\\?"([^"\\]*(?:\\.[^"\\]*)*)/i) || html.match(/<video[^>]+src="([^">]+)"/i);
-      const imgMatch = html.match(/display_url\\?":\\?"([^"\\]*(?:\\.[^"\\]*)*)/i) || html.match(/<img class="EmbeddedMediaImage"[^>]+src="([^">]+)"/i);
+  for (const embedUrl of embedUrls) {
+    try {
+      const res = await axios.get(embedUrl, {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+          "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+          "Accept-Language": "en-US,en;q=0.9",
+        },
+        timeout: 9000,
+      });
+
+      const html = res.data;
+      if (typeof html !== "string") continue;
+
+      const shortcodeMedia = parseShortcodeMediaFromEmbedHtml(html);
+      if (shortcodeMedia) {
+        const author = shortcodeMedia.owner?.full_name || shortcodeMedia.owner?.username || "Instagram Creator";
+        const authorHandle = `@${shortcodeMedia.owner?.username || "instagram_user"}`;
+        const authorAvatar = shortcodeMedia.owner?.profile_pic_url?.replace(/\\\//g, "/");
+        const caption = shortcodeMedia.edge_media_to_caption?.edges?.[0]?.node?.text || "Instagram Post";
+        const displayUrl = (shortcodeMedia.display_url || "").replace(/\\\//g, "/");
+
+        // 1. Multi-slide Carousel Album
+        const sidecarEdges = shortcodeMedia.edge_sidecar_to_children?.edges;
+        if (sidecarEdges && sidecarEdges.length > 0) {
+          const carouselItems: MediaChildItem[] = sidecarEdges.map((edge: any, index: number) => {
+            const node = edge.node;
+            const isVideo = Boolean(node.is_video);
+            const childDisplayUrl = (node.display_url || "").replace(/\\\//g, "/");
+            const childVideoUrl = (node.video_url || "").replace(/\\\//g, "/");
+            const width = node.dimensions?.width;
+            const height = node.dimensions?.height;
+
+            const childResolutions: MediaResolution[] = [];
+            if (isVideo && childVideoUrl) {
+              childResolutions.push({
+                label: height ? `${height}p Video` : "1080p Full HD",
+                quality: "Original HD MP4 • Best Quality",
+                size: "HD Video",
+                type: "mp4",
+                downloadUrl: childVideoUrl,
+                width,
+                height,
+                isBest: true,
+              });
+              childResolutions.push({
+                label: "Audio Track (MP3)",
+                quality: "320 kbps Stereo Audio",
+                size: "320 kbps",
+                type: "mp3",
+                downloadUrl: childVideoUrl,
+                bitrate: "320 kbps",
+              });
+            } else {
+              childResolutions.push({
+                label: width && height ? `${width}x${height}` : "1080p Original",
+                quality: "Original Resolution • Lossless JPG",
+                size: "Original JPG",
+                type: "jpg",
+                downloadUrl: childDisplayUrl,
+                width,
+                height,
+                isBest: true,
+              });
+            }
+
+            return {
+              id: `${shortcode}_${index + 1}`,
+              index: index + 1,
+              type: isVideo ? "video" : "photo",
+              thumbnailUrl: childDisplayUrl,
+              width,
+              height,
+              resolutions: childResolutions,
+            };
+          });
+
+          return {
+            id: shortcode,
+            shortcode,
+            type: "album",
+            isCarousel: true,
+            author,
+            authorHandle,
+            authorAvatar,
+            caption,
+            thumbnailUrl: carouselItems[0]?.thumbnailUrl || displayUrl,
+            resolutions: carouselItems[0]?.resolutions || [],
+            carouselItems,
+          };
+        }
+
+        // 2. Single Video
+        if (shortcodeMedia.is_video && shortcodeMedia.video_url) {
+          const videoUrl = shortcodeMedia.video_url.replace(/\\\//g, "/");
+          const width = shortcodeMedia.dimensions?.width;
+          const height = shortcodeMedia.dimensions?.height;
+
+          return {
+            id: shortcode,
+            shortcode,
+            type: "reel",
+            author,
+            authorHandle,
+            authorAvatar,
+            caption,
+            thumbnailUrl: displayUrl,
+            duration: shortcodeMedia.video_duration ? `${Math.round(shortcodeMedia.video_duration)}s` : undefined,
+            resolutions: [
+              {
+                label: height ? `${height}p Video` : "1080p Full HD",
+                quality: "Original HD MP4 • Best Quality",
+                size: "Full HD Video",
+                type: "mp4",
+                downloadUrl: videoUrl,
+                width,
+                height,
+                isBest: true,
+              },
+              {
+                label: "320 kbps Studio Audio",
+                quality: "High Fidelity Stereo MP3",
+                size: "320 kbps MP3",
+                type: "mp3",
+                downloadUrl: videoUrl,
+                bitrate: "320 kbps",
+              },
+            ],
+          };
+        }
+
+        // 3. Single Photo
+        const width = shortcodeMedia.dimensions?.width;
+        const height = shortcodeMedia.dimensions?.height;
+        return {
+          id: shortcode,
+          shortcode,
+          type: "photo",
+          author,
+          authorHandle,
+          authorAvatar,
+          caption,
+          thumbnailUrl: displayUrl,
+          resolutions: [
+            {
+              label: width && height ? `${width}x${height}` : "1080p Original",
+              quality: "Original Resolution • Lossless JPG",
+              size: "Original Lossless",
+              type: "jpg",
+              downloadUrl: displayUrl,
+              width,
+              height,
+              isBest: true,
+            },
+          ],
+        };
+      }
+
+      // Regex fallback on embed HTML
+      const videoMatch =
+        html.match(/video_url\\?":\\?"([^"\\]*(?:\\.[^"\\]*)*)/i) || html.match(/<video[^>]+src="([^">]+)"/i);
+      const imgMatch =
+        html.match(/display_url\\?":\\?"([^"\\]*(?:\\.[^"\\]*)*)/i) ||
+        html.match(/<img class="EmbeddedMediaImage"[^>]+src="([^">]+)"/i);
       const userMatch = html.match(/"username\\?":\\?"([^"\\]+)/i);
 
       if (videoMatch || imgMatch) {
@@ -748,7 +994,7 @@ async function extractViaEmbed(shortcode: string): Promise<ExtractedMedia | null
           author: userMatch ? userMatch[1] : "Instagram Creator",
           authorHandle: `@${userMatch ? userMatch[1] : "instagram_user"}`,
           caption: "Instagram Post",
-          thumbnailUrl: imgUrl || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&q=80",
+          thumbnailUrl: imgUrl || "",
           resolutions: videoUrl
             ? [
                 {
@@ -779,12 +1025,54 @@ async function extractViaEmbed(shortcode: string): Promise<ExtractedMedia | null
               ],
         };
       }
+    } catch {
+      // try next url
     }
-  } catch (err: unknown) {
-    console.warn("Embed extraction error:", err instanceof Error ? err.message : err);
   }
 
   return null;
+}
+
+/**
+ * Merges a video-only yt-dlp result with full carousel items from embed (restoring all photos)
+ */
+function mergeCarouselItems(
+  fullCarousel: ExtractedMedia,
+  ytDlpResult: ExtractedMedia
+): ExtractedMedia {
+  if (!fullCarousel.carouselItems || fullCarousel.carouselItems.length === 0) {
+    return ytDlpResult;
+  }
+  if (!ytDlpResult.carouselItems || ytDlpResult.carouselItems.length === 0) {
+    return fullCarousel;
+  }
+
+  // ytDlpResult has high-bitrate DASH video streams for the video slides
+  const ytVideos = ytDlpResult.carouselItems.filter((it) => it.type === "video");
+  let ytVideoIndex = 0;
+
+  const mergedItems: MediaChildItem[] = fullCarousel.carouselItems.map((item) => {
+    if (item.type === "video" && ytVideos[ytVideoIndex]) {
+      const ytVid = ytVideos[ytVideoIndex];
+      ytVideoIndex++;
+      return {
+        ...item,
+        resolutions: ytVid.resolutions.length > 0 ? ytVid.resolutions : item.resolutions,
+        thumbnailUrl: ytVid.thumbnailUrl || item.thumbnailUrl,
+        duration: ytVid.duration || item.duration,
+      };
+    }
+    return item;
+  });
+
+  return {
+    ...fullCarousel,
+    author: ytDlpResult.author || fullCarousel.author,
+    authorHandle: ytDlpResult.authorHandle || fullCarousel.authorHandle,
+    caption: fullCarousel.caption || ytDlpResult.caption,
+    carouselItems: mergedItems,
+    resolutions: mergedItems[0]?.resolutions || fullCarousel.resolutions,
+  };
 }
 
 /**
@@ -931,11 +1219,52 @@ export async function extractInstagramMedia(inputUrl: string, isSample = false):
     throw new Error("Invalid Instagram URL. Please provide a link in the format instagram.com/reel/..., instagram.com/p/..., or instagram.com/stories/...");
   }
 
-  // 2. Try Self-Hosted yt-dlp (Extracts Photos, Mixed Carousels, Reels & Videos via Polaris GraphQL & DASH)
+  // 1. Try Self-Hosted yt-dlp (Provides 1080p DASH video streams and polaris GraphQL dump)
   const ytDlpResult = await extractWithYtDlp(inputUrl);
-  if (ytDlpResult) return ytDlpResult;
 
-  // 3. Try Direct Mobile API with cookies (Fallback for authenticated private posts or specific formats)
+  // 2. Carousel Completeness Check:
+  // When yt-dlp falls back to video-only extraction (e.g. on datacenter IPs), it skips photos.
+  // If yt-dlp returned a carousel where ALL items are videos, we verify with extractViaEmbed to restore omitted photos.
+  const isVideoOnlyCarousel =
+    Boolean(ytDlpResult?.isCarousel) &&
+    Boolean(ytDlpResult?.carouselItems && ytDlpResult.carouselItems.length > 0) &&
+    Boolean(ytDlpResult?.carouselItems?.every((it) => it.type === "video"));
+
+  if (isVideoOnlyCarousel && ytDlpResult) {
+    try {
+      const embedResult = await extractViaEmbed(shortcode);
+      if (
+        embedResult?.isCarousel &&
+        embedResult.carouselItems &&
+        embedResult.carouselItems.length > ytDlpResult.carouselItems!.length
+      ) {
+        return mergeCarouselItems(embedResult, ytDlpResult);
+      }
+    } catch {
+      // Continue if embed extraction fails
+    }
+  }
+
+  // If yt-dlp returned a complete album with photos, or a single video/reel, return it
+  if (ytDlpResult && !isVideoOnlyCarousel) {
+    return ytDlpResult;
+  }
+
+  // 3. Try Public Embed Extractor (Extracts full photo carousels, mixed albums, and single photos without cookies)
+  const embedResult = await extractViaEmbed(shortcode);
+  if (embedResult) {
+    if (ytDlpResult && isVideoOnlyCarousel && embedResult.isCarousel) {
+      return mergeCarouselItems(embedResult, ytDlpResult);
+    }
+    return embedResult;
+  }
+
+  // If yt-dlp returned a video-only carousel and embed couldn't fetch more, still return yt-dlp videos
+  if (ytDlpResult) {
+    return ytDlpResult;
+  }
+
+  // 4. Try Direct Mobile API with cookies (Fallback for authenticated private posts or specific formats)
   const directResult = await extractViaDirectApi(shortcode);
   if (directResult) return directResult;
 
@@ -946,10 +1275,6 @@ export async function extractInstagramMedia(inputUrl: string, isSample = false):
   // 6. Try Direct GraphQL Query with cookies
   const graphResult = await extractViaGraphQL(shortcode);
   if (graphResult) return graphResult;
-
-  // 7. Try Public Embed Scrape
-  const embedResult = await extractViaEmbed(shortcode);
-  if (embedResult) return embedResult;
 
   // If all live methods were blocked by Instagram's login wall
   throw new Error(

@@ -406,17 +406,16 @@ export default function DeveloperPage() {
   // ---------------------------------------------------------------------------
   if (!isAuthenticated) {
     return (
-      <div className="page-wrapper" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: "20px" }}>
+      <div className="page-wrapper" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: "20px", background: "var(--bg-main, #f8fafc)" }}>
         <div
           style={{
             maxWidth: "420px",
             width: "100%",
-            background: "var(--card-bg, rgba(255,255,255,0.05))",
-            border: "1px solid var(--card-border, rgba(255,255,255,0.1))",
+            background: "var(--card-bg-elevated, #ffffff)",
+            border: "1px solid var(--card-border, rgba(0,0,0,0.08))",
             borderRadius: "20px",
             padding: "36px 30px",
-            boxShadow: "0 25px 60px -15px rgba(0,0,0,0.7)",
-            backdropFilter: "blur(24px)",
+            boxShadow: "0 20px 40px -10px rgba(0,0,0,0.08)",
             textAlign: "center",
           }}
         >
@@ -430,7 +429,7 @@ export default function DeveloperPage() {
               alignItems: "center",
               justifyContent: "center",
               margin: "0 auto 20px",
-              boxShadow: "0 10px 25px -5px rgba(236,72,153,0.5)",
+              boxShadow: "0 10px 25px -5px rgba(236,72,153,0.4)",
             }}
           >
             <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5">
@@ -439,19 +438,19 @@ export default function DeveloperPage() {
             </svg>
           </div>
 
-          <h1 style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--text-primary)", marginBottom: "8px" }}>
+          <h1 style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--text-primary, #0f172a)", marginBottom: "8px" }}>
             Developer Portal
           </h1>
-          <p style={{ fontSize: "0.88rem", color: "var(--text-secondary)", marginBottom: "24px" }}>
+          <p style={{ fontSize: "0.88rem", color: "var(--text-secondary, #475569)", marginBottom: "24px" }}>
             Enter your developer passcode to access analytics, language CMS, and system telemetry.
           </p>
 
           {authError && (
             <div
               style={{
-                background: "rgba(239,68,68,0.15)",
-                border: "1px solid rgba(239,68,68,0.3)",
-                color: "#fca5a5",
+                background: "rgba(239,68,68,0.1)",
+                border: "1px solid rgba(239,68,68,0.25)",
+                color: "#dc2626",
                 padding: "10px 14px",
                 borderRadius: "10px",
                 fontSize: "0.85rem",
@@ -465,7 +464,7 @@ export default function DeveloperPage() {
 
           <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             <div style={{ textAlign: "left" }}>
-              <label style={{ display: "block", fontSize: "0.8rem", fontWeight: 600, color: "var(--text-muted)", marginBottom: "6px" }}>
+              <label style={{ display: "block", fontSize: "0.8rem", fontWeight: 600, color: "var(--text-secondary, #475569)", marginBottom: "6px" }}>
                 Admin Secret Passcode
               </label>
               <input
@@ -477,9 +476,9 @@ export default function DeveloperPage() {
                   width: "100%",
                   padding: "12px 14px",
                   borderRadius: "12px",
-                  background: "rgba(0,0,0,0.3)",
-                  border: "1px solid var(--card-border, rgba(255,255,255,0.15))",
-                  color: "#fff",
+                  background: "#ffffff",
+                  border: "1px solid var(--card-border, rgba(0,0,0,0.14))",
+                  color: "var(--text-primary, #0f172a)",
                   fontSize: "0.95rem",
                   outline: "none",
                 }}
@@ -495,7 +494,7 @@ export default function DeveloperPage() {
                 onChange={(e) => setRememberMe(e.target.checked)}
                 style={{ accentColor: "#ec4899", cursor: "pointer" }}
               />
-              <label htmlFor="rememberMe" style={{ fontSize: "0.82rem", color: "var(--text-secondary)", cursor: "pointer" }}>
+              <label htmlFor="rememberMe" style={{ fontSize: "0.82rem", color: "var(--text-secondary, #475569)", cursor: "pointer" }}>
                 Remember session on this device
               </label>
             </div>
@@ -521,8 +520,8 @@ export default function DeveloperPage() {
             </button>
           </form>
 
-          <div style={{ marginTop: "24px", paddingTop: "18px", borderTop: "1px solid var(--card-border)" }}>
-            <Link href="/" style={{ color: "var(--text-muted)", fontSize: "0.85rem", textDecoration: "none" }}>
+          <div style={{ marginTop: "24px", paddingTop: "18px", borderTop: "1px solid var(--card-border, rgba(0,0,0,0.08))" }}>
+            <Link href="/" style={{ color: "var(--text-muted, #64748b)", fontSize: "0.85rem", textDecoration: "none" }}>
               ← Return to GramSave Home
             </Link>
           </div>
@@ -535,12 +534,12 @@ export default function DeveloperPage() {
   // 2. AUTHENTICATED DEVELOPER PORTAL
   // ---------------------------------------------------------------------------
   return (
-    <div className="page-wrapper" style={{ minHeight: "100vh", background: "var(--bg-primary, #0b0c10)" }}>
+    <div className="page-wrapper" style={{ minHeight: "100vh", background: "var(--bg-main, #f8fafc)", color: "var(--text-primary, #0f172a)" }}>
       {/* Top Header */}
       <header
         style={{
-          borderBottom: "1px solid var(--card-border, rgba(255,255,255,0.1))",
-          background: "var(--header-bg, rgba(11,12,16,0.92))",
+          borderBottom: "1px solid var(--card-border, rgba(0,0,0,0.08))",
+          background: "var(--header-bg, rgba(255,255,255,0.94))",
           backdropFilter: "blur(20px)",
           position: "sticky",
           top: 0,
@@ -553,7 +552,7 @@ export default function DeveloperPage() {
               <div className="logo-badge" style={{ width: "32px", height: "32px" }}>
                 <span style={{ fontSize: "16px" }}>⚡</span>
               </div>
-              <span className="brand-name" style={{ fontSize: "1.2rem" }}>
+              <span className="brand-name" style={{ fontSize: "1.2rem", color: "var(--text-primary, #0f172a)" }}>
                 Gram<span>Save</span>
               </span>
             </Link>
@@ -562,8 +561,8 @@ export default function DeveloperPage() {
                 fontSize: "0.75rem",
                 fontWeight: 700,
                 color: "#ec4899",
-                background: "rgba(236,72,153,0.15)",
-                border: "1px solid rgba(236,72,153,0.3)",
+                background: "rgba(236,72,153,0.12)",
+                border: "1px solid rgba(236,72,153,0.25)",
                 padding: "2px 8px",
                 borderRadius: "6px",
               }}
@@ -578,11 +577,13 @@ export default function DeveloperPage() {
               target="_blank"
               style={{
                 fontSize: "0.82rem",
-                color: "var(--text-secondary)",
+                color: "var(--text-secondary, #475569)",
                 textDecoration: "none",
                 padding: "6px 12px",
                 borderRadius: "8px",
-                border: "1px solid var(--card-border)",
+                border: "1px solid var(--card-border, rgba(0,0,0,0.1))",
+                background: "#ffffff",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
               }}
             >
               🌐 Open Site
@@ -591,12 +592,14 @@ export default function DeveloperPage() {
               onClick={() => verifySecret(passcode)}
               style={{
                 fontSize: "0.82rem",
-                background: "rgba(255,255,255,0.06)",
-                color: "#fff",
-                border: "1px solid var(--card-border)",
+                background: "#ffffff",
+                color: "var(--text-secondary, #475569)",
+                border: "1px solid var(--card-border, rgba(0,0,0,0.1))",
                 padding: "6px 12px",
                 borderRadius: "8px",
                 cursor: "pointer",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+                fontWeight: 500,
               }}
             >
               🔄 Refresh
@@ -605,9 +608,9 @@ export default function DeveloperPage() {
               onClick={handleResetAnalytics}
               style={{
                 fontSize: "0.82rem",
-                background: "rgba(245,158,11,0.15)",
-                color: "#f59e0b",
-                border: "1px solid rgba(245,158,11,0.3)",
+                background: "rgba(245,158,11,0.1)",
+                color: "#d97706",
+                border: "1px solid rgba(245,158,11,0.25)",
                 padding: "6px 12px",
                 borderRadius: "8px",
                 cursor: "pointer",
@@ -621,9 +624,9 @@ export default function DeveloperPage() {
               onClick={handleLogout}
               style={{
                 fontSize: "0.82rem",
-                background: "rgba(239,68,68,0.15)",
-                color: "#f87171",
-                border: "1px solid rgba(239,68,68,0.3)",
+                background: "rgba(239,68,68,0.1)",
+                color: "#dc2626",
+                border: "1px solid rgba(239,68,68,0.2)",
                 padding: "6px 12px",
                 borderRadius: "8px",
                 cursor: "pointer",
@@ -653,10 +656,10 @@ export default function DeveloperPage() {
                   padding: "12px 16px",
                   fontSize: "0.88rem",
                   fontWeight: isActive ? 700 : 500,
-                  color: isActive ? "#ec4899" : "var(--text-secondary)",
+                  color: isActive ? "#db2777" : "var(--text-secondary, #475569)",
                   background: "transparent",
                   border: "none",
-                  borderBottom: isActive ? "2px solid #ec4899" : "2px solid transparent",
+                  borderBottom: isActive ? "2px solid #db2777" : "2px solid transparent",
                   cursor: "pointer",
                   whiteSpace: "nowrap",
                   transition: "all 0.15s ease",
@@ -687,76 +690,80 @@ export default function DeveloperPage() {
             >
               <div
                 style={{
-                  background: "var(--card-bg, rgba(255,255,255,0.04))",
-                  border: "1px solid var(--card-border, rgba(255,255,255,0.1))",
+                  background: "var(--card-bg, #ffffff)",
+                  border: "1px solid var(--card-border, rgba(0,0,0,0.08))",
                   borderRadius: "16px",
                   padding: "20px",
+                  boxShadow: "0 4px 12px -2px rgba(0,0,0,0.04)",
                 }}
               >
-                <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>
+                <div style={{ fontSize: "0.8rem", color: "var(--text-muted, #64748b)", textTransform: "uppercase", fontWeight: 700 }}>
                   Total Site Visits
                 </div>
-                <div style={{ fontSize: "2rem", fontWeight: 800, color: "#fff", marginTop: "6px" }}>
+                <div style={{ fontSize: "2rem", fontWeight: 800, color: "var(--text-primary, #0f172a)", marginTop: "6px" }}>
                   {(analytics?.totalVisits || 0).toLocaleString()}
                 </div>
-                <div style={{ fontSize: "0.75rem", color: "#10b981", marginTop: "4px" }}>
+                <div style={{ fontSize: "0.75rem", color: "#059669", marginTop: "4px" }}>
                   ● Active traffic telemetry running
                 </div>
               </div>
 
               <div
                 style={{
-                  background: "var(--card-bg, rgba(255,255,255,0.04))",
-                  border: "1px solid var(--card-border, rgba(255,255,255,0.1))",
+                  background: "var(--card-bg, #ffffff)",
+                  border: "1px solid var(--card-border, rgba(0,0,0,0.08))",
                   borderRadius: "16px",
                   padding: "20px",
+                  boxShadow: "0 4px 12px -2px rgba(0,0,0,0.04)",
                 }}
               >
-                <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>
+                <div style={{ fontSize: "0.8rem", color: "var(--text-muted, #64748b)", textTransform: "uppercase", fontWeight: 700 }}>
                   Total Downloads
                 </div>
                 <div style={{ fontSize: "2rem", fontWeight: 800, color: "#ec4899", marginTop: "6px" }}>
                   {(analytics?.totalDownloads || 0).toLocaleString()}
                 </div>
-                <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "4px" }}>
+                <div style={{ fontSize: "0.75rem", color: "var(--text-secondary, #475569)", marginTop: "4px" }}>
                   Streams delivered via attachment proxy
                 </div>
               </div>
 
               <div
                 style={{
-                  background: "var(--card-bg, rgba(255,255,255,0.04))",
-                  border: "1px solid var(--card-border, rgba(255,255,255,0.1))",
+                  background: "var(--card-bg, #ffffff)",
+                  border: "1px solid var(--card-border, rgba(0,0,0,0.08))",
                   borderRadius: "16px",
                   padding: "20px",
+                  boxShadow: "0 4px 12px -2px rgba(0,0,0,0.04)",
                 }}
               >
-                <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>
+                <div style={{ fontSize: "0.8rem", color: "var(--text-muted, #64748b)", textTransform: "uppercase", fontWeight: 700 }}>
                   Active Languages
                 </div>
-                <div style={{ fontSize: "2rem", fontWeight: 800, color: "#38bdf8", marginTop: "6px" }}>
-                  {languages.filter((l) => l.active).length} <span style={{ fontSize: "1rem", color: "var(--text-muted)" }}>/ {languages.length}</span>
+                <div style={{ fontSize: "2rem", fontWeight: 800, color: "#0284c7", marginTop: "6px" }}>
+                  {languages.filter((l) => l.active).length} <span style={{ fontSize: "1rem", color: "var(--text-muted, #64748b)" }}>/ {languages.length}</span>
                 </div>
-                <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "4px" }}>
+                <div style={{ fontSize: "0.75rem", color: "var(--text-secondary, #475569)", marginTop: "4px" }}>
                   Configured in site CMS
                 </div>
               </div>
 
               <div
                 style={{
-                  background: "var(--card-bg, rgba(255,255,255,0.04))",
-                  border: "1px solid var(--card-border, rgba(255,255,255,0.1))",
+                  background: "var(--card-bg, #ffffff)",
+                  border: "1px solid var(--card-border, rgba(0,0,0,0.08))",
                   borderRadius: "16px",
                   padding: "20px",
+                  boxShadow: "0 4px 12px -2px rgba(0,0,0,0.04)",
                 }}
               >
-                <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", textTransform: "uppercase", fontWeight: 700 }}>
+                <div style={{ fontSize: "0.8rem", color: "var(--text-muted, #64748b)", textTransform: "uppercase", fontWeight: 700 }}>
                   Engine Health
                 </div>
-                <div style={{ fontSize: "1.25rem", fontWeight: 800, color: "#10b981", marginTop: "10px", display: "flex", alignItems: "center", gap: "6px" }}>
+                <div style={{ fontSize: "1.25rem", fontWeight: 800, color: "#059669", marginTop: "10px", display: "flex", alignItems: "center", gap: "6px" }}>
                   <span>✓ 100% Operational</span>
                 </div>
-                <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "6px" }}>
+                <div style={{ fontSize: "0.75rem", color: "var(--text-secondary, #475569)", marginTop: "6px" }}>
                   FFmpeg Muxer + yt-dlp Core
                 </div>
               </div>
@@ -767,13 +774,14 @@ export default function DeveloperPage() {
               {/* Media Distribution */}
               <div
                 style={{
-                  background: "var(--card-bg, rgba(255,255,255,0.04))",
-                  border: "1px solid var(--card-border, rgba(255,255,255,0.1))",
+                  background: "var(--card-bg, #ffffff)",
+                  border: "1px solid var(--card-border, rgba(0,0,0,0.08))",
                   borderRadius: "16px",
                   padding: "24px",
+                  boxShadow: "0 4px 12px -2px rgba(0,0,0,0.04)",
                 }}
               >
-                <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "#fff", marginBottom: "16px" }}>
+                <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--text-primary, #0f172a)", marginBottom: "16px" }}>
                   Downloads by Media Format
                 </h3>
                 {analytics?.downloadsByType &&
@@ -792,14 +800,14 @@ export default function DeveloperPage() {
                     return (
                       <div key={type} style={{ marginBottom: "14px" }}>
                         <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.85rem", marginBottom: "4px" }}>
-                          <span style={{ textTransform: "capitalize", fontWeight: 600, color: "var(--text-primary)" }}>
+                          <span style={{ textTransform: "capitalize", fontWeight: 600, color: "var(--text-primary, #0f172a)" }}>
                             {type}
                           </span>
-                          <span style={{ color: "var(--text-secondary)" }}>
+                          <span style={{ color: "var(--text-secondary, #475569)" }}>
                             {count} downloads ({pct}%)
                           </span>
                         </div>
-                        <div style={{ height: "8px", borderRadius: "4px", background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
+                        <div style={{ height: "8px", borderRadius: "4px", background: "var(--bg-tertiary, #f1f5f9)", overflow: "hidden" }}>
                           <div style={{ height: "100%", width: `${pct}%`, background: barColor, borderRadius: "4px" }}></div>
                         </div>
                       </div>
@@ -810,13 +818,14 @@ export default function DeveloperPage() {
               {/* Traffic Sources */}
               <div
                 style={{
-                  background: "var(--card-bg, rgba(255,255,255,0.04))",
-                  border: "1px solid var(--card-border, rgba(255,255,255,0.1))",
+                  background: "var(--card-bg, #ffffff)",
+                  border: "1px solid var(--card-border, rgba(0,0,0,0.08))",
                   borderRadius: "16px",
                   padding: "24px",
+                  boxShadow: "0 4px 12px -2px rgba(0,0,0,0.04)",
                 }}
               >
-                <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "#fff", marginBottom: "16px" }}>
+                <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--text-primary, #0f172a)", marginBottom: "16px" }}>
                   Traffic Referrals
                 </h3>
                 {analytics?.trafficSources &&
@@ -826,15 +835,15 @@ export default function DeveloperPage() {
                     return (
                       <div key={src} style={{ marginBottom: "14px" }}>
                         <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.85rem", marginBottom: "4px" }}>
-                          <span style={{ textTransform: "capitalize", fontWeight: 600, color: "var(--text-primary)" }}>
+                          <span style={{ textTransform: "capitalize", fontWeight: 600, color: "var(--text-primary, #0f172a)" }}>
                             {src}
                           </span>
-                          <span style={{ color: "var(--text-secondary)" }}>
+                          <span style={{ color: "var(--text-secondary, #475569)" }}>
                             {count} visits ({pct}%)
                           </span>
                         </div>
-                        <div style={{ height: "8px", borderRadius: "4px", background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
-                          <div style={{ height: "100%", width: `${pct}%`, background: "#38bdf8", borderRadius: "4px" }}></div>
+                        <div style={{ height: "8px", borderRadius: "4px", background: "var(--bg-tertiary, #f1f5f9)", overflow: "hidden" }}>
+                          <div style={{ height: "100%", width: `${pct}%`, background: "#0284c7", borderRadius: "4px" }}></div>
                         </div>
                       </div>
                     );
@@ -844,17 +853,18 @@ export default function DeveloperPage() {
               {/* Visitor Geographies */}
               <div
                 style={{
-                  background: "var(--card-bg, rgba(255,255,255,0.04))",
-                  border: "1px solid var(--card-border, rgba(255,255,255,0.1))",
+                  background: "var(--card-bg, #ffffff)",
+                  border: "1px solid var(--card-border, rgba(0,0,0,0.08))",
                   borderRadius: "16px",
                   padding: "24px",
+                  boxShadow: "0 4px 12px -2px rgba(0,0,0,0.04)",
                 }}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-                  <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "#fff" }}>
+                  <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--text-primary, #0f172a)" }}>
                     🌍 Top Visitor Countries
                   </h3>
-                  <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Edge Geo-IP</span>
+                  <span style={{ fontSize: "0.75rem", color: "var(--text-muted, #64748b)" }}>Edge Geo-IP</span>
                 </div>
                 {analytics?.topCountries &&
                   Object.entries(analytics.topCountries)
@@ -882,15 +892,15 @@ export default function DeveloperPage() {
                       return (
                         <div key={countryCode} style={{ marginBottom: "14px" }}>
                           <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.85rem", marginBottom: "4px" }}>
-                            <span style={{ fontWeight: 600, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "6px" }}>
+                            <span style={{ fontWeight: 600, color: "var(--text-primary, #0f172a)", display: "flex", alignItems: "center", gap: "6px" }}>
                               <span>{meta.flag}</span>
                               <span>{meta.name}</span>
                             </span>
-                            <span style={{ color: "var(--text-secondary)" }}>
+                            <span style={{ color: "var(--text-secondary, #475569)" }}>
                               {count} visits ({pct}%)
                             </span>
                           </div>
-                          <div style={{ height: "8px", borderRadius: "4px", background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
+                          <div style={{ height: "8px", borderRadius: "4px", background: "var(--bg-tertiary, #f1f5f9)", overflow: "hidden" }}>
                             <div style={{ height: "100%", width: `${pct}%`, background: "linear-gradient(90deg, #10b981, #06b6d4)", borderRadius: "4px" }}></div>
                           </div>
                         </div>
@@ -902,17 +912,18 @@ export default function DeveloperPage() {
             {/* Recent Live Activity Stream */}
             <div
               style={{
-                background: "var(--card-bg, rgba(255,255,255,0.04))",
-                border: "1px solid var(--card-border, rgba(255,255,255,0.1))",
+                background: "var(--card-bg, #ffffff)",
+                border: "1px solid var(--card-border, rgba(0,0,0,0.08))",
                 borderRadius: "16px",
                 padding: "24px",
+                boxShadow: "0 4px 12px -2px rgba(0,0,0,0.04)",
               }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-                <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "#fff" }}>
+                <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--text-primary, #0f172a)" }}>
                   Recent Activity Log
                 </h3>
-                <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>
+                <span style={{ fontSize: "0.78rem", color: "var(--text-muted, #64748b)" }}>
                   Showing last {analytics?.recentActivity?.length || 0} events
                 </span>
               </div>
@@ -920,7 +931,7 @@ export default function DeveloperPage() {
               <div style={{ overflowX: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem", textAlign: "left" }}>
                   <thead>
-                    <tr style={{ borderBottom: "1px solid var(--card-border)", color: "var(--text-muted)" }}>
+                    <tr style={{ background: "var(--bg-tertiary, #f8fafc)", borderBottom: "1px solid var(--card-border, rgba(0,0,0,0.08))", color: "var(--text-muted, #64748b)" }}>
                       <th style={{ padding: "10px" }}>Event</th>
                       <th style={{ padding: "10px" }}>Format</th>
                       <th style={{ padding: "10px" }}>Quality / Detail</th>
@@ -931,7 +942,7 @@ export default function DeveloperPage() {
                   <tbody>
                     {analytics?.recentActivity && analytics.recentActivity.length > 0 ? (
                       analytics.recentActivity.map((ev) => (
-                        <tr key={ev.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                        <tr key={ev.id} style={{ borderBottom: "1px solid rgba(0,0,0,0.05)" }}>
                           <td style={{ padding: "10px" }}>
                             <span
                               style={{
@@ -939,22 +950,22 @@ export default function DeveloperPage() {
                                 borderRadius: "4px",
                                 fontSize: "0.75rem",
                                 fontWeight: 700,
-                                background: ev.type === "download" ? "rgba(236,72,153,0.15)" : "rgba(56,189,248,0.15)",
-                                color: ev.type === "download" ? "#ec4899" : "#38bdf8",
+                                background: ev.type === "download" ? "rgba(236,72,153,0.12)" : "rgba(2,132,199,0.12)",
+                                color: ev.type === "download" ? "#db2777" : "#0284c7",
                               }}
                             >
                               {ev.type.toUpperCase()}
                             </span>
                           </td>
-                          <td style={{ padding: "10px", textTransform: "capitalize", fontWeight: 600 }}>{ev.format || "reel"}</td>
-                          <td style={{ padding: "10px", color: "var(--text-secondary)" }}>{ev.quality || "-"}</td>
-                          <td style={{ padding: "10px", color: "var(--text-muted)", fontFamily: "monospace" }}>{ev.ipMasked || "anonymized"}</td>
-                          <td style={{ padding: "10px", color: "var(--text-muted)" }}>{new Date(ev.timestamp).toLocaleTimeString()}</td>
+                          <td style={{ padding: "10px", textTransform: "capitalize", fontWeight: 600, color: "var(--text-primary, #0f172a)" }}>{ev.format || "reel"}</td>
+                          <td style={{ padding: "10px", color: "var(--text-secondary, #475569)" }}>{ev.quality || "-"}</td>
+                          <td style={{ padding: "10px", color: "var(--text-muted, #64748b)", fontFamily: "monospace" }}>{ev.ipMasked || "anonymized"}</td>
+                          <td style={{ padding: "10px", color: "var(--text-muted, #64748b)" }}>{new Date(ev.timestamp).toLocaleTimeString()}</td>
                         </tr>
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={5} style={{ padding: "20px", textAlign: "center", color: "var(--text-muted)" }}>
+                        <td colSpan={5} style={{ padding: "20px", textAlign: "center", color: "var(--text-muted, #64748b)" }}>
                           No activity recorded yet.
                         </td>
                       </tr>
@@ -974,19 +985,20 @@ export default function DeveloperPage() {
             {/* CMS Top Controls & Actions */}
             <div
               style={{
-                background: "var(--card-bg, rgba(255,255,255,0.04))",
-                border: "1px solid var(--card-border, rgba(255,255,255,0.1))",
+                background: "var(--card-bg, #ffffff)",
+                border: "1px solid var(--card-border, rgba(0,0,0,0.08))",
                 borderRadius: "16px",
                 padding: "20px",
                 marginBottom: "20px",
+                boxShadow: "0 4px 12px -2px rgba(0,0,0,0.04)",
               }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px", marginBottom: "16px" }}>
                 <div>
-                  <h2 style={{ fontSize: "1.25rem", fontWeight: 700, color: "#fff", marginBottom: "4px" }}>
+                  <h2 style={{ fontSize: "1.25rem", fontWeight: 700, color: "var(--text-primary, #0f172a)", marginBottom: "4px" }}>
                     Website Language &amp; Text CMS
                   </h2>
-                  <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>
+                  <p style={{ fontSize: "0.85rem", color: "var(--text-secondary, #475569)" }}>
                     View, edit, and add text in every language across all pages. Changes are saved immediately.
                   </p>
                 </div>
@@ -995,9 +1007,9 @@ export default function DeveloperPage() {
                   <button
                     onClick={() => setShowAddStringModal(true)}
                     style={{
-                      background: "rgba(255,255,255,0.06)",
-                      border: "1px solid var(--card-border)",
-                      color: "#fff",
+                      background: "var(--bg-tertiary, #f1f5f9)",
+                      border: "1px solid var(--card-border, rgba(0,0,0,0.1))",
+                      color: "var(--text-primary, #0f172a)",
                       padding: "8px 14px",
                       borderRadius: "10px",
                       fontSize: "0.85rem",
@@ -1040,9 +1052,9 @@ export default function DeveloperPage() {
                         gap: "6px",
                         padding: "8px 14px",
                         borderRadius: "10px",
-                        background: isSelected ? "rgba(236,72,153,0.18)" : "rgba(255,255,255,0.04)",
-                        border: isSelected ? "1px solid #ec4899" : "1px solid var(--card-border)",
-                        color: isSelected ? "#fff" : "var(--text-secondary)",
+                        background: isSelected ? "rgba(236,72,153,0.12)" : "var(--bg-tertiary, #f1f5f9)",
+                        border: isSelected ? "1px solid #ec4899" : "1px solid var(--card-border, rgba(0,0,0,0.08))",
+                        color: isSelected ? "#db2777" : "var(--text-secondary, #475569)",
                         fontWeight: isSelected ? 700 : 500,
                         fontSize: "0.85rem",
                         cursor: "pointer",
@@ -1051,10 +1063,10 @@ export default function DeveloperPage() {
                     >
                       <span style={{ fontSize: "1.1rem" }}>{l.flag}</span>
                       <span>{l.name}</span>
-                      <span style={{ fontSize: "0.72rem", color: isSelected ? "#ec4899" : "var(--text-muted)", textTransform: "uppercase" }}>
+                      <span style={{ fontSize: "0.72rem", color: isSelected ? "#db2777" : "var(--text-muted, #64748b)", textTransform: "uppercase" }}>
                         ({l.code})
                       </span>
-                      {!l.active && <span style={{ fontSize: "0.65rem", background: "rgba(239,68,68,0.2)", color: "#f87171", padding: "1px 4px", borderRadius: "4px" }}>off</span>}
+                      {!l.active && <span style={{ fontSize: "0.65rem", background: "rgba(239,68,68,0.15)", color: "#dc2626", padding: "1px 4px", borderRadius: "4px" }}>off</span>}
                     </button>
                   );
                 })}
@@ -1068,9 +1080,9 @@ export default function DeveloperPage() {
                   padding: "12px 18px",
                   borderRadius: "12px",
                   marginBottom: "20px",
-                  background: cmsMessage.type === "success" ? "rgba(16,185,129,0.15)" : "rgba(239,68,68,0.15)",
+                  background: cmsMessage.type === "success" ? "rgba(16,185,129,0.12)" : "rgba(239,68,68,0.12)",
                   border: `1px solid ${cmsMessage.type === "success" ? "rgba(16,185,129,0.3)" : "rgba(239,68,68,0.3)"}`,
-                  color: cmsMessage.type === "success" ? "#6ee7b7" : "#fca5a5",
+                  color: cmsMessage.type === "success" ? "#059669" : "#dc2626",
                   fontSize: "0.88rem",
                   fontWeight: 600,
                   display: "flex",
@@ -1103,11 +1115,12 @@ export default function DeveloperPage() {
                   style={{
                     padding: "8px 14px",
                     borderRadius: "10px",
-                    background: "rgba(0,0,0,0.3)",
-                    border: "1px solid var(--card-border)",
-                    color: "#fff",
+                    background: "#ffffff",
+                    border: "1px solid var(--card-border, rgba(0,0,0,0.12))",
+                    color: "var(--text-primary, #0f172a)",
                     fontSize: "0.85rem",
                     minWidth: "240px",
+                    outline: "none",
                   }}
                 />
 
@@ -1117,11 +1130,12 @@ export default function DeveloperPage() {
                   style={{
                     padding: "8px 12px",
                     borderRadius: "10px",
-                    background: "rgba(0,0,0,0.3)",
-                    border: "1px solid var(--card-border)",
-                    color: "#fff",
+                    background: "#ffffff",
+                    border: "1px solid var(--card-border, rgba(0,0,0,0.12))",
+                    color: "var(--text-primary, #0f172a)",
                     fontSize: "0.85rem",
                     cursor: "pointer",
+                    outline: "none",
                   }}
                 >
                   <option value="all">All Sections ({stringKeys.length})</option>
@@ -1140,7 +1154,7 @@ export default function DeveloperPage() {
 
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 {Object.keys(editedStrings).length > 0 && (
-                  <span style={{ fontSize: "0.82rem", color: "#f59e0b", fontWeight: 600 }}>
+                  <span style={{ fontSize: "0.82rem", color: "#d97706", fontWeight: 600 }}>
                     ● {Object.keys(editedStrings).length} unsaved changes
                   </span>
                 )}
@@ -1150,9 +1164,9 @@ export default function DeveloperPage() {
                   style={{
                     padding: "9px 20px",
                     borderRadius: "10px",
-                    background: Object.keys(editedStrings).length > 0 ? "linear-gradient(135deg, #10b981, #059669)" : "rgba(255,255,255,0.06)",
-                    border: "none",
-                    color: "#fff",
+                    background: Object.keys(editedStrings).length > 0 ? "linear-gradient(135deg, #10b981, #059669)" : "var(--bg-tertiary, #f1f5f9)",
+                    border: Object.keys(editedStrings).length > 0 ? "none" : "1px solid var(--card-border, rgba(0,0,0,0.06))",
+                    color: Object.keys(editedStrings).length > 0 ? "#fff" : "var(--text-muted, #94a3b8)",
                     fontWeight: 700,
                     fontSize: "0.88rem",
                     cursor: Object.keys(editedStrings).length > 0 ? "pointer" : "default",
@@ -1168,16 +1182,17 @@ export default function DeveloperPage() {
             {/* Searchable Key-Value Table */}
             <div
               style={{
-                background: "var(--card-bg, rgba(255,255,255,0.04))",
-                border: "1px solid var(--card-border, rgba(255,255,255,0.1))",
+                background: "var(--card-bg, #ffffff)",
+                border: "1px solid var(--card-border, rgba(0,0,0,0.08))",
                 borderRadius: "16px",
                 overflow: "hidden",
+                boxShadow: "0 4px 12px -2px rgba(0,0,0,0.04)",
               }}
             >
               <div style={{ overflowX: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem", textAlign: "left" }}>
                   <thead>
-                    <tr style={{ background: "rgba(0,0,0,0.25)", borderBottom: "1px solid var(--card-border)", color: "var(--text-muted)" }}>
+                    <tr style={{ background: "var(--bg-tertiary, #f8fafc)", borderBottom: "1px solid var(--card-border, rgba(0,0,0,0.08))", color: "var(--text-muted, #64748b)" }}>
                       <th style={{ padding: "12px 16px", width: "22%" }}>String Key</th>
                       <th style={{ padding: "12px 16px", width: "35%" }}>Default (English)</th>
                       <th style={{ padding: "12px 16px", width: "43%" }}>
@@ -1196,16 +1211,16 @@ export default function DeveloperPage() {
                           <tr
                             key={key}
                             style={{
-                              borderBottom: "1px solid rgba(255,255,255,0.04)",
-                              background: isEdited ? "rgba(245,158,11,0.05)" : "transparent",
+                              borderBottom: "1px solid rgba(0,0,0,0.05)",
+                              background: isEdited ? "rgba(245,158,11,0.08)" : "transparent",
                             }}
                           >
                             <td style={{ padding: "12px 16px", verticalAlign: "top" }}>
-                              <span style={{ fontFamily: "monospace", fontSize: "0.8rem", color: "#ec4899", fontWeight: 600 }}>
+                              <span style={{ fontFamily: "monospace", fontSize: "0.8rem", color: "#db2777", fontWeight: 600 }}>
                                 {key}
                               </span>
                             </td>
-                            <td style={{ padding: "12px 16px", verticalAlign: "top", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                            <td style={{ padding: "12px 16px", verticalAlign: "top", color: "var(--text-secondary, #475569)", lineHeight: 1.5 }}>
                               {enVal}
                             </td>
                             <td style={{ padding: "12px 16px", verticalAlign: "top" }}>
@@ -1218,11 +1233,12 @@ export default function DeveloperPage() {
                                     width: "100%",
                                     padding: "8px 12px",
                                     borderRadius: "8px",
-                                    background: "rgba(0,0,0,0.3)",
-                                    border: isEdited ? "1px solid #f59e0b" : "1px solid var(--card-border)",
-                                    color: "#fff",
+                                    background: "#ffffff",
+                                    border: isEdited ? "1px solid #f59e0b" : "1px solid var(--card-border, rgba(0,0,0,0.12))",
+                                    color: "var(--text-primary, #0f172a)",
                                     fontSize: "0.85rem",
                                     resize: "vertical",
+                                    outline: "none",
                                   }}
                                 />
                               ) : (
@@ -1234,10 +1250,11 @@ export default function DeveloperPage() {
                                     width: "100%",
                                     padding: "7px 12px",
                                     borderRadius: "8px",
-                                    background: "rgba(0,0,0,0.3)",
-                                    border: isEdited ? "1px solid #f59e0b" : "1px solid var(--card-border)",
-                                    color: "#fff",
+                                    background: "#ffffff",
+                                    border: isEdited ? "1px solid #f59e0b" : "1px solid var(--card-border, rgba(0,0,0,0.12))",
+                                    color: "var(--text-primary, #0f172a)",
                                     fontSize: "0.85rem",
+                                    outline: "none",
                                   }}
                                 />
                               )}
@@ -1247,7 +1264,7 @@ export default function DeveloperPage() {
                       })
                     ) : (
                       <tr>
-                        <td colSpan={3} style={{ padding: "30px", textAlign: "center", color: "var(--text-muted)" }}>
+                        <td colSpan={3} style={{ padding: "30px", textAlign: "center", color: "var(--text-muted, #64748b)" }}>
                           No string keys match your filter.
                         </td>
                       </tr>
@@ -1274,14 +1291,15 @@ export default function DeveloperPage() {
               {/* yt-dlp Diagnostic */}
               <div
                 style={{
-                  background: "var(--card-bg, rgba(255,255,255,0.04))",
-                  border: "1px solid var(--card-border, rgba(255,255,255,0.1))",
+                  background: "var(--card-bg, #ffffff)",
+                  border: "1px solid var(--card-border, rgba(0,0,0,0.08))",
                   borderRadius: "16px",
                   padding: "24px",
+                  boxShadow: "0 4px 12px -2px rgba(0,0,0,0.04)",
                 }}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
-                  <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "#fff" }}>
+                  <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--text-primary, #0f172a)" }}>
                     yt-dlp Extraction Core
                   </h3>
                   <span
@@ -1290,17 +1308,17 @@ export default function DeveloperPage() {
                       fontWeight: 700,
                       padding: "3px 8px",
                       borderRadius: "6px",
-                      background: systemInfo?.ytdlp?.available ? "rgba(16,185,129,0.15)" : "rgba(239,68,68,0.15)",
-                      color: systemInfo?.ytdlp?.available ? "#10b981" : "#ef4444",
+                      background: systemInfo?.ytdlp?.available ? "rgba(16,185,129,0.12)" : "rgba(239,68,68,0.12)",
+                      color: systemInfo?.ytdlp?.available ? "#059669" : "#dc2626",
                     }}
                   >
                     {systemInfo?.ytdlp?.available ? "● Available" : "● Offline"}
                   </span>
                 </div>
-                <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "12px" }}>
-                  Version: <strong>{systemInfo?.ytdlp?.version || "Not detected"}</strong>
+                <p style={{ fontSize: "0.85rem", color: "var(--text-secondary, #475569)", marginBottom: "12px" }}>
+                  Version: <strong style={{ color: "var(--text-primary, #0f172a)" }}>{systemInfo?.ytdlp?.version || "Not detected"}</strong>
                 </p>
-                <p style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
+                <p style={{ fontSize: "0.8rem", color: "var(--text-muted, #64748b)" }}>
                   Primary high-fidelity media scraper used for reels, multi-slide sidecars, and stories.
                 </p>
               </div>
@@ -1308,14 +1326,15 @@ export default function DeveloperPage() {
               {/* FFmpeg Diagnostic */}
               <div
                 style={{
-                  background: "var(--card-bg, rgba(255,255,255,0.04))",
-                  border: "1px solid var(--card-border, rgba(255,255,255,0.1))",
+                  background: "var(--card-bg, #ffffff)",
+                  border: "1px solid var(--card-border, rgba(0,0,0,0.08))",
                   borderRadius: "16px",
                   padding: "24px",
+                  boxShadow: "0 4px 12px -2px rgba(0,0,0,0.04)",
                 }}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
-                  <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "#fff" }}>
+                  <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--text-primary, #0f172a)" }}>
                     FFmpeg Real-time Muxer
                   </h3>
                   <span
@@ -1324,17 +1343,17 @@ export default function DeveloperPage() {
                       fontWeight: 700,
                       padding: "3px 8px",
                       borderRadius: "6px",
-                      background: systemInfo?.ffmpeg?.available ? "rgba(16,185,129,0.15)" : "rgba(239,68,68,0.15)",
-                      color: systemInfo?.ffmpeg?.available ? "#10b981" : "#ef4444",
+                      background: systemInfo?.ffmpeg?.available ? "rgba(16,185,129,0.12)" : "rgba(239,68,68,0.12)",
+                      color: systemInfo?.ffmpeg?.available ? "#059669" : "#dc2626",
                     }}
                   >
                     {systemInfo?.ffmpeg?.available ? "● Operational" : "● Offline"}
                   </span>
                 </div>
-                <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "12px" }}>
-                  {systemInfo?.ffmpeg?.version || "Not detected"}
+                <p style={{ fontSize: "0.85rem", color: "var(--text-secondary, #475569)", marginBottom: "12px" }}>
+                  <strong style={{ color: "var(--text-primary, #0f172a)" }}>{systemInfo?.ffmpeg?.version || "Not detected"}</strong>
                 </p>
-                <p style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
+                <p style={{ fontSize: "0.8rem", color: "var(--text-muted, #64748b)" }}>
                   Muxes separate 1080p DASH video streams and AAC audio streams on-the-fly with zero temp disk writes.
                 </p>
               </div>
@@ -1342,19 +1361,20 @@ export default function DeveloperPage() {
               {/* Instagram Session Cookies Health Monitor */}
               <div
                 style={{
-                  background: "var(--card-bg, rgba(255,255,255,0.04))",
+                  background: "var(--card-bg, #ffffff)",
                   border:
                     systemInfo?.cookies?.status === "EXPIRING_SOON"
-                      ? "1px solid rgba(245,158,11,0.5)"
+                      ? "1px solid rgba(245,158,11,0.4)"
                       : systemInfo?.cookies?.status === "EXPIRED"
-                      ? "1px solid rgba(239,68,68,0.5)"
-                      : "1px solid var(--card-border, rgba(255,255,255,0.1))",
+                      ? "1px solid rgba(239,68,68,0.4)"
+                      : "1px solid var(--card-border, rgba(0,0,0,0.08))",
                   borderRadius: "16px",
                   padding: "24px",
+                  boxShadow: "0 4px 12px -2px rgba(0,0,0,0.04)",
                 }}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
-                  <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "#fff", display: "flex", alignItems: "center", gap: "8px" }}>
+                  <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--text-primary, #0f172a)", display: "flex", alignItems: "center", gap: "8px" }}>
                     <span>🍪</span>
                     <span>Instagram Session Cookies</span>
                   </h3>
@@ -1366,16 +1386,16 @@ export default function DeveloperPage() {
                       borderRadius: "6px",
                       background:
                         systemInfo?.cookies?.status === "HEALTHY"
-                          ? "rgba(16,185,129,0.15)"
+                          ? "rgba(16,185,129,0.12)"
                           : systemInfo?.cookies?.status === "EXPIRING_SOON"
-                          ? "rgba(245,158,11,0.15)"
-                          : "rgba(239,68,68,0.15)",
+                          ? "rgba(245,158,11,0.12)"
+                          : "rgba(239,68,68,0.12)",
                       color:
                         systemInfo?.cookies?.status === "HEALTHY"
-                          ? "#10b981"
+                          ? "#059669"
                           : systemInfo?.cookies?.status === "EXPIRING_SOON"
-                          ? "#f59e0b"
-                          : "#ef4444",
+                          ? "#d97706"
+                          : "#dc2626",
                     }}
                   >
                     {systemInfo?.cookies?.status === "HEALTHY"
@@ -1390,23 +1410,23 @@ export default function DeveloperPage() {
                   </span>
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "14px" }}>
-                  <div style={{ background: "rgba(0,0,0,0.25)", padding: "10px 12px", borderRadius: "10px", border: "1px solid var(--card-border)" }}>
-                    <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", textTransform: "uppercase" }}>Account ID</div>
-                    <div style={{ fontSize: "0.9rem", fontWeight: 700, color: "#fff", marginTop: "2px" }}>
+                  <div style={{ background: "var(--bg-tertiary, #f8fafc)", padding: "10px 12px", borderRadius: "10px", border: "1px solid var(--card-border, rgba(0,0,0,0.08))" }}>
+                    <div style={{ fontSize: "0.72rem", color: "var(--text-muted, #64748b)", textTransform: "uppercase" }}>Account ID</div>
+                    <div style={{ fontSize: "0.9rem", fontWeight: 700, color: "var(--text-primary, #0f172a)", marginTop: "2px" }}>
                       {systemInfo?.cookies?.userIdMasked || "Session Active"}
                     </div>
                   </div>
-                  <div style={{ background: "rgba(0,0,0,0.25)", padding: "10px 12px", borderRadius: "10px", border: "1px solid var(--card-border)" }}>
-                    <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", textTransform: "uppercase" }}>Expires On</div>
-                    <div style={{ fontSize: "0.9rem", fontWeight: 700, color: systemInfo?.cookies?.daysRemaining && systemInfo.cookies.daysRemaining < 14 ? "#f59e0b" : "#38bdf8", marginTop: "2px" }}>
+                  <div style={{ background: "var(--bg-tertiary, #f8fafc)", padding: "10px 12px", borderRadius: "10px", border: "1px solid var(--card-border, rgba(0,0,0,0.08))" }}>
+                    <div style={{ fontSize: "0.72rem", color: "var(--text-muted, #64748b)", textTransform: "uppercase" }}>Expires On</div>
+                    <div style={{ fontSize: "0.9rem", fontWeight: 700, color: systemInfo?.cookies?.daysRemaining && systemInfo.cookies.daysRemaining < 14 ? "#d97706" : "#0284c7", marginTop: "2px" }}>
                       {systemInfo?.cookies?.expiresAt || "Perpetual"}
                     </div>
                   </div>
                 </div>
-                <p style={{ fontSize: "0.82rem", color: "var(--text-secondary)", marginBottom: "6px" }}>
-                  Active Cookie Records: <strong>{systemInfo?.cookies?.lineCount || 0}</strong> ({systemInfo?.cookies?.sizeBytes ? `${Math.round(systemInfo.cookies.sizeBytes / 1024)} KB` : "0 KB"})
+                <p style={{ fontSize: "0.82rem", color: "var(--text-secondary, #475569)", marginBottom: "6px" }}>
+                  Active Cookie Records: <strong style={{ color: "var(--text-primary, #0f172a)" }}>{systemInfo?.cookies?.lineCount || 0}</strong> ({systemInfo?.cookies?.sizeBytes ? `${Math.round(systemInfo.cookies.sizeBytes / 1024)} KB` : "0 KB"})
                 </p>
-                <p style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>
+                <p style={{ fontSize: "0.78rem", color: "var(--text-muted, #64748b)" }}>
                   Health monitor warns you before cookies expire so you can paste fresh cookies without download interruptions.
                 </p>
               </div>
@@ -1414,21 +1434,22 @@ export default function DeveloperPage() {
               {/* Server Telemetry */}
               <div
                 style={{
-                  background: "var(--card-bg, rgba(255,255,255,0.04))",
-                  border: "1px solid var(--card-border, rgba(255,255,255,0.1))",
+                  background: "var(--card-bg, #ffffff)",
+                  border: "1px solid var(--card-border, rgba(0,0,0,0.08))",
                   borderRadius: "16px",
                   padding: "24px",
+                  boxShadow: "0 4px 12px -2px rgba(0,0,0,0.04)",
                 }}
               >
-                <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "#fff", marginBottom: "14px" }}>
+                <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--text-primary, #0f172a)", marginBottom: "14px" }}>
                   Server Environment
                 </h3>
-                <ul style={{ listStyle: "none", padding: 0, margin: 0, fontSize: "0.85rem", color: "var(--text-secondary)" }}>
-                  <li style={{ marginBottom: "8px" }}>Platform: <strong style={{ color: "#fff" }}>{systemInfo?.platform}</strong></li>
-                  <li style={{ marginBottom: "8px" }}>Node.js: <strong style={{ color: "#fff" }}>{systemInfo?.nodeVersion}</strong></li>
-                  <li style={{ marginBottom: "8px" }}>Memory: <strong style={{ color: "#fff" }}>{systemInfo?.memoryUsageMb} MB</strong></li>
-                  <li style={{ marginBottom: "8px" }}>Uptime: <strong style={{ color: "#fff" }}>{Math.round((systemInfo?.uptimeSeconds || 0) / 60)} minutes</strong></li>
-                  <li>Turnstile Bot Protection: <strong style={{ color: systemInfo?.turnstileEnabled ? "#10b981" : "#94a3b8" }}>{systemInfo?.turnstileEnabled ? "Active" : "Disabled (Direct Pass)"}</strong></li>
+                <ul style={{ listStyle: "none", padding: 0, margin: 0, fontSize: "0.85rem", color: "var(--text-secondary, #475569)" }}>
+                  <li style={{ marginBottom: "8px" }}>Platform: <strong style={{ color: "var(--text-primary, #0f172a)" }}>{systemInfo?.platform}</strong></li>
+                  <li style={{ marginBottom: "8px" }}>Node.js: <strong style={{ color: "var(--text-primary, #0f172a)" }}>{systemInfo?.nodeVersion}</strong></li>
+                  <li style={{ marginBottom: "8px" }}>Memory: <strong style={{ color: "var(--text-primary, #0f172a)" }}>{systemInfo?.memoryUsageMb} MB</strong></li>
+                  <li style={{ marginBottom: "8px" }}>Uptime: <strong style={{ color: "var(--text-primary, #0f172a)" }}>{Math.round((systemInfo?.uptimeSeconds || 0) / 60)} minutes</strong></li>
+                  <li>Turnstile Bot Protection: <strong style={{ color: systemInfo?.turnstileEnabled ? "#059669" : "#64748b" }}>{systemInfo?.turnstileEnabled ? "Active" : "Disabled (Direct Pass)"}</strong></li>
                 </ul>
               </div>
             </div>
@@ -1441,16 +1462,17 @@ export default function DeveloperPage() {
         {activeTab === "debugger" && (
           <div
             style={{
-              background: "var(--card-bg, rgba(255,255,255,0.04))",
-              border: "1px solid var(--card-border, rgba(255,255,255,0.1))",
+              background: "var(--card-bg, #ffffff)",
+              border: "1px solid var(--card-border, rgba(0,0,0,0.08))",
               borderRadius: "16px",
               padding: "24px",
+              boxShadow: "0 4px 12px -2px rgba(0,0,0,0.04)",
             }}
           >
-            <h2 style={{ fontSize: "1.25rem", fontWeight: 700, color: "#fff", marginBottom: "6px" }}>
+            <h2 style={{ fontSize: "1.25rem", fontWeight: 700, color: "var(--text-primary, #0f172a)", marginBottom: "6px" }}>
               Live URL Tester &amp; Link Inspector
             </h2>
-            <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "20px" }}>
+            <p style={{ fontSize: "0.85rem", color: "var(--text-secondary, #475569)", marginBottom: "20px" }}>
               Test any Instagram link in real-time to inspect exact scraper output, response latency, and available streams.
             </p>
 
@@ -1465,10 +1487,11 @@ export default function DeveloperPage() {
                   minWidth: "280px",
                   padding: "12px 16px",
                   borderRadius: "12px",
-                  background: "rgba(0,0,0,0.3)",
-                  border: "1px solid var(--card-border)",
-                  color: "#fff",
+                  background: "#ffffff",
+                  border: "1px solid var(--card-border, rgba(0,0,0,0.14))",
+                  color: "var(--text-primary, #0f172a)",
                   fontSize: "0.9rem",
+                  outline: "none",
                 }}
               />
               <button
@@ -1494,9 +1517,9 @@ export default function DeveloperPage() {
                 style={{
                   padding: "14px 18px",
                   borderRadius: "12px",
-                  background: "rgba(239,68,68,0.15)",
-                  border: "1px solid rgba(239,68,68,0.3)",
-                  color: "#fca5a5",
+                  background: "rgba(239,68,68,0.1)",
+                  border: "1px solid rgba(239,68,68,0.25)",
+                  color: "#dc2626",
                   fontSize: "0.88rem",
                   marginBottom: "20px",
                 }}
@@ -1508,15 +1531,15 @@ export default function DeveloperPage() {
             {debugResult !== null && (
               <div>
                 <div style={{ display: "flex", gap: "16px", alignItems: "center", marginBottom: "16px" }}>
-                  <span style={{ fontSize: "0.85rem", color: "#10b981", fontWeight: 700 }}>✓ Extracted Successfully</span>
-                  <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>Latency: {debugTimeMs} ms</span>
-                  <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>Type: {String(debugResult.type || "media")}</span>
+                  <span style={{ fontSize: "0.85rem", color: "#059669", fontWeight: 700 }}>✓ Extracted Successfully</span>
+                  <span style={{ fontSize: "0.85rem", color: "var(--text-muted, #64748b)" }}>Latency: {debugTimeMs} ms</span>
+                  <span style={{ fontSize: "0.85rem", color: "var(--text-muted, #64748b)" }}>Type: {String(debugResult.type || "media")}</span>
                 </div>
 
                 <div
                   style={{
-                    background: "rgba(0,0,0,0.5)",
-                    border: "1px solid var(--card-border)",
+                    background: "#0f172a",
+                    border: "1px solid rgba(0,0,0,0.12)",
                     borderRadius: "12px",
                     padding: "16px",
                     fontFamily: "monospace",
@@ -1539,16 +1562,17 @@ export default function DeveloperPage() {
         {activeTab === "bookmarklet" && (
           <div
             style={{
-              background: "var(--card-bg, rgba(255,255,255,0.04))",
-              border: "1px solid var(--card-border, rgba(255,255,255,0.1))",
+              background: "var(--card-bg, #ffffff)",
+              border: "1px solid var(--card-border, rgba(0,0,0,0.08))",
               borderRadius: "16px",
               padding: "28px",
+              boxShadow: "0 4px 12px -2px rgba(0,0,0,0.04)",
             }}
           >
-            <h2 style={{ fontSize: "1.25rem", fontWeight: 700, color: "#fff", marginBottom: "8px" }}>
+            <h2 style={{ fontSize: "1.25rem", fontWeight: 700, color: "var(--text-primary, #0f172a)", marginBottom: "8px" }}>
               1-Click Browser Bookmarklet
             </h2>
-            <p style={{ fontSize: "0.9rem", color: "var(--text-secondary)", marginBottom: "24px", maxWidth: "600px" }}>
+            <p style={{ fontSize: "0.9rem", color: "var(--text-secondary, #475569)", marginBottom: "24px", maxWidth: "600px" }}>
               Users can drag this button to their browser bookmarks bar. Whenever they browse Instagram on desktop, clicking it immediately opens GramSave and auto-extracts the post.
             </p>
 
@@ -1576,18 +1600,18 @@ export default function DeveloperPage() {
             </div>
 
             <div style={{ marginTop: "24px" }}>
-              <h4 style={{ fontSize: "0.95rem", fontWeight: 700, color: "#fff", marginBottom: "8px" }}>
+              <h4 style={{ fontSize: "0.95rem", fontWeight: 700, color: "var(--text-primary, #0f172a)", marginBottom: "8px" }}>
                 Bookmarklet JavaScript Code:
               </h4>
               <div
                 style={{
-                  background: "rgba(0,0,0,0.4)",
-                  border: "1px solid var(--card-border)",
+                  background: "var(--bg-tertiary, #f1f5f9)",
+                  border: "1px solid var(--card-border, rgba(0,0,0,0.08))",
                   borderRadius: "10px",
                   padding: "12px",
                   fontFamily: "monospace",
                   fontSize: "0.82rem",
-                  color: "#38bdf8",
+                  color: "#0284c7",
                   wordBreak: "break-all",
                 }}
               >
@@ -1606,7 +1630,7 @@ export default function DeveloperPage() {
           style={{
             position: "fixed",
             inset: 0,
-            background: "rgba(0,0,0,0.75)",
+            background: "rgba(15,23,42,0.45)",
             backdropFilter: "blur(8px)",
             display: "flex",
             alignItems: "center",
@@ -1617,25 +1641,25 @@ export default function DeveloperPage() {
         >
           <div
             style={{
-              background: "#181a20",
-              border: "1px solid var(--card-border)",
+              background: "#ffffff",
+              border: "1px solid var(--card-border, rgba(0,0,0,0.1))",
               borderRadius: "18px",
               padding: "28px",
               maxWidth: "460px",
               width: "100%",
-              boxShadow: "0 25px 60px rgba(0,0,0,0.8)",
+              boxShadow: "0 25px 60px rgba(0,0,0,0.12)",
             }}
           >
-            <h3 style={{ fontSize: "1.2rem", fontWeight: 700, color: "#fff", marginBottom: "6px" }}>
+            <h3 style={{ fontSize: "1.2rem", fontWeight: 700, color: "var(--text-primary, #0f172a)", marginBottom: "6px" }}>
               Add New Website Language
             </h3>
-            <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "20px" }}>
+            <p style={{ fontSize: "0.85rem", color: "var(--text-secondary, #475569)", marginBottom: "20px" }}>
               The new language will be populated with English defaults. You can then translate strings via the CMS.
             </p>
 
             <form onSubmit={handleAddLanguage} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
               <div>
-                <label style={{ display: "block", fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "4px" }}>
+                <label style={{ display: "block", fontSize: "0.8rem", color: "var(--text-secondary, #475569)", marginBottom: "4px" }}>
                   Language Code (e.g. de, it, ru, ja, zh)
                 </label>
                 <input
@@ -1648,15 +1672,16 @@ export default function DeveloperPage() {
                     width: "100%",
                     padding: "10px 12px",
                     borderRadius: "8px",
-                    background: "rgba(0,0,0,0.3)",
-                    border: "1px solid var(--card-border)",
-                    color: "#fff",
+                    background: "#ffffff",
+                    border: "1px solid var(--card-border, rgba(0,0,0,0.14))",
+                    color: "var(--text-primary, #0f172a)",
+                    outline: "none",
                   }}
                 />
               </div>
 
               <div>
-                <label style={{ display: "block", fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "4px" }}>
+                <label style={{ display: "block", fontSize: "0.8rem", color: "var(--text-secondary, #475569)", marginBottom: "4px" }}>
                   English Name (e.g. German)
                 </label>
                 <input
@@ -1669,15 +1694,16 @@ export default function DeveloperPage() {
                     width: "100%",
                     padding: "10px 12px",
                     borderRadius: "8px",
-                    background: "rgba(0,0,0,0.3)",
-                    border: "1px solid var(--card-border)",
-                    color: "#fff",
+                    background: "#ffffff",
+                    border: "1px solid var(--card-border, rgba(0,0,0,0.14))",
+                    color: "var(--text-primary, #0f172a)",
+                    outline: "none",
                   }}
                 />
               </div>
 
               <div>
-                <label style={{ display: "block", fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "4px" }}>
+                <label style={{ display: "block", fontSize: "0.8rem", color: "var(--text-secondary, #475569)", marginBottom: "4px" }}>
                   Native Name (e.g. Deutsch)
                 </label>
                 <input
@@ -1690,16 +1716,17 @@ export default function DeveloperPage() {
                     width: "100%",
                     padding: "10px 12px",
                     borderRadius: "8px",
-                    background: "rgba(0,0,0,0.3)",
-                    border: "1px solid var(--card-border)",
-                    color: "#fff",
+                    background: "#ffffff",
+                    border: "1px solid var(--card-border, rgba(0,0,0,0.14))",
+                    color: "var(--text-primary, #0f172a)",
+                    outline: "none",
                   }}
                 />
               </div>
 
               <div style={{ display: "flex", gap: "12px" }}>
                 <div style={{ flex: 1 }}>
-                  <label style={{ display: "block", fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "4px" }}>
+                  <label style={{ display: "block", fontSize: "0.8rem", color: "var(--text-secondary, #475569)", marginBottom: "4px" }}>
                     Flag Emoji (e.g. 🇩🇪)
                   </label>
                   <input
@@ -1711,16 +1738,17 @@ export default function DeveloperPage() {
                       width: "100%",
                       padding: "10px 12px",
                       borderRadius: "8px",
-                      background: "rgba(0,0,0,0.3)",
-                      border: "1px solid var(--card-border)",
-                      color: "#fff",
+                      background: "#ffffff",
+                      border: "1px solid var(--card-border, rgba(0,0,0,0.14))",
+                      color: "var(--text-primary, #0f172a)",
                       fontSize: "1.1rem",
+                      outline: "none",
                     }}
                   />
                 </div>
 
                 <div style={{ flex: 1 }}>
-                  <label style={{ display: "block", fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "4px" }}>
+                  <label style={{ display: "block", fontSize: "0.8rem", color: "var(--text-secondary, #475569)", marginBottom: "4px" }}>
                     Direction
                   </label>
                   <select
@@ -1730,9 +1758,10 @@ export default function DeveloperPage() {
                       width: "100%",
                       padding: "10px 12px",
                       borderRadius: "8px",
-                      background: "rgba(0,0,0,0.3)",
-                      border: "1px solid var(--card-border)",
-                      color: "#fff",
+                      background: "#ffffff",
+                      border: "1px solid var(--card-border, rgba(0,0,0,0.14))",
+                      color: "var(--text-primary, #0f172a)",
+                      outline: "none",
                     }}
                   >
                     <option value="ltr">LTR (Left-to-Right)</option>
@@ -1749,10 +1778,11 @@ export default function DeveloperPage() {
                     flex: 1,
                     padding: "10px",
                     borderRadius: "10px",
-                    background: "rgba(255,255,255,0.06)",
-                    border: "none",
-                    color: "#fff",
+                    background: "var(--bg-tertiary, #f1f5f9)",
+                    border: "1px solid var(--card-border, rgba(0,0,0,0.08))",
+                    color: "var(--text-secondary, #475569)",
                     cursor: "pointer",
+                    fontWeight: 600,
                   }}
                 >
                   Cancel
@@ -1787,7 +1817,7 @@ export default function DeveloperPage() {
           style={{
             position: "fixed",
             inset: 0,
-            background: "rgba(0,0,0,0.75)",
+            background: "rgba(15,23,42,0.45)",
             backdropFilter: "blur(8px)",
             display: "flex",
             alignItems: "center",
@@ -1798,24 +1828,25 @@ export default function DeveloperPage() {
         >
           <div
             style={{
-              background: "#181a20",
-              border: "1px solid var(--card-border)",
+              background: "#ffffff",
+              border: "1px solid var(--card-border, rgba(0,0,0,0.1))",
               borderRadius: "18px",
               padding: "28px",
               maxWidth: "460px",
               width: "100%",
+              boxShadow: "0 25px 60px rgba(0,0,0,0.12)",
             }}
           >
-            <h3 style={{ fontSize: "1.2rem", fontWeight: 700, color: "#fff", marginBottom: "6px" }}>
+            <h3 style={{ fontSize: "1.2rem", fontWeight: 700, color: "var(--text-primary, #0f172a)", marginBottom: "6px" }}>
               Add New Translation Key
             </h3>
-            <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "20px" }}>
+            <p style={{ fontSize: "0.85rem", color: "var(--text-secondary, #475569)", marginBottom: "20px" }}>
               Add a new string key into the translation dictionary for `{selectedLang.toUpperCase()}`.
             </p>
 
             <form onSubmit={handleAddCustomString} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
               <div>
-                <label style={{ display: "block", fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "4px" }}>
+                <label style={{ display: "block", fontSize: "0.8rem", color: "var(--text-secondary, #475569)", marginBottom: "4px" }}>
                   Key Name (e.g. promo_banner_text)
                 </label>
                 <input
@@ -1828,15 +1859,16 @@ export default function DeveloperPage() {
                     width: "100%",
                     padding: "10px 12px",
                     borderRadius: "8px",
-                    background: "rgba(0,0,0,0.3)",
-                    border: "1px solid var(--card-border)",
-                    color: "#fff",
+                    background: "#ffffff",
+                    border: "1px solid var(--card-border, rgba(0,0,0,0.14))",
+                    color: "var(--text-primary, #0f172a)",
+                    outline: "none",
                   }}
                 />
               </div>
 
               <div>
-                <label style={{ display: "block", fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "4px" }}>
+                <label style={{ display: "block", fontSize: "0.8rem", color: "var(--text-secondary, #475569)", marginBottom: "4px" }}>
                   Text Value
                 </label>
                 <textarea
@@ -1849,10 +1881,11 @@ export default function DeveloperPage() {
                     width: "100%",
                     padding: "10px 12px",
                     borderRadius: "8px",
-                    background: "rgba(0,0,0,0.3)",
-                    border: "1px solid var(--card-border)",
-                    color: "#fff",
+                    background: "#ffffff",
+                    border: "1px solid var(--card-border, rgba(0,0,0,0.14))",
+                    color: "var(--text-primary, #0f172a)",
                     resize: "vertical",
+                    outline: "none",
                   }}
                 />
               </div>
@@ -1865,10 +1898,11 @@ export default function DeveloperPage() {
                     flex: 1,
                     padding: "10px",
                     borderRadius: "10px",
-                    background: "rgba(255,255,255,0.06)",
-                    border: "none",
-                    color: "#fff",
+                    background: "var(--bg-tertiary, #f1f5f9)",
+                    border: "1px solid var(--card-border, rgba(0,0,0,0.08))",
+                    color: "var(--text-secondary, #475569)",
                     cursor: "pointer",
+                    fontWeight: 600,
                   }}
                 >
                   Cancel

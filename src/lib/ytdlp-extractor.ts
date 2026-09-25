@@ -471,18 +471,82 @@ function parsePolarisMedia(product: IgPolarisProduct, fallbackShortcode: string)
 
 function extractPolarisFromDump(stdout: string): IgPolarisProduct | null {
   try {
-    const lines = stdout.split("\n");
+    const lines = stdout.split(/\r?\n/);
+
+    // Helper to normalize any graphql payload into IgPolarisProduct
+    const normalizeProduct = (candidateData: any): IgPolarisProduct | null => {
+      if (!candidateData || typeof candidateData !== "object") return null;
+      let prod =
+        candidateData?.data?.xig_polaris_media?.if_not_gated_logged_out ||
+        candidateData?.data?.xig_polaris_media ||
+        candidateData?.data?.xdt_shortcode_media ||
+        candidateData?.data?.shortcode_media ||
+        candidateData?.shortcode_media ||
+        candidateData;
+
+      if (!prod || typeof prod !== "object") return null;
+
+      // If it has edge_sidecar_to_children (GraphQL format) but not carousel_media, normalize it
+      if (prod.edge_sidecar_to_children?.edges && !prod.carousel_media) {
+        prod.carousel_media = prod.edge_sidecar_to_children.edges.map((e: any) => {
+          const n = e.node || {};
+          const isVideo = Boolean(n.is_video);
+          return {
+            media_type: isVideo ? 2 : 1,
+            video_duration: n.video_duration,
+            image_versions2: {
+              candidates: n.display_url
+                ? [{ url: n.display_url, width: n.dimensions?.width, height: n.dimensions?.height }]
+                : [],
+            },
+            video_versions: n.video_url
+              ? [{ url: n.video_url, width: n.dimensions?.width, height: n.dimensions?.height }]
+              : [],
+          };
+        });
+      }
+
+      if (prod.carousel_media || prod.image_versions2 || prod.video_versions) {
+        return prod as IgPolarisProduct;
+      }
+      return null;
+    };
+
+    // 1. Check lines following graphql or api requests
     for (let i = 0; i < lines.length; i++) {
-      if (lines[i].includes("https://www.instagram.com/api/graphql")) {
-        const nextLine = lines[i + 1]?.trim();
-        if (nextLine && !nextLine.startsWith("[")) {
-          const jsonStr = Buffer.from(nextLine, "base64").toString("utf8");
-          const data = JSON.parse(jsonStr);
-          const product = data?.data?.xig_polaris_media?.if_not_gated_logged_out;
-          if (product && (product.carousel_media || product.image_versions2 || product.video_versions)) {
-            return product;
+      if (lines[i].includes("graphql") || lines[i].includes("api/v1")) {
+        for (let j = 1; j <= 5; j++) {
+          const candidate = lines[i + j]?.trim();
+          if (candidate && !candidate.startsWith("[") && candidate.length > 50) {
+            try {
+              const jsonStr = Buffer.from(candidate, "base64").toString("utf8");
+              if (jsonStr.startsWith("{") || jsonStr.startsWith("[")) {
+                const data = JSON.parse(jsonStr);
+                const prod = normalizeProduct(data);
+                if (prod) return prod;
+              }
+            } catch {}
           }
         }
+      }
+    }
+
+    // 2. Global scan for any large base64 block containing media
+    for (let i = 0; i < lines.length; i++) {
+      const candidate = lines[i].trim();
+      if (candidate.length > 500 && !candidate.startsWith("[") && !candidate.startsWith("{")) {
+        try {
+          const jsonStr = Buffer.from(candidate, "base64").toString("utf8");
+          if (
+            jsonStr.includes("carousel_media") ||
+            jsonStr.includes("image_versions2") ||
+            jsonStr.includes("edge_sidecar_to_children")
+          ) {
+            const data = JSON.parse(jsonStr);
+            const prod = normalizeProduct(data);
+            if (prod) return prod;
+          }
+        } catch {}
       }
     }
   } catch (e) {
