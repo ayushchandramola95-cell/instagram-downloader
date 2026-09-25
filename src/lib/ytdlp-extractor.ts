@@ -34,13 +34,6 @@ interface YtDlpOutput {
   entries?: YtDlpOutput[]; // For albums / carousels / stories
 }
 
-function cleanQualityLabel(height?: number, formatNote?: string): string {
-  if (height && height >= 1080) return "1080p Full HD • Best Quality";
-  if (height && height >= 720) return "720p HD • High Definition";
-  if (height && height >= 480) return "480p SD • Standard Quality";
-  if (formatNote && !formatNote.toLowerCase().includes("dash")) return formatNote;
-  return "Original Quality";
-}
 
 /**
  * Builds resolutions array from a single yt-dlp item
@@ -246,13 +239,266 @@ function buildResolutionsFromOutput(item: YtDlpOutput): MediaResolution[] {
   return resolutions;
 }
 
+interface IgCandidate {
+  url: string;
+  width?: number;
+  height?: number;
+}
+
+interface IgVideoVersion {
+  url: string;
+  width?: number;
+  height?: number;
+}
+
+interface IgCarouselItem {
+  pk?: string;
+  id?: string;
+  media_type: number; // 1 = photo, 2 = video
+  image_versions2?: {
+    candidates?: IgCandidate[];
+  };
+  video_versions?: IgVideoVersion[];
+  video_duration?: number;
+}
+
+interface IgPolarisProduct {
+  pk?: string;
+  id?: string;
+  code?: string;
+  media_type?: number;
+  user?: {
+    username?: string;
+    full_name?: string;
+    profile_pic_url?: string;
+  };
+  caption?: {
+    text?: string;
+  };
+  image_versions2?: {
+    candidates?: IgCandidate[];
+  };
+  video_versions?: IgVideoVersion[];
+  video_duration?: number;
+  carousel_media?: IgCarouselItem[];
+}
+
+function parsePolarisMedia(product: IgPolarisProduct, fallbackShortcode: string): ExtractedMedia | null {
+  const shortcode = product.code || fallbackShortcode;
+  const author = product.user?.full_name || product.user?.username || "Instagram Creator";
+  const authorHandle = `@${product.user?.username || "instagram_user"}`;
+  const authorAvatar = product.user?.profile_pic_url;
+  const caption = product.caption?.text || "Instagram Post";
+
+  // 1. Carousel Media (multi-photo, multi-video, or mixed)
+  if (product.carousel_media && product.carousel_media.length > 0) {
+    const carouselItems: MediaChildItem[] = product.carousel_media.map((child, idx) => {
+      const isVideo = child.media_type === 2;
+      const childResolutions: MediaResolution[] = [];
+
+      if (isVideo && child.video_versions && child.video_versions.length > 0) {
+        const sortedVideos = [...child.video_versions].sort((a, b) => (b.height || 0) - (a.height || 0));
+        sortedVideos.forEach((v, vIdx) => {
+          const isBest = vIdx === 0;
+          childResolutions.push({
+            label: v.height ? `${v.height}p Video` : `Video Stream #${vIdx + 1}`,
+            quality: isBest ? "Original Quality MP4" : `${v.height || "SD"}p Compressed MP4`,
+            size: isBest ? "HD Video" : "Standard",
+            type: "mp4",
+            downloadUrl: v.url,
+            width: v.width,
+            height: v.height,
+            isBest,
+          });
+        });
+
+        if (sortedVideos[0]) {
+          childResolutions.push({
+            label: "Audio Track (MP3)",
+            quality: "320 kbps Stereo Audio",
+            size: "320 kbps",
+            type: "mp3",
+            downloadUrl: sortedVideos[0].url,
+            bitrate: "320 kbps",
+          });
+        }
+      } else if (child.image_versions2?.candidates && child.image_versions2.candidates.length > 0) {
+        const allCandidates = [...child.image_versions2.candidates]
+          .filter((c) => c.url && (c.width || 0) >= 200)
+          .sort((a, b) => ((b.width || 0) * (b.height || 0)) - ((a.width || 0) * (a.height || 0)));
+        const candidatesToUse = allCandidates.length > 0 ? allCandidates : child.image_versions2.candidates;
+
+        candidatesToUse.forEach((c, cIdx) => {
+          const isOriginal = cIdx === 0;
+          childResolutions.push({
+            label: c.width && c.height ? `${c.width}x${c.height}` : (isOriginal ? "1080p Original" : `Photo #${cIdx + 1}`),
+            quality: isOriginal ? "Original Resolution • Lossless JPG" : `${c.width || "HD"} Compressed JPG`,
+            size: isOriginal ? "Original JPG" : "Compressed JPG",
+            type: "jpg",
+            downloadUrl: c.url,
+            width: c.width,
+            height: c.height,
+            isBest: isOriginal,
+          });
+        });
+      }
+
+      return {
+        id: `${shortcode}_${idx + 1}`,
+        index: idx + 1,
+        type: isVideo ? "video" : "photo",
+        thumbnailUrl: child.image_versions2?.candidates?.[0]?.url || "",
+        duration: isVideo && child.video_duration ? `${Math.round(child.video_duration)}s` : undefined,
+        width: isVideo ? child.video_versions?.[0]?.width : child.image_versions2?.candidates?.[0]?.width,
+        height: isVideo ? child.video_versions?.[0]?.height : child.image_versions2?.candidates?.[0]?.height,
+        resolutions: childResolutions,
+      };
+    });
+
+    return {
+      id: shortcode,
+      shortcode,
+      type: "album",
+      isCarousel: true,
+      author,
+      authorHandle,
+      authorAvatar,
+      caption,
+      thumbnailUrl: carouselItems[0]?.thumbnailUrl || "",
+      resolutions: carouselItems[0]?.resolutions || [],
+      carouselItems,
+    };
+  }
+
+  // 2. Single Photo
+  if (product.media_type === 1 || (!product.video_versions && product.image_versions2?.candidates)) {
+    const candidates = [...(product.image_versions2?.candidates || [])]
+      .filter((c) => c.url)
+      .sort((a, b) => ((b.width || 0) * (b.height || 0)) - ((a.width || 0) * (a.height || 0)));
+
+    if (candidates.length > 0) {
+      const resolutions: MediaResolution[] = candidates.map((c, idx) => {
+        const isBest = idx === 0;
+        return {
+          label: c.width && c.height ? `${c.width}x${c.height}` : (isBest ? "1080p Original" : `Resolution #${idx + 1}`),
+          quality: isBest ? "Original Resolution • Lossless JPG" : `${c.width || "HD"} Compressed JPG`,
+          size: isBest ? "Original Lossless" : "Standard",
+          type: "jpg",
+          downloadUrl: c.url,
+          width: c.width,
+          height: c.height,
+          isBest,
+        };
+      });
+
+      return {
+        id: shortcode,
+        shortcode,
+        type: "photo",
+        author,
+        authorHandle,
+        authorAvatar,
+        caption,
+        thumbnailUrl: candidates[0].url,
+        resolutions,
+      };
+    }
+  }
+
+  // 3. Single Video / Reel
+  if (product.video_versions && product.video_versions.length > 0) {
+    const sortedVideos = [...product.video_versions].sort((a, b) => (b.height || 0) - (a.height || 0));
+    const bestVideo = sortedVideos[0];
+    const resolutions: MediaResolution[] = [];
+
+    sortedVideos.forEach((v, idx) => {
+      const isBest = idx === 0;
+      resolutions.push({
+        label: v.height ? `${v.height}p Video` : (isBest ? "1080p Full HD" : "Standard Video"),
+        quality: isBest ? "Original HD MP4 • Best Quality" : "Compressed MP4",
+        size: isBest ? "High Bitrate" : "Optimized",
+        type: "mp4",
+        downloadUrl: v.url,
+        width: v.width,
+        height: v.height,
+        isBest,
+      });
+    });
+
+    if (bestVideo) {
+      resolutions.push({
+        label: "320 kbps Studio Audio",
+        quality: "High Fidelity Stereo MP3",
+        size: "320 kbps MP3",
+        type: "mp3",
+        downloadUrl: bestVideo.url,
+        bitrate: "320 kbps",
+      });
+      resolutions.push({
+        label: "256 kbps High Audio",
+        quality: "Standard Definition MP3",
+        size: "256 kbps MP3",
+        type: "mp3",
+        downloadUrl: bestVideo.url,
+        bitrate: "256 kbps",
+      });
+      resolutions.push({
+        label: "128 kbps Mobile Audio",
+        quality: "Compressed Mobile MP3",
+        size: "128 kbps MP3",
+        type: "mp3",
+        downloadUrl: bestVideo.url,
+        bitrate: "128 kbps",
+      });
+    }
+
+    return {
+      id: shortcode,
+      shortcode,
+      type: "reel",
+      author,
+      authorHandle,
+      authorAvatar,
+      caption,
+      thumbnailUrl: product.image_versions2?.candidates?.[0]?.url || "",
+      duration: product.video_duration ? `${Math.round(product.video_duration)}s` : undefined,
+      resolutions,
+    };
+  }
+
+  return null;
+}
+
+function extractPolarisFromDump(stdout: string): IgPolarisProduct | null {
+  try {
+    const lines = stdout.split("\n");
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].includes("https://www.instagram.com/api/graphql")) {
+        const nextLine = lines[i + 1]?.trim();
+        if (nextLine && !nextLine.startsWith("[")) {
+          const jsonStr = Buffer.from(nextLine, "base64").toString("utf8");
+          const data = JSON.parse(jsonStr);
+          const product = data?.data?.xig_polaris_media?.if_not_gated_logged_out;
+          if (product && (product.carousel_media || product.image_versions2 || product.video_versions)) {
+            return product;
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.warn("Polaris dump decode error:", e instanceof Error ? e.message : e);
+  }
+  return null;
+}
+
 /**
- * Executes self-hosted yt-dlp to extract direct CDN video links and metadata
+ * Executes self-hosted yt-dlp to extract direct CDN video/image links and metadata
  */
 export async function extractWithYtDlp(targetUrl: string): Promise<ExtractedMedia | null> {
   try {
     const args: string[] = [
-      "-j",
+      "--dump-pages",
+      "--ignore-errors",
       "--no-warnings",
       "--no-check-certificates",
       "--skip-download",
@@ -310,18 +556,74 @@ export async function extractWithYtDlp(targetUrl: string): Promise<ExtractedMedi
     // Path to yt-dlp binary (default 'yt-dlp' from PATH or env override)
     const ytDlpBinary = process.env.YT_DLP_BINARY_PATH || "yt-dlp";
 
-    // Run yt-dlp with a 15-second timeout
-    const { stdout } = await execFileAsync(ytDlpBinary, args, {
-      timeout: 15000,
-      maxBuffer: 15 * 1024 * 1024,
-    });
+    // Run yt-dlp with a 15-second timeout. If yt-dlp exits with 1 due to photo items, stdout still contains dumped pages.
+    let stdout = "";
+    try {
+      const res = await execFileAsync(ytDlpBinary, args, {
+        timeout: 15000,
+        maxBuffer: 50 * 1024 * 1024,
+      });
+      stdout = res.stdout;
+    } catch (err: unknown) {
+      const anyErr = err as { stdout?: string };
+      if (anyErr && typeof anyErr.stdout === "string" && anyErr.stdout.trim()) {
+        stdout = anyErr.stdout;
+      } else {
+        console.warn("yt-dlp execution error:", err instanceof Error ? err.message : err);
+        return null;
+      }
+    }
 
     if (!stdout || !stdout.trim()) {
       return null;
     }
 
+    const shortcodeMatch = targetUrl.match(/(?:reel|reels|p|tv|share|stories\/[^/]+)\/([a-zA-Z0-9_-]+)/);
+    const shortcodeFromUrl = shortcodeMatch ? shortcodeMatch[1] : "instagram_media";
+
+    // 1. Try decoding dumped Polaris GraphQL first (covers all photos, mixed carousels, and videos)
+    const polarisProduct = extractPolarisFromDump(stdout);
+    if (polarisProduct) {
+      const parsedPolaris = parsePolarisMedia(polarisProduct, shortcodeFromUrl);
+      if (parsedPolaris) {
+        return parsedPolaris;
+      }
+    }
+
+    // 2. Fallback to standard yt-dlp -j JSON extraction for videos if polaris dump is absent
+    let jsonStdout = stdout;
+    if (!jsonStdout.includes("{\"") && !jsonStdout.includes("{\n")) {
+      try {
+        const fallbackArgs = [
+          "-j",
+          "--no-warnings",
+          "--no-check-certificates",
+          "--skip-download",
+        ];
+        if (cookiesEnv && fs.existsSync(cookiesEnv)) {
+          fallbackArgs.push("--cookies", cookiesEnv);
+        } else if (fs.existsSync(defaultCookies)) {
+          fallbackArgs.push("--cookies", defaultCookies);
+        }
+        if (process.env.YT_DLP_PROXY) {
+          fallbackArgs.push("--proxy", process.env.YT_DLP_PROXY);
+        }
+        fallbackArgs.push("--user-agent", userAgent);
+        fallbackArgs.push(targetUrl);
+
+        const res = await execFileAsync(ytDlpBinary, fallbackArgs, {
+          timeout: 15000,
+          maxBuffer: 15 * 1024 * 1024,
+        });
+        jsonStdout = res.stdout;
+      } catch (err: unknown) {
+        const anyErr = err as { stdout?: string };
+        if (anyErr?.stdout) jsonStdout = anyErr.stdout;
+      }
+    }
+
     // yt-dlp can output multiple JSON lines for multi-item posts or playlists
-    const lines = stdout.trim().split("\n").filter((l) => l.trim().startsWith("{"));
+    const lines = jsonStdout.trim().split("\n").filter((l) => l.trim().startsWith("{"));
     if (lines.length === 0) return null;
 
     // Handle Carousel / Multi-item post
@@ -333,7 +635,6 @@ export async function extractWithYtDlp(targetUrl: string): Promise<ExtractedMedi
       const carouselItems: MediaChildItem[] = parsedItems.map((item, index) => {
         const itemResolutions = buildResolutionsFromOutput(item);
         const isVideo = item.ext === "mp4" || Boolean(item.formats?.some((f) => f.vcodec && f.vcodec !== "none"));
-        const downloadUrl = itemResolutions[0]?.downloadUrl || item.url || "";
 
         return {
           id: `${shortcode}_${index + 1}`,

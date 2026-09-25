@@ -52,7 +52,7 @@ export function validateInstagramUrl(inputUrl: string): UrlValidationResult {
     return { valid: false, error: "Please enter an Instagram URL or username." };
   }
 
-  let trimmed = inputUrl.trim();
+  const trimmed = inputUrl.trim();
   if (trimmed.length > 2048) {
     return { valid: false, error: "Input is excessively long." };
   }

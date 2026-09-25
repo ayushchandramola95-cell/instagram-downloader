@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
 import JSZip from "jszip";
 import { useTranslation } from "@/lib/i18n";
@@ -169,6 +169,9 @@ export default function DownloaderSection({
   const [audioCurrentTime, setAudioCurrentTime] = useState(0);
   const [audioDuration, setAudioDuration] = useState(0);
 
+  // Dedicated audio bitrate selection index (0 = 320kbps, 1 = 256kbps, 2 = 128kbps)
+  const [selectedAudioQualityIndex, setSelectedAudioQualityIndex] = useState<number>(0);
+
   // Auto-clipboard inspection when switching back to tab
   useEffect(() => {
     const checkClipboardOnFocus = async () => {
@@ -199,17 +202,6 @@ export default function DownloaderSection({
     return () => window.removeEventListener("focus", checkClipboardOnFocus);
   }, [url, dismissedClipboardUrl, result]);
 
-  // Auto-fetch if ?url=... query param is provided
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      const queryUrl = params.get("url");
-      if (queryUrl && !url) {
-        setUrl(queryUrl);
-        fetchMedia(queryUrl);
-      }
-    }
-  }, []);
 
   // Cloudflare Turnstile anti-bot state (optional)
   const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
@@ -259,9 +251,10 @@ export default function DownloaderSection({
 
   // Stop audio on unmount
   useEffect(() => {
+    const audioEl = audioRef.current;
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
+      if (audioEl) {
+        audioEl.pause();
       }
     };
   }, []);
@@ -275,6 +268,7 @@ export default function DownloaderSection({
     setUrl("");
     setError(null);
     setSelectedQualityIndex(0);
+    setSelectedAudioQualityIndex(0);
     setCarouselSelectedQualities({});
     setActiveShowcaseSlide(0);
 
@@ -417,6 +411,7 @@ export default function DownloaderSection({
       if (activeTab === "audio" || json.data.type === "audio") {
         const audioIdx = json.data.resolutions.findIndex((r) => r.type === "mp3");
         setSelectedQualityIndex(audioIdx !== -1 ? audioIdx : 0);
+        setSelectedAudioQualityIndex(0);
       } else {
         setSelectedQualityIndex(0);
       }
@@ -447,6 +442,22 @@ export default function DownloaderSection({
       setLoading(false);
     }
   };
+
+  // Auto-fetch if ?url=... query param is provided
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const queryUrl = params.get("url");
+      const isSampleParam = params.get("sample") === "true";
+      if (queryUrl && !url) {
+        setTimeout(() => {
+          setUrl(queryUrl);
+          void fetchMedia(queryUrl, isSampleParam);
+        }, 0);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -590,8 +601,9 @@ export default function DownloaderSection({
         setBatchDownloading(false);
         setBatchProgressText("");
       }, 2500);
-    } catch (err: any) {
-      setBatchProgressText(`ZIP Error: ${err.message || "Failed"}`);
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : "Failed";
+      setBatchProgressText(`ZIP Error: ${errMsg}`);
       setTimeout(() => {
         setBatchDownloading(false);
         setBatchProgressText("");
@@ -641,11 +653,50 @@ export default function DownloaderSection({
       result?.type === "audio" ||
       activeTab === "audio");
 
-  // Audio streaming URL for the preview player
+  // Audio streaming URL for the preview player & dedicated audio tracks
   const audioPreviewUrl = result?.resolutions.find((r) => r.type === "mp3")?.downloadUrl || currentResolution?.downloadUrl || "";
   const proxyAudioPreviewUrl = audioPreviewUrl.startsWith("http")
     ? `/api/download?url=${encodeURIComponent(audioPreviewUrl)}&filename=preview.mp3`
     : audioPreviewUrl;
+
+  // Filter or synthesize strictly MP3 audio options so video resolutions never appear in the audio bitrate selector
+  const audioResolutions: MediaResolution[] = useMemo(() => {
+    if (!result?.resolutions || result.resolutions.length === 0) return [];
+    const directMp3s = result.resolutions.filter((r) => r.type === "mp3");
+    if (directMp3s.length >= 2) return directMp3s;
+
+    // Fallback/standard: Provide the 3 standard bitrates from audio stream
+    const baseAudioUrl = directMp3s[0]?.downloadUrl || result.resolutions.find((r) => r.audioUrl)?.audioUrl || audioPreviewUrl;
+    return [
+      {
+        label: "320 kbps Studio Audio",
+        quality: "Ultra High Fidelity Stereo",
+        size: "320 kbps MP3",
+        type: "mp3" as const,
+        downloadUrl: baseAudioUrl,
+        bitrate: "320 kbps",
+      },
+      {
+        label: "256 kbps High Audio",
+        quality: "High Definition MP3",
+        size: "256 kbps MP3",
+        type: "mp3" as const,
+        downloadUrl: baseAudioUrl,
+        bitrate: "256 kbps",
+      },
+      {
+        label: "128 kbps Standard Audio",
+        quality: "Standard Definition MP3",
+        size: "128 kbps MP3",
+        type: "mp3" as const,
+        downloadUrl: baseAudioUrl,
+        bitrate: "128 kbps",
+      },
+    ];
+  }, [result, audioPreviewUrl]);
+
+  const currentAudioResolution: MediaResolution | undefined =
+    audioResolutions[selectedAudioQualityIndex] || audioResolutions[0] || currentResolution;
 
   return (
     <section className="hero container" id="downloader">
@@ -1516,7 +1567,7 @@ export default function DownloaderSection({
                   </div>
 
                   <span style={{ marginTop: "10px", fontSize: "0.8rem", fontWeight: 700, color: "#ec4899" }}>
-                    🎵 320 KBPS STEREO AUDIO
+                    🎵 {currentAudioResolution?.bitrate ? `${currentAudioResolution.bitrate.toUpperCase()} STEREO AUDIO` : "320 KBPS STEREO AUDIO"}
                   </span>
                 </div>
               </div>
@@ -1634,27 +1685,54 @@ export default function DownloaderSection({
                     </div>
                   </div>
 
-                  {/* Bitrate Toggle */}
-                  <div className="quality-toggle-container">
-                    <div className="quality-toggle-label">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                      </svg>
-                      <span>Select MP3 Audio Bitrate:</span>
+                  {/* Redesigned Premium Audio Bitrate Selector */}
+                  <div className="audio-bitrate-selector-container">
+                    <div className="audio-bitrate-header">
+                      <div className="audio-bitrate-title">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                        </svg>
+                        <span>Select MP3 Audio Bitrate:</span>
+                      </div>
+                      <span className="audio-bitrate-selected-pill">
+                        🎵 {currentAudioResolution?.bitrate || "320 kbps"} Stereo
+                      </span>
                     </div>
 
-                    <div className="quality-toggle-bar">
-                      {result.resolutions.map((res, idx) => (
-                        <button
-                          key={idx}
-                          type="button"
-                          className={`quality-toggle-pill ${selectedQualityIndex === idx ? "active" : ""}`}
-                          onClick={() => setSelectedQualityIndex(idx)}
-                        >
-                          <span>{res.type === "mp3" ? "🎵 " : ""}{res.label}</span>
-                        </button>
-                      ))}
+                    <div className="audio-bitrate-cards-grid">
+                      {audioResolutions.map((res, idx) => {
+                        const isSelected = selectedAudioQualityIndex === idx;
+                        const is320 = res.bitrate?.includes("320") || res.label.includes("320") || idx === 0;
+                        const is256 = res.bitrate?.includes("256") || res.label.includes("256") || idx === 1;
+                        const is128 = res.bitrate?.includes("128") || res.label.includes("128") || idx === 2;
+
+                        const badgeLabel = is320 ? "Master Quality" : is256 ? "High Quality" : "Fast / Mobile";
+                        const badgeIcon = is320 ? "⭐" : is256 ? "✨" : "⚡";
+                        const bitrateNum = is320 ? "320 kbps" : is256 ? "256 kbps" : is128 ? "128 kbps" : (res.bitrate || res.label);
+                        const subLabel = is320 ? "Studio Audio" : is256 ? "Crystal Clear" : "Standard MP3";
+
+                        return (
+                          <button
+                            key={idx}
+                            type="button"
+                            className={`audio-bitrate-card ${isSelected ? "selected" : ""}`}
+                            onClick={() => setSelectedAudioQualityIndex(idx)}
+                            aria-label={`Select ${bitrateNum} ${subLabel}`}
+                          >
+                            <div className="audio-bitrate-card-top">
+                              <span className={`audio-bitrate-badge ${isSelected ? "badge-active" : ""}`}>
+                                {badgeIcon} {badgeLabel}
+                              </span>
+                              <div className={`audio-radio-circle ${isSelected ? "radio-checked" : ""}`}>
+                                {isSelected && <span className="audio-radio-inner-dot"></span>}
+                              </div>
+                            </div>
+                            <div className="audio-bitrate-rate">{bitrateNum}</div>
+                            <div className="audio-bitrate-sub">{subLabel}</div>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -1662,11 +1740,11 @@ export default function DownloaderSection({
                   <div className="specs-strip">
                     <div className="spec-item">
                       <span className="spec-title">Audio Format</span>
-                      <span className="spec-value">MP3 Stereo (320kbps)</span>
+                      <span className="spec-value">MP3 Stereo ({currentAudioResolution?.bitrate || "320kbps"})</span>
                     </div>
                     <div className="spec-item">
-                      <span className="spec-title">Quality</span>
-                      <span className="spec-value">{currentResolution?.quality || "Ultra HD Fidelity"}</span>
+                      <span className="spec-title">Quality Tier</span>
+                      <span className="spec-value">{currentAudioResolution?.quality || "Ultra HD Fidelity"}</span>
                     </div>
                     <div className="spec-item">
                       <span className="spec-title">Channels</span>
@@ -1676,15 +1754,15 @@ export default function DownloaderSection({
                 </div>
 
                 {/* Primary Download Button */}
-                {currentResolution && (
+                {currentAudioResolution && (
                   <button
                     type="button"
                     className="primary-dl-card-btn"
                     style={{ background: "linear-gradient(135deg, #f97316 0%, #ec4899 100%)" }}
                     onClick={() =>
                       triggerDownload(
-                        currentResolution.downloadUrl,
-                        `gramsave_${result.id}_${currentResolution.label.replace(/\s+/g, "_")}.${currentResolution.type}`
+                        currentAudioResolution.downloadUrl,
+                        `gramsave_${result.id}_${(currentAudioResolution.bitrate || currentAudioResolution.label).replace(/[^a-zA-Z0-9]/g, "_")}.mp3`
                       )
                     }
                   >
@@ -1694,13 +1772,15 @@ export default function DownloaderSection({
                         <polyline points="7 10 12 15 17 10"></polyline>
                         <line x1="12" y1="15" x2="12" y2="3"></line>
                       </svg>
-                      <span style={{ fontWeight: 800, fontSize: "1.08rem" }}>Download Audio</span>
+                      <span style={{ fontWeight: 800, fontSize: "1.08rem" }}>
+                        Download {currentAudioResolution.bitrate || "320 kbps"} Audio
+                      </span>
                     </div>
                   </button>
                 )}
 
                 {/* Ringtone & Viral Snippet Extractor */}
-                {currentResolution && (
+                {currentAudioResolution && (
                   <div
                     style={{
                       marginTop: "16px",
@@ -1725,7 +1805,7 @@ export default function DownloaderSection({
                     <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
                       <button
                         type="button"
-                        onClick={() => handleDownloadRingtone(currentResolution, 15)}
+                        onClick={() => handleDownloadRingtone(currentAudioResolution, 15)}
                         style={{
                           flex: 1,
                           minWidth: "150px",
@@ -1749,7 +1829,7 @@ export default function DownloaderSection({
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleDownloadRingtone(currentResolution, 30)}
+                        onClick={() => handleDownloadRingtone(currentAudioResolution, 30)}
                         style={{
                           flex: 1,
                           minWidth: "150px",
@@ -1768,7 +1848,7 @@ export default function DownloaderSection({
                           transition: "all 0.2s ease",
                         }}
                       >
-                        <span>📱</span>
+                        <span>🔔</span>
                         <span>30s Story Sound (MP3)</span>
                       </button>
                     </div>

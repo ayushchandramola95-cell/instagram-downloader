@@ -102,7 +102,7 @@ async function extractProfileViaTopsearch(username: string): Promise<ExtractedMe
 
     // Find the exact matching user or first match
     const match =
-      users.find((u: any) => u.user?.username?.toLowerCase() === username.toLowerCase())?.user ||
+      users.find((u: { user?: { username?: string } }) => u.user?.username?.toLowerCase() === username.toLowerCase())?.user ||
       users[0]?.user;
 
     if (!match) return null;
@@ -117,7 +117,7 @@ async function extractProfileViaTopsearch(username: string): Promise<ExtractedMe
     let hdPicUrl = defaultPicUrl;
     let hdWidth = 1080;
     let hdHeight = 1080;
-    let mediaResolutions: MediaResolution[] = [];
+    const mediaResolutions: MediaResolution[] = [];
 
     // Try resolving HD master candidate using profile_pic_id
     if (match.profile_pic_id) {

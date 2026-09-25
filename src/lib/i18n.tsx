@@ -57,17 +57,19 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     // Detect preferred or saved language
     const saved = localStorage.getItem("gramsave_lang");
     if (saved && initialData.strings[saved as keyof typeof initialData.strings]) {
-      setCurrentLangState(saved);
+      setTimeout(() => setCurrentLangState(saved), 0);
     } else {
       // Check browser navigator language
       const browserLang = typeof navigator !== "undefined" ? navigator.language?.slice(0, 2).toLowerCase() : "en";
       const match = (initialData.languages as LanguageMeta[]).find((l) => l.code === browserLang && l.active);
       if (match) {
-        setCurrentLangState(match.code);
+        setTimeout(() => setCurrentLangState(match.code), 0);
       }
     }
 
-    reloadTranslations();
+    setTimeout(() => {
+      reloadTranslations();
+    }, 0);
 
     // Record page visit in analytics
     try {

@@ -11,7 +11,7 @@ interface HeaderProps {
   activeTab?: string;
 }
 
-export default function Header({ activeTab }: HeaderProps) {
+export default function Header({}: HeaderProps = {}) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [toolsDropdownOpen, setToolsDropdownOpen] = useState(false);
@@ -35,12 +35,13 @@ export default function Header({ activeTab }: HeaderProps) {
 
   // Primary top-level navigation links
   const primaryNavItems = [
-    { label: t("nav_home", "Home"), href: "/" },
-    { label: t("nav_reels", "Reels"), href: "/reels-downloader" },
-    { label: t("nav_stories", "Stories"), href: "/story-saver" },
+    { label: t("nav_home", "Home"), href: "/", icon: "🏠" },
+    { label: t("nav_reels", "Reels"), href: "/reels-downloader", icon: "🎬" },
+    { label: t("nav_stories", "Stories"), href: "/story-saver", icon: "⚡" },
     {
       label: t("nav_profile", "Profile DP"),
       href: "/profile-downloader",
+      icon: "👤",
       badge: "HD",
     },
   ];
@@ -106,13 +107,17 @@ export default function Header({ activeTab }: HeaderProps) {
     const devParam = params.get("dev") || params.get("admin");
     if (devParam === "true" || devParam === "admin" || devParam === "1") {
       localStorage.setItem("gramsave_dev_mode", "true");
-      setIsDevMode(true);
-      triggerToast("⚡ Developer Mode Unlocked!");
+      setTimeout(() => {
+        setIsDevMode(true);
+        triggerToast("⚡ Developer Mode Unlocked!");
+      }, 0);
       return;
     }
 
     if (hasSecret) {
-      setIsDevMode(true);
+      setTimeout(() => {
+        setIsDevMode(true);
+      }, 0);
     }
 
     // 3. Secret Hotkey: Ctrl + Shift + D (or Cmd + Shift + D) to toggle Dev Mode
@@ -139,7 +144,7 @@ export default function Header({ activeTab }: HeaderProps) {
   }, []);
 
   // Easter egg: Click brand logo 5 times in 2.5s to toggle Dev Mode
-  const handleLogoClick = (e: React.MouseEvent) => {
+  const handleLogoClick = () => {
     if (logoTimerRef.current) clearTimeout(logoTimerRef.current);
 
     const nextCount = logoClicks + 1;
@@ -311,53 +316,82 @@ export default function Header({ activeTab }: HeaderProps) {
         </div>
       </div>
 
-      {/* Mobile Drawer Menu */}
+      {/* Mobile Drawer Menu & Overlay */}
       {mobileMenuOpen && (
-        <div className="mobile-menu" id="mobile-navigation-drawer">
-          <div style={{ paddingBottom: "12px", borderBottom: "1px solid var(--card-border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text-secondary)" }}>Language</span>
-            <LanguageSelector />
-          </div>
+        <>
+          <div
+            className="mobile-menu-backdrop"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-hidden="true"
+          />
+          <div className="mobile-menu" id="mobile-navigation-drawer">
+            {/* Top row: Language dropdown */}
+            <div className="mobile-menu-header-row">
+              <span className="mobile-menu-label">Language</span>
+              <LanguageSelector />
+            </div>
 
-          {/* All format links in mobile drawer */}
-          {[...primaryNavItems, ...moreToolsItems].map((item) => {
-            const isActive = pathname === item.href;
-            return (
+            {/* Install App Quick Action (Mobile) */}
+            <div className="mobile-drawer-install-wrap">
+              <InstallAppButton />
+            </div>
+
+            {/* All format links in mobile drawer */}
+            <div className="mobile-menu-links-list">
+              {[...primaryNavItems, ...moreToolsItems].map((item) => {
+                const isActive = pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`mobile-nav-link ${isActive ? "active" : ""}`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <div className="mobile-nav-link-left">
+                      <span className="mobile-nav-icon">{item.icon}</span>
+                      <span className="mobile-nav-title">{item.label}</span>
+                    </div>
+                    {isActive ? (
+                      <span className="mobile-nav-current-pill">● Active</span>
+                    ) : "badge" in item && item.badge ? (
+                      <span className="nav-badge-new">{item.badge}</span>
+                    ) : (
+                      <span className="mobile-nav-arrow">→</span>
+                    )}
+                  </Link>
+                );
+              })}
+
               <Link
-                key={item.href}
-                href={item.href}
-                className={`mobile-nav-link ${isActive ? "active" : ""}`}
+                href="/#faq"
+                className="mobile-nav-link"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                <span>{item.label}</span>
-                {isActive && (
-                  <span style={{ fontSize: "0.75rem", color: "#ec4899", fontWeight: 700 }}>● Current</span>
-                )}
+                <div className="mobile-nav-link-left">
+                  <span className="mobile-nav-icon">❓</span>
+                  <span className="mobile-nav-title">{t("nav_faq", "FAQ")}</span>
+                </div>
+                <span className="mobile-nav-arrow">→</span>
               </Link>
-            );
-          })}
 
-          <Link
-            href="/#faq"
-            className="mobile-nav-link"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            <span>{t("nav_faq", "FAQ")}</span>
-          </Link>
-
-          {/* Dev button in mobile only if isDevMode */}
-          {isDevMode && (
-            <Link
-              href="/developer"
-              className="mobile-nav-link"
-              onClick={() => setMobileMenuOpen(false)}
-              style={{ color: "#ec4899", fontWeight: 700 }}
-            >
-              <span>⚡ Developer Dashboard (Private)</span>
-            </Link>
-          )}
-
-        </div>
+              {/* Dev button in mobile only if isDevMode */}
+              {isDevMode && (
+                <Link
+                  href="/developer"
+                  className="mobile-nav-link"
+                  onClick={() => setMobileMenuOpen(false)}
+                  style={{ color: "#ec4899", fontWeight: 700 }}
+                >
+                  <div className="mobile-nav-link-left">
+                    <span className="mobile-nav-icon">⚡</span>
+                    <span className="mobile-nav-title">Developer Dashboard (Private)</span>
+                  </div>
+                  <span className="mobile-nav-arrow">→</span>
+                </Link>
+              )}
+            </div>
+          </div>
+        </>
       )}
 
       {/* Secret Dev Mode Notification Toast */}

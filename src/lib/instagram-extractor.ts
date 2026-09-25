@@ -281,13 +281,32 @@ export async function extractViaDirectApi(shortcode: string): Promise<ExtractedM
 
     // 3. Carousel Album (media_type === 8)
     if (item.media_type === 8 && item.carousel_media) {
-      const carouselItems: MediaChildItem[] = item.carousel_media.map((child: any, idx: number) => {
+      interface VideoVersion {
+        height?: number;
+        width?: number;
+        url: string;
+      }
+      interface ImageCandidate {
+        width: number;
+        height: number;
+        url: string;
+      }
+      interface CarouselChild {
+        media_type?: number;
+        video_duration?: number;
+        video_versions?: VideoVersion[];
+        image_versions2?: {
+          candidates?: ImageCandidate[];
+        };
+      }
+
+      const carouselItems: MediaChildItem[] = (item.carousel_media as CarouselChild[]).map((child, idx: number) => {
         const isChildVideo = child.media_type === 2;
         const childResolutions: MediaResolution[] = [];
 
         if (isChildVideo && child.video_versions && child.video_versions.length > 0) {
-          const sortedVideos = [...child.video_versions].sort((a: any, b: any) => (b.height || 0) - (a.height || 0));
-          sortedVideos.forEach((v: any, vIdx: number) => {
+          const sortedVideos = [...child.video_versions].sort((a, b) => (b.height || 0) - (a.height || 0));
+          sortedVideos.forEach((v, vIdx: number) => {
             const isBest = vIdx === 0;
             childResolutions.push({
               label: v.height ? `${v.height}p Video` : `Video Stream #${vIdx + 1}`,
@@ -313,11 +332,11 @@ export async function extractViaDirectApi(shortcode: string): Promise<ExtractedM
           }
         } else if (child.image_versions2?.candidates?.[0]) {
           const allCandidates = (child.image_versions2.candidates || [])
-            .filter((c: any) => c.url && c.width && c.width >= 200)
-            .sort((a: any, b: any) => (b.width * b.height) - (a.width * a.height));
+            .filter((c) => c.url && c.width && c.width >= 200)
+            .sort((a, b) => (b.width * b.height) - (a.width * a.height));
           const candidatesToUse = allCandidates.length > 0 ? allCandidates : [child.image_versions2.candidates[0]];
 
-          candidatesToUse.forEach((c: any, cIdx: number) => {
+          candidatesToUse.forEach((c, cIdx: number) => {
             const isOriginal = cIdx === 0;
             childResolutions.push({
               label: `${c.width}x${c.height}`,
@@ -406,7 +425,9 @@ export async function extractUserStories(username: string): Promise<ExtractedMed
   });
 
   const reelsMedia = resStories.data?.reels_media || [];
-  const userReel = reelsMedia.find((r: any) => r.user?.pk == userId || r.id == userId) || reelsMedia[0];
+  const userReel =
+    reelsMedia.find((r: { user?: { pk?: string | number }; id?: string | number }) => String(r.user?.pk) === String(userId) || String(r.id) === String(userId)) ||
+    reelsMedia[0];
 
   if (!userReel || !userReel.items || userReel.items.length === 0) {
     throw new Error(`@${username} has no active stories right now. Instagram stories disappear automatically after 24 hours.`);
@@ -449,7 +470,15 @@ export async function extractUserStories(username: string): Promise<ExtractedMed
     };
   }
 
-  const carouselItems: MediaChildItem[] = items.map((it: any, idx: number) => {
+  interface StoryItem {
+    id: string;
+    media_type: number;
+    video_versions?: Array<{ url: string }>;
+    image_versions2?: { candidates?: Array<{ url: string }> };
+    video_duration?: number;
+  }
+
+  const carouselItems: MediaChildItem[] = (items as StoryItem[]).map((it, idx: number) => {
     const isVideo = it.media_type === 2;
     const dlUrl = (isVideo ? it.video_versions?.[0]?.url : it.image_versions2?.candidates?.[0]?.url) || "";
     return {
@@ -902,18 +931,11 @@ export async function extractInstagramMedia(inputUrl: string, isSample = false):
     throw new Error("Invalid Instagram URL. Please provide a link in the format instagram.com/reel/..., instagram.com/p/..., or instagram.com/stories/...");
   }
 
-  // 2. If it's a photo post (/p/), use Direct API first!
-  // yt-dlp only supports video streams and fails with "No video formats found" on photo posts.
-  if (inputUrl.includes("/p/")) {
-    const directResult = await extractViaDirectApi(shortcode);
-    if (directResult) return directResult;
-  }
-
-  // 3. Try Self-Hosted yt-dlp (Great for Reels & Videos)
+  // 2. Try Self-Hosted yt-dlp (Extracts Photos, Mixed Carousels, Reels & Videos via Polaris GraphQL & DASH)
   const ytDlpResult = await extractWithYtDlp(inputUrl);
   if (ytDlpResult) return ytDlpResult;
 
-  // 4. Try Direct Mobile API with cookies (Fallback for any photo, video, or story item yt-dlp missed)
+  // 3. Try Direct Mobile API with cookies (Fallback for authenticated private posts or specific formats)
   const directResult = await extractViaDirectApi(shortcode);
   if (directResult) return directResult;
 

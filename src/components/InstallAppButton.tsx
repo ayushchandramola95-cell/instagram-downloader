@@ -20,7 +20,7 @@ export default function InstallAppButton() {
       window.matchMedia("(display-mode: standalone)").matches ||
       (window.navigator as unknown as { standalone?: boolean }).standalone === true
     ) {
-      setIsStandalone(true);
+      setTimeout(() => setIsStandalone(true), 0);
       return;
     }
 
@@ -28,8 +28,10 @@ export default function InstallAppButton() {
     const userAgent = window.navigator.userAgent.toLowerCase();
     const isAppleDevice = /iphone|ipad|ipod/.test(userAgent);
     if (isAppleDevice) {
-      setIsIOS(true);
-      setIsInstallable(true);
+      setTimeout(() => {
+        setIsIOS(true);
+        setIsInstallable(true);
+      }, 0);
     }
 
     // Android / Chrome PWA install trigger

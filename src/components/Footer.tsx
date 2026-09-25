@@ -14,7 +14,7 @@ export default function Footer() {
         localStorage.getItem("gramsave_dev_mode") === "true" ||
         Boolean(localStorage.getItem("gramsave_dev_secret")) ||
         Boolean(sessionStorage.getItem("gramsave_dev_secret"));
-      setIsDevMode(hasDev);
+      setTimeout(() => setIsDevMode(hasDev), 0);
     }
   }, []);
 

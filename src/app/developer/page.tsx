@@ -84,18 +84,25 @@ export default function DeveloperPage() {
   // Debugger State
   const [debugUrl, setDebugUrl] = useState("");
   const [debugLoading, setDebugLoading] = useState(false);
-  const [debugResult, setDebugResult] = useState<any>(null);
+  const [debugResult, setDebugResult] = useState<{ type?: string; [key: string]: unknown } | null>(null);
   const [debugError, setDebugError] = useState<string | null>(null);
   const [debugTimeMs, setDebugTimeMs] = useState<number | null>(null);
 
-  // Check saved authentication
-  useEffect(() => {
-    const savedSecret = sessionStorage.getItem("gramsave_dev_secret") || localStorage.getItem("gramsave_dev_secret");
-    if (savedSecret) {
-      setPasscode(savedSecret);
-      verifySecret(savedSecret);
+  const loadCmsData = async () => {
+    try {
+      const res = await fetch("/api/translations");
+      const data = await res.json();
+      if (data.languages && data.strings) {
+        setLanguages(data.languages);
+        setAllStrings(data.strings);
+        if (!selectedLang && data.languages.length > 0) {
+          setSelectedLang(data.languages[0].code);
+        }
+      }
+    } catch (e) {
+      console.error("Failed to load CMS data:", e);
     }
-  }, []);
+  };
 
   const verifySecret = async (secret: string) => {
     setLoadingStats(true);
@@ -125,13 +132,25 @@ export default function DeveloperPage() {
 
       // Load translations for CMS
       loadCmsData();
-    } catch (err: any) {
-      setAuthError(err.message || "Failed to authenticate.");
+    } catch (err: unknown) {
+      setAuthError(err instanceof Error ? err.message : "Failed to authenticate.");
       setIsAuthenticated(false);
     } finally {
       setLoadingStats(false);
     }
   };
+
+  // Check saved authentication
+  useEffect(() => {
+    const savedSecret = sessionStorage.getItem("gramsave_dev_secret") || localStorage.getItem("gramsave_dev_secret");
+    if (savedSecret) {
+      setTimeout(() => {
+        setPasscode(savedSecret);
+        void verifySecret(savedSecret);
+      }, 0);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -148,22 +167,6 @@ export default function DeveloperPage() {
     localStorage.removeItem("gramsave_dev_mode");
     setIsAuthenticated(false);
     setPasscode("");
-  };
-
-  const loadCmsData = async () => {
-    try {
-      const res = await fetch("/api/translations");
-      const data = await res.json();
-      if (data.languages && data.strings) {
-        setLanguages(data.languages);
-        setAllStrings(data.strings);
-        if (!selectedLang && data.languages.length > 0) {
-          setSelectedLang(data.languages[0].code);
-        }
-      }
-    } catch (e) {
-      console.error("Failed to load CMS data:", e);
-    }
   };
 
   // Switch selected language in CMS
@@ -219,8 +222,8 @@ export default function DeveloperPage() {
       setEditedStrings({});
       setCmsMessage({ text: `Successfully saved changes for '${selectedLang.toUpperCase()}'!`, type: "success" });
       reloadTranslations();
-    } catch (err: any) {
-      setCmsMessage({ text: err.message || "Save failed.", type: "error" });
+    } catch (err: unknown) {
+      setCmsMessage({ text: err instanceof Error ? err.message : "Save failed.", type: "error" });
     } finally {
       setSavingCms(false);
     }
@@ -263,8 +266,8 @@ export default function DeveloperPage() {
       setSelectedLang(code);
       setCmsMessage({ text: `Language '${code.toUpperCase()}' created and activated!`, type: "success" });
       reloadTranslations();
-    } catch (err: any) {
-      alert(err.message || "Failed to add language.");
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "Failed to add language.");
     } finally {
       setSavingCms(false);
     }
@@ -306,34 +309,13 @@ export default function DeveloperPage() {
       }));
       setCmsMessage({ text: `String key '${cleanKey}' added!`, type: "success" });
       reloadTranslations();
-    } catch (err: any) {
-      alert(err.message || "Failed to add string.");
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "Failed to add string.");
     } finally {
       setSavingCms(false);
     }
   };
 
-  // Toggle language active status
-  const handleToggleLanguage = async (code: string) => {
-    try {
-      const res = await fetch("/api/translations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          secret: passcode,
-          action: "toggle_language",
-          code,
-        }),
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        await loadCmsData();
-        reloadTranslations();
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
 
   // Run link debugger
   const handleRunDebugger = async (e: React.FormEvent) => {
@@ -358,10 +340,10 @@ export default function DeveloperPage() {
       if (!res.ok || !data.success) {
         setDebugError(data.error || `HTTP error ${res.status}`);
       } else {
-        setDebugResult(data.data);
+        setDebugResult(data.data as { type?: string; [key: string]: unknown });
       }
-    } catch (err: any) {
-      setDebugError(err.message || "Network test failed.");
+    } catch (err: unknown) {
+      setDebugError(err instanceof Error ? err.message : "Network test failed.");
     } finally {
       setDebugLoading(false);
     }
@@ -385,8 +367,8 @@ export default function DeveloperPage() {
       } else {
         alert(data.error || "Failed to reset analytics.");
       }
-    } catch (e: any) {
-      alert("Error: " + e.message);
+    } catch (e: unknown) {
+      alert("Error: " + (e instanceof Error ? e.message : "Reset failed"));
     } finally {
       setLoadingStats(false);
     }
@@ -666,7 +648,7 @@ export default function DeveloperPage() {
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => setActiveTab(tab.id as "analytics" | "cms" | "system" | "debugger" | "bookmarklet")}
                 style={{
                   padding: "12px 16px",
                   fontSize: "0.88rem",
@@ -1523,12 +1505,12 @@ export default function DeveloperPage() {
               </div>
             )}
 
-            {debugResult && (
+            {debugResult !== null && (
               <div>
                 <div style={{ display: "flex", gap: "16px", alignItems: "center", marginBottom: "16px" }}>
                   <span style={{ fontSize: "0.85rem", color: "#10b981", fontWeight: 700 }}>✓ Extracted Successfully</span>
                   <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>Latency: {debugTimeMs} ms</span>
-                  <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>Type: {debugResult.type}</span>
+                  <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>Type: {String(debugResult.type || "media")}</span>
                 </div>
 
                 <div
@@ -1743,7 +1725,7 @@ export default function DeveloperPage() {
                   </label>
                   <select
                     value={newLangDir}
-                    onChange={(e) => setNewLangDir(e.target.value as any)}
+                    onChange={(e) => setNewLangDir(e.target.value as "ltr" | "rtl")}
                     style={{
                       width: "100%",
                       padding: "10px 12px",
