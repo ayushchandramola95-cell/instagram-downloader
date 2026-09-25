@@ -826,6 +826,7 @@ export default function DownloaderSection({
               className="clipboard-detected-banner"
               style={{
                 marginTop: "16px",
+                width: "100%",
                 maxWidth: "760px",
                 margin: "16px auto 0",
                 background: "linear-gradient(135deg, rgba(236,72,153,0.18) 0%, rgba(139,92,246,0.18) 100%)",
@@ -840,9 +841,9 @@ export default function DownloaderSection({
                 boxShadow: "0 8px 24px -6px rgba(236,72,153,0.35)",
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", overflow: "hidden", textAlign: "left" }}>
-                <span style={{ fontSize: "1.2rem" }}>📋</span>
-                <div style={{ overflow: "hidden" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", overflow: "hidden", textAlign: "left", minWidth: 0, flex: 1 }}>
+                <span style={{ fontSize: "1.2rem", flexShrink: 0 }}>📋</span>
+                <div style={{ overflow: "hidden", minWidth: 0 }}>
                   <div style={{ fontSize: "0.85rem", fontWeight: 700, color: "#fff" }}>
                     Instagram Link Detected in Clipboard
                   </div>
@@ -853,7 +854,7 @@ export default function DownloaderSection({
                       whiteSpace: "nowrap",
                       overflow: "hidden",
                       textOverflow: "ellipsis",
-                      maxWidth: "420px",
+                      maxWidth: "100%",
                     }}
                   >
                     {clipboardDetectedUrl}

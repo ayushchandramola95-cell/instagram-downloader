@@ -129,7 +129,7 @@ export default function Home() {
         <DownloaderSection defaultTab="all" />
 
         {/* Specialized Downloader Silo Hub */}
-        <section className="container" style={{ padding: "40px 20px 20px" }}>
+        <section className="container silo-hub-section">
           <div className="section-header">
             <div className="section-tag">Dedicated Downloader Tools</div>
             <h2 className="section-title">Save Any Type of Instagram Content</h2>
@@ -138,14 +138,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-              gap: "20px",
-              marginTop: "30px",
-            }}
-          >
+          <div className="silo-tools-grid">
             {SILO_TOOLS.map((tool) => (
               <Link
                 key={tool.href}

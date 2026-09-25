@@ -1,5 +1,5 @@
 {
-  "totalVisits": 37,
+  "totalVisits": 39,
   "totalDownloads": 1,
   "downloadsByType": {
     "reel": 0,
@@ -10,7 +10,7 @@
     "carousel": 0
   },
   "trafficSources": {
-    "direct": 37,
+    "direct": 39,
     "google": 0,
     "bing": 0,
     "instagram": 0,
@@ -34,7 +34,7 @@
     },
     {
       "date": "2026-09-25",
-      "visits": 31,
+      "visits": 33,
       "downloads": 0
     }
   ],
@@ -48,6 +48,6 @@
     "FR": 6,
     "MX": 5,
     "OTHER": 14,
-    "GLOBAL": 32
+    "GLOBAL": 34
   }
 }
