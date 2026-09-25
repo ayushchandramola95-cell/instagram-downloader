@@ -68,6 +68,9 @@ export default function Footer() {
               <li>
                 <Link href="/carousel-downloader" className="footer-link">Instagram Carousel & Album Saver</Link>
               </li>
+              <li>
+                <Link href="/dp-viewer" className="footer-link">Instagram Full-Size HD DP Viewer</Link>
+              </li>
             </ul>
           </div>
 

@@ -1,6 +1,14 @@
 import type { Metadata, Viewport } from "next";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "@/lib/i18n";
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+  variable: "--font-primary",
+});
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -10,6 +18,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://gramsave.site"),
   title: "GramSave - Instagram Video & Reels Downloader (1080p Full HD)",
   description:
     "Fast, free and anonymous online Instagram video downloader. Save Instagram Reels, Stories, Photos, and Audio in high quality 1080p MP4. No app or login required.",
@@ -92,17 +101,6 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: "https://gramsave.site",
-    languages: {
-      "x-default": "https://gramsave.site",
-      en: "https://gramsave.site",
-      es: "https://gramsave.site/?lang=es",
-      pt: "https://gramsave.site/?lang=pt",
-      id: "https://gramsave.site/?lang=id",
-      hi: "https://gramsave.site/?lang=hi",
-      fr: "https://gramsave.site/?lang=fr",
-      ar: "https://gramsave.site/?lang=ar",
-      de: "https://gramsave.site/?lang=de",
-    },
   },
 };
 
@@ -195,7 +193,7 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="en" data-theme="dark" suppressHydrationWarning>
+    <html lang="en" className={plusJakartaSans.variable} data-theme="dark" suppressHydrationWarning>
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/favicon-48x48.png" sizes="48x48" type="image/png" />

@@ -1,17 +1,5 @@
 import type { MetadataRoute } from "next";
 
-const SUPPORTED_LANGS = ["en", "es", "pt", "id", "hi", "fr", "ar", "de"];
-
-function getLanguageAlternates(baseUrl: string, path: string): Record<string, string> {
-  const alternates: Record<string, string> = {
-    "x-default": `${baseUrl}${path}`,
-  };
-  for (const lang of SUPPORTED_LANGS) {
-    alternates[lang] = `${baseUrl}${path}?lang=${lang}`;
-  }
-  return alternates;
-}
-
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://gramsave.site";
   const now = new Date();
@@ -38,9 +26,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     lastModified: now,
     changeFrequency: page.changeFrequency,
     priority: page.priority,
-    alternates: {
-      languages: getLanguageAlternates(baseUrl, page.path),
-    },
   }));
 
   const legalEntries: MetadataRoute.Sitemap = legalPages.map((page) => ({

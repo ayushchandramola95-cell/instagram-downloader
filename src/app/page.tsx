@@ -91,6 +91,14 @@ const SILO_TOOLS = [
     icon: "📂",
     color: "#10b981",
   },
+  {
+    title: "HD DP Viewer & Zoom",
+    tag: "Full Size 1080p",
+    desc: "Inspect and zoom full-size Instagram profile pictures (DP) in 1080p high definition online.",
+    href: "/dp-viewer",
+    icon: "🔍",
+    color: "#8b5cf6",
+  },
 ];
 
 export default function Home() {

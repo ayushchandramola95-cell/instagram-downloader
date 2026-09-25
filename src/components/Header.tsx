@@ -55,6 +55,12 @@ export default function Header({ activeTab }: HeaderProps) {
       href: "/carousel-downloader",
       icon: "📂",
     },
+    {
+      label: "HD DP Viewer",
+      desc: "Full Size Profile Zoom",
+      href: "/dp-viewer",
+      icon: "🔍",
+    },
   ];
 
   const isMoreToolsActive = moreToolsItems.some((item) => pathname === item.href);
