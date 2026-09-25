@@ -193,7 +193,7 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="en" className={plusJakartaSans.variable} data-theme="dark" suppressHydrationWarning>
+    <html lang="en" className={plusJakartaSans.variable} data-theme="light" suppressHydrationWarning>
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/favicon-48x48.png" sizes="48x48" type="image/png" />
@@ -229,9 +229,8 @@ export default function RootLayout({
             __html: `
               (function() {
                 try {
-                  var saved = localStorage.getItem('gramsave-theme') || localStorage.getItem('instasnap-theme');
-                  var initial = saved || 'dark';
-                  document.documentElement.setAttribute('data-theme', initial);
+                  document.documentElement.setAttribute('data-theme', 'light');
+                  localStorage.setItem('gramsave-theme', 'light');
                 } catch (e) {}
               })();
             `,

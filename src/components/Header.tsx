@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
-import ThemeToggle from "@/components/ThemeToggle";
 import InstallAppButton from "@/components/InstallAppButton";
 import LanguageSelector from "@/components/LanguageSelector";
 import { useTranslation } from "@/lib/i18n";
@@ -269,8 +268,6 @@ export default function Header({ activeTab }: HeaderProps) {
 
           <InstallAppButton />
 
-          <ThemeToggle />
-
           {/* Developer Mode Button (STRICTLY VISIBLE ONLY TO OWNER/DEVELOPER) */}
           {isDevMode && (
             <Link
@@ -360,10 +357,6 @@ export default function Header({ activeTab }: HeaderProps) {
             </Link>
           )}
 
-          <div style={{ paddingTop: "12px", borderTop: "1px solid var(--card-border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontSize: "0.9rem", fontWeight: 600, color: "var(--text-secondary)" }}>Theme Mode</span>
-            <ThemeToggle />
-          </div>
         </div>
       )}
 
