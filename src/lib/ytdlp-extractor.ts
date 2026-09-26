@@ -620,11 +620,11 @@ export async function extractWithYtDlp(targetUrl: string): Promise<ExtractedMedi
     // Path to yt-dlp binary (default 'yt-dlp' from PATH or env override)
     const ytDlpBinary = process.env.YT_DLP_BINARY_PATH || "yt-dlp";
 
-    // Run yt-dlp with a 15-second timeout. If yt-dlp exits with 1 due to photo items, stdout still contains dumped pages.
+    // Run yt-dlp with a 35-second timeout. If yt-dlp exits with 1 due to photo items, stdout still contains dumped pages.
     let stdout = "";
     try {
       const res = await execFileAsync(ytDlpBinary, args, {
-        timeout: 15000,
+        timeout: 35000,
         maxBuffer: 50 * 1024 * 1024,
       });
       stdout = res.stdout;

@@ -2407,10 +2407,20 @@ export default function DownloaderSection({
                     return (
                       <div key={item.index} className="carousel-card">
                         {/* Slide Thumbnail */}
-                        <div
-                          className="carousel-slide-thumb"
-                          style={{ backgroundImage: `url(${item.thumbnailUrl})` }}
-                        >
+                        <div className="carousel-slide-thumb" style={{ overflow: "hidden", position: "relative" }}>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            referrerPolicy="no-referrer"
+                            src={item.thumbnailUrl}
+                            alt={`Slide ${item.index}`}
+                            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                            onError={(e) => {
+                              const target = e.currentTarget;
+                              if (item.thumbnailUrl && !target.src.includes("/api/download")) {
+                                target.src = `/api/download?url=${encodeURIComponent(item.thumbnailUrl)}&filename=slide_${item.index}.jpg&preview=1`;
+                              }
+                            }}
+                          />
                           <span className="carousel-slide-badge">
                             {item.type === "video" ? "🎬 VIDEO" : "📸 PHOTO"}
                           </span>
@@ -2621,10 +2631,24 @@ export default function DownloaderSection({
                             <div
                               key={idx}
                               className={`filmstrip-thumb ${activeShowcaseSlide === idx ? "active" : ""}`}
-                              style={{ backgroundImage: `url(${item.thumbnailUrl})` }}
                               onClick={() => setActiveShowcaseSlide(idx)}
                               title={`Slide ${item.index}`}
-                            />
+                              style={{ overflow: "hidden", position: "relative" }}
+                            >
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                referrerPolicy="no-referrer"
+                                src={item.thumbnailUrl}
+                                alt={`Slide ${item.index}`}
+                                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                                onError={(e) => {
+                                  const target = e.currentTarget;
+                                  if (item.thumbnailUrl && !target.src.includes("/api/download")) {
+                                    target.src = `/api/download?url=${encodeURIComponent(item.thumbnailUrl)}&filename=thumb_${item.index}.jpg&preview=1`;
+                                  }
+                                }}
+                              />
+                            </div>
                           ))}
                         </div>
                       </>

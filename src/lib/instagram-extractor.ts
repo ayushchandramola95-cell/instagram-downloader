@@ -406,29 +406,91 @@ export async function extractViaDirectApi(shortcode: string): Promise<ExtractedM
 export async function extractUserStories(username: string, targetStoryId?: string): Promise<ExtractedMedia> {
   const cookieStr = getCookieString();
 
-  // 1. Get user_id from profile page HTML
+  // 1. Get user_id using multi-source resolution (topsearch, web_profile_info, or profile page)
   let userId: string | null = null;
+
+  // Strategy A: topsearch API
   try {
-    const res = await axios.get(`https://www.instagram.com/${username}/`, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-        "Cookie": cookieStr,
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9",
-        "Sec-Fetch-Site": "same-origin",
-      },
-      timeout: 10000,
-    });
-    const html = res.data;
-    if (typeof html === "string") {
-      const match = html.match(/"user_id":\s*"(\d+)"/) || html.match(/"id":\s*"(\d+)"/) || html.match(/profilePage_(\d+)/);
-      if (match) userId = match[1];
+    const searchRes = await axios.get(
+      `https://www.instagram.com/web/search/topsearch/?context=blended&query=${encodeURIComponent(username)}`,
+      {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+          "X-IG-App-ID": "936619743392459",
+          "X-Requested-With": "XMLHttpRequest",
+          "X-ASBD-ID": "129477",
+          ...(cookieStr ? { Cookie: cookieStr } : {}),
+        },
+        timeout: 8000,
+      }
+    );
+    const users = searchRes.data?.users;
+    if (Array.isArray(users)) {
+      const match =
+        users.find((u: { user?: { username?: string } }) => u.user?.username?.toLowerCase() === username.toLowerCase())?.user ||
+        users[0]?.user;
+      if (match?.pk || match?.id) {
+        userId = String(match.pk || match.id);
+      }
     }
   } catch (e: unknown) {
-    console.warn("Failed to get user_id from profile:", e instanceof Error ? e.message : e);
+    console.warn("Topsearch resolution warning for story:", e instanceof Error ? e.message : e);
+  }
+
+  // Strategy B: web_profile_info API
+  if (!userId) {
+    try {
+      const profileRes = await axios.get(
+        `https://www.instagram.com/api/v1/users/web_profile_info/?username=${encodeURIComponent(username)}`,
+        {
+          headers: {
+            "User-Agent":
+              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+            "X-IG-App-ID": "936619743392459",
+            ...(cookieStr ? { Cookie: cookieStr } : {}),
+          },
+          timeout: 8000,
+        }
+      );
+      if (profileRes.data?.data?.user?.id) {
+        userId = String(profileRes.data.data.user.id);
+      }
+    } catch (e: unknown) {
+      console.warn("web_profile_info resolution warning for story:", e instanceof Error ? e.message : e);
+    }
+  }
+
+  // Strategy C: Profile page HTML scraping fallback
+  if (!userId) {
+    try {
+      const res = await axios.get(`https://www.instagram.com/${username}/`, {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+          "Cookie": cookieStr,
+          "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9",
+          "Sec-Fetch-Site": "same-origin",
+        },
+        timeout: 8000,
+      });
+      const html = res.data;
+      if (typeof html === "string") {
+        const match =
+          html.match(/"user_id":\s*"(\d+)"/) ||
+          html.match(/"id":\s*"(\d+)"/) ||
+          html.match(/profilePage_(\d+)/);
+        if (match) userId = match[1];
+      }
+    } catch (e: unknown) {
+      console.warn("Failed to get user_id from profile HTML:", e instanceof Error ? e.message : e);
+    }
   }
 
   if (!userId) {
-    throw new Error(`Could not find Instagram user @${username}. Please verify the profile username or story link.`);
+    throw new Error(
+      `Unable to fetch active stories for @${username}. Instagram Stories are temporary (disappearing automatically after 24 hours) and require an active login session. Please make sure this user has an active public story.`
+    );
   }
 
   // 2. Query stories feed
@@ -839,36 +901,41 @@ function parseShortcodeMediaFromEmbedHtml(html: string): any {
  */
 async function extractViaEmbed(shortcode: string): Promise<ExtractedMedia | null> {
   const embedUrls = [
+    `https://www.instagram.com/p/${shortcode}/embed/captioned/?cr=1`,
     `https://www.instagram.com/p/${shortcode}/embed/captioned/`,
-    `https://www.instagram.com/reel/${shortcode}/embed/captioned/`,
+    `https://www.instagram.com/reel/${shortcode}/embed/captioned/?cr=1`,
     `https://www.instagram.com/p/${shortcode}/embed/`,
   ];
 
-  for (const embedUrl of embedUrls) {
-    try {
-      const cookieStr = getCookieString();
-      const headers: Record<string, string> = {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-        "Accept":
-          "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.9",
-        "Sec-Ch-Ua": '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
-        "Sec-Ch-Ua-Mobile": "?0",
-        "Sec-Ch-Ua-Platform": '"Windows"',
-        "Sec-Fetch-Dest": "iframe",
-        "Sec-Fetch-Mode": "navigate",
-        "Sec-Fetch-Site": "cross-site",
-        "Referer": "https://google.com/",
-      };
-      if (cookieStr) {
-        headers["Cookie"] = cookieStr;
-      }
+  // Try Mobile user agent first (proven to return full GraphSidecar in <1s), then Desktop fallback
+  const userAgents = [
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Mobile/15E148 Safari/604.1",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+  ];
 
-      const res = await axios.get(embedUrl, {
-        headers,
-        timeout: 9000,
-      });
+  for (const ua of userAgents) {
+    for (const embedUrl of embedUrls) {
+      try {
+        const cookieStr = getCookieString();
+        const headers: Record<string, string> = {
+          "User-Agent": ua,
+          "Accept":
+            "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+          "Accept-Language": "en-US,en;q=0.9",
+          "Sec-Fetch-Dest": "iframe",
+          "Sec-Fetch-Mode": "navigate",
+          "Sec-Fetch-Site": "cross-site",
+          "Referer": "https://google.com/",
+        };
+        if (cookieStr) {
+          headers["Cookie"] = cookieStr;
+        }
+
+        const res = await axios.get(embedUrl, {
+          headers,
+          timeout: 15000,
+          maxRedirects: 5,
+        });
 
       const html = res.data;
       if (typeof html !== "string") continue;
@@ -1084,6 +1151,7 @@ async function extractViaEmbed(shortcode: string): Promise<ExtractedMedia | null
       }
     } catch (err: unknown) {
       console.warn(`[Instagram] embed fetch error on ${embedUrl}:`, err instanceof Error ? err.message : err);
+    }
     }
   }
 
@@ -1328,8 +1396,16 @@ export async function extractInstagramMedia(inputUrl: string, isSample = false):
 
   // 2. Check if it's an Instagram story URL (/stories/username/ or /stories/username/story_id/)
   if (isStoryProfileUrl(inputUrl)) {
-    const username = extractStoryUsername(inputUrl);
     const storyId = extractStoryId(inputUrl);
+    // Try yt-dlp first if it's a specific story item ID and cookies are present
+    if (storyId) {
+      try {
+        const ytStory = await extractWithYtDlp(inputUrl);
+        if (ytStory) return ytStory;
+      } catch {}
+    }
+
+    const username = extractStoryUsername(inputUrl);
     if (username) {
       return await extractUserStories(username, storyId);
     }
@@ -1338,6 +1414,30 @@ export async function extractInstagramMedia(inputUrl: string, isSample = false):
   const shortcode = extractShortcode(inputUrl);
   if (!shortcode) {
     throw new Error("Invalid Instagram URL. Please provide a link in the format instagram.com/reel/..., instagram.com/p/..., or instagram.com/stories/...");
+  }
+
+  const isPostOrShare = inputUrl.includes("/p/") || inputUrl.includes("/share/");
+
+  // Fast Path for Posts & Carousels:
+  // /p/ and /share/ URLs are primarily albums and photos. Public embed extraction returns full carousels in <1s.
+  if (isPostOrShare) {
+    try {
+      const embedResult = await extractViaEmbed(shortcode);
+      if (embedResult?.isCarousel) {
+        // Check if any slide is a video and can be enriched with yt-dlp DASH streams
+        const hasVideoSlide = embedResult.carouselItems?.some((it) => it.type === "video");
+        if (hasVideoSlide) {
+          try {
+            const ytDlpResult = await extractWithYtDlp(inputUrl);
+            if (ytDlpResult) return mergeCarouselItems(embedResult, ytDlpResult);
+          } catch {}
+        }
+        return embedResult;
+      }
+      if (embedResult) {
+        return embedResult;
+      }
+    } catch {}
   }
 
   // 1. Try Self-Hosted yt-dlp (Provides 1080p DASH video streams and polaris GraphQL dump)
