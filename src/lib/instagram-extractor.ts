@@ -58,14 +58,14 @@ export function isStoryProfileUrl(inputUrl: string): boolean {
     const url = new URL(inputUrl.trim());
     const pathParts = url.pathname.split("/").filter(Boolean);
     const storiesIndex = pathParts.findIndex((p) => p.toLowerCase() === "stories");
-    return storiesIndex !== -1 && (!pathParts[storiesIndex + 2] || !/^\d+$/.test(pathParts[storiesIndex + 2]));
+    return storiesIndex !== -1 && Boolean(pathParts[storiesIndex + 1]);
   } catch {
     return false;
   }
 }
 
 /**
- * Extracts username from story profile URL (/stories/username/)
+ * Extracts username from story URL (/stories/username/...)
  */
 export function extractStoryUsername(inputUrl: string): string | null {
   try {
@@ -78,6 +78,23 @@ export function extractStoryUsername(inputUrl: string): string | null {
     return null;
   } catch {
     return null;
+  }
+}
+
+/**
+ * Extracts specific story item ID from story URL (/stories/username/3994184622585009061/)
+ */
+export function extractStoryId(inputUrl: string): string | undefined {
+  try {
+    const url = new URL(inputUrl.trim());
+    const pathParts = url.pathname.split("/").filter(Boolean);
+    const storiesIndex = pathParts.findIndex((p) => p.toLowerCase() === "stories");
+    if (storiesIndex !== -1 && pathParts[storiesIndex + 2] && /^\d+$/.test(pathParts[storiesIndex + 2])) {
+      return pathParts[storiesIndex + 2];
+    }
+    return undefined;
+  } catch {
+    return undefined;
   }
 }
 
@@ -386,7 +403,7 @@ export async function extractViaDirectApi(shortcode: string): Promise<ExtractedM
 /**
  * Extracts active stories for a user profile (/stories/username/)
  */
-export async function extractUserStories(username: string): Promise<ExtractedMedia> {
+export async function extractUserStories(username: string, targetStoryId?: string): Promise<ExtractedMedia> {
   const cookieStr = getCookieString();
 
   // 1. Get user_id from profile page HTML
@@ -433,7 +450,18 @@ export async function extractUserStories(username: string): Promise<ExtractedMed
     throw new Error(`@${username} has no active stories right now. Instagram stories disappear automatically after 24 hours.`);
   }
 
-  const items = userReel.items;
+  let items = userReel.items;
+
+  // If a specific story ID was requested, isolate that story item if present
+  if (targetStoryId) {
+    const specificItem = items.find(
+      (it: { id?: string | number; pk?: string | number }) =>
+        String(it.id).includes(targetStoryId) || String(it.pk) === targetStoryId
+    );
+    if (specificItem) {
+      items = [specificItem];
+    }
+  }
 
   if (items.length === 1) {
     const it = items[0];
@@ -1298,11 +1326,12 @@ export async function extractInstagramMedia(inputUrl: string, isSample = false):
     return await extractInstagramProfile(inputUrl);
   }
 
-  // 2. Check if it's a story profile URL (/stories/username/) without a specific story ID
+  // 2. Check if it's an Instagram story URL (/stories/username/ or /stories/username/story_id/)
   if (isStoryProfileUrl(inputUrl)) {
     const username = extractStoryUsername(inputUrl);
+    const storyId = extractStoryId(inputUrl);
     if (username) {
-      return await extractUserStories(username);
+      return await extractUserStories(username, storyId);
     }
   }
 

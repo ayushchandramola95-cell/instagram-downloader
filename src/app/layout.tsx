@@ -19,6 +19,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://gramsave.site"),
+  referrer: "no-referrer",
   title: "GramSave - Instagram Video & Reels Downloader (1080p Full HD)",
   description:
     "Fast, free and anonymous online Instagram video downloader. Save Instagram Reels, Stories, Photos, and Audio in high quality 1080p MP4. No app or login required.",

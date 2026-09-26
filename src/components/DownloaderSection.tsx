@@ -1059,9 +1059,17 @@ export default function DownloaderSection({
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
+                      referrerPolicy="no-referrer"
                       src={currentResolution?.downloadUrl || result.thumbnailUrl}
                       alt={result.caption || "Instagram Profile Picture"}
                       className="profile-avatar-img"
+                      onError={(e) => {
+                        const target = e.currentTarget;
+                        const fallback = currentResolution?.downloadUrl || result.thumbnailUrl;
+                        if (fallback && !target.src.includes("/api/download")) {
+                          target.src = `/api/download?url=${encodeURIComponent(fallback)}&filename=preview.jpg&preview=1`;
+                        }
+                      }}
                     />
                     <div className="profile-zoom-hint">🔍 Tap to Zoom</div>
                   </div>
@@ -1293,9 +1301,17 @@ export default function DownloaderSection({
                 </button>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
+                  referrerPolicy="no-referrer"
                   src={currentResolution?.downloadUrl || result.thumbnailUrl}
                   alt={result.author || "Full Resolution DP"}
                   className="dp-zoom-modal-img"
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    const fallback = currentResolution?.downloadUrl || result.thumbnailUrl;
+                    if (fallback && !target.src.includes("/api/download")) {
+                      target.src = `/api/download?url=${encodeURIComponent(fallback)}&filename=preview.jpg&preview=1`;
+                    }
+                  }}
                 />
                 <div style={{ display: "flex", gap: "10px" }}>
                   <button
@@ -1333,9 +1349,17 @@ export default function DownloaderSection({
                   </div>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
+                    referrerPolicy="no-referrer"
                     src={currentResolution?.downloadUrl || result.thumbnailUrl}
                     alt={result.caption || "Instagram Photo"}
                     className="photo-showcase-img"
+                    onError={(e) => {
+                      const target = e.currentTarget;
+                      const fallback = currentResolution?.downloadUrl || result.thumbnailUrl;
+                      if (fallback && !target.src.includes("/api/download")) {
+                        target.src = `/api/download?url=${encodeURIComponent(fallback)}&filename=preview.jpg&preview=1`;
+                      }
+                    }}
                   />
                 </div>
 
@@ -2501,9 +2525,17 @@ export default function DownloaderSection({
                           ) : (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
+                              referrerPolicy="no-referrer"
                               src={chosenRes.downloadUrl || activeItem.thumbnailUrl}
                               alt={`Slide ${activeItem.index}`}
                               className="showcase-featured-img"
+                              onError={(e) => {
+                                const target = e.currentTarget;
+                                const fallback = chosenRes.downloadUrl || activeItem.thumbnailUrl;
+                                if (fallback && !target.src.includes("/api/download")) {
+                                  target.src = `/api/download?url=${encodeURIComponent(fallback)}&filename=preview.jpg&preview=1`;
+                                }
+                              }}
                             />
                           )}
 
