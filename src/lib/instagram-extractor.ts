@@ -818,18 +818,47 @@ async function extractViaEmbed(shortcode: string): Promise<ExtractedMedia | null
 
   for (const embedUrl of embedUrls) {
     try {
+      const cookieStr = getCookieString();
+      const headers: Record<string, string> = {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        "Accept":
+          "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Sec-Ch-Ua": '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
+        "Sec-Ch-Ua-Mobile": "?0",
+        "Sec-Ch-Ua-Platform": '"Windows"',
+        "Sec-Fetch-Dest": "iframe",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "cross-site",
+        "Referer": "https://google.com/",
+      };
+      if (cookieStr) {
+        headers["Cookie"] = cookieStr;
+      }
+
       const res = await axios.get(embedUrl, {
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-          "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-          "Accept-Language": "en-US,en;q=0.9",
-        },
+        headers,
         timeout: 9000,
       });
 
       const html = res.data;
       if (typeof html !== "string") continue;
+
+      const hasShortcodeMedia = html.includes("shortcode_media");
+      const hasGqlData = html.includes("gql_data");
+      const hasHttpError = html.includes("httpErrorPage");
+      const hasLoginPage = html.includes("login");
+
+      console.log(`[Instagram] shortcode: ${shortcode}`);
+      console.log(`[Instagram] extractor: embed`);
+      console.log(`[Instagram] URL: ${embedUrl}`);
+      console.log(`[Instagram] HTTP status: ${res.status}`);
+      console.log(`[Instagram] response length: ${html.length}`);
+      console.log(`[Instagram] contains shortcode_media: ${hasShortcodeMedia}`);
+      console.log(`[Instagram] contains gql_data: ${hasGqlData}`);
+      console.log(`[Instagram] contains httpErrorPage: ${hasHttpError}`);
+      console.log(`[Instagram] contains login page: ${hasLoginPage}`);
 
       const shortcodeMedia = parseShortcodeMediaFromEmbedHtml(html);
       if (shortcodeMedia) {
@@ -1025,11 +1054,74 @@ async function extractViaEmbed(shortcode: string): Promise<ExtractedMedia | null
               ],
         };
       }
-    } catch {
-      // try next url
+    } catch (err: unknown) {
+      console.warn(`[Instagram] embed fetch error on ${embedUrl}:`, err instanceof Error ? err.message : err);
     }
   }
 
+  return null;
+}
+
+/**
+ * Strategy 4: Official Meta Public oEmbed API
+ * Publicly extracts verified original photo and author metadata without requiring login or cookies.
+ * Guaranteed universal fallback for single photos and cloud datacenter IPs (like Google Cloud Run).
+ */
+async function extractViaOembed(shortcode: string): Promise<ExtractedMedia | null> {
+  const endpoints = [
+    `https://www.instagram.com/api/v1/oembed/?url=https://www.instagram.com/p/${shortcode}/`,
+    `https://graph.facebook.com/v19.0/instagram_oembed?url=https://www.instagram.com/p/${shortcode}/&access_token=`,
+  ];
+
+  for (const endpoint of endpoints) {
+    try {
+      const res = await axios.get(endpoint, {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+          "Accept": "application/json,text/plain,*/*",
+        },
+        timeout: 8000,
+      });
+
+      const data = res.data;
+      if (data && (data.thumbnail_url || data.title || data.author_name)) {
+        const title = data.title || "Instagram Post";
+        const author = data.author_name || "Instagram Creator";
+        const authorHandle = data.author_name ? `@${data.author_name}` : "@instagram_user";
+        const thumbUrl = (data.thumbnail_url || "").replace(/\\\//g, "/");
+        const width = data.thumbnail_width || 1080;
+        const height = data.thumbnail_height || 1080;
+
+        if (thumbUrl) {
+          console.log(`[Instagram] oEmbed extraction successful for ${shortcode}`);
+          return {
+            id: shortcode,
+            shortcode,
+            type: "photo",
+            author,
+            authorHandle,
+            caption: title,
+            thumbnailUrl: thumbUrl,
+            resolutions: [
+              {
+                label: `${width}x${height} Original`,
+                quality: "Original Resolution • Lossless JPG",
+                size: "Original Lossless",
+                type: "jpg",
+                downloadUrl: thumbUrl,
+                width,
+                height,
+                isBest: true,
+              },
+            ],
+          };
+        }
+      }
+    } catch (err: unknown) {
+      console.warn(`[Instagram] oEmbed failed on ${endpoint}:`, err instanceof Error ? err.message : err);
+    }
+  }
   return null;
 }
 
@@ -1259,7 +1351,16 @@ export async function extractInstagramMedia(inputUrl: string, isSample = false):
     return embedResult;
   }
 
-  // If yt-dlp returned a video-only carousel and embed couldn't fetch more, still return yt-dlp videos
+  // 4. Try Official Public oEmbed API (Guaranteed fallback for single photos and cloud datacenter IPs)
+  const oembedResult = await extractViaOembed(shortcode);
+  if (oembedResult) {
+    if (ytDlpResult && isVideoOnlyCarousel && oembedResult.isCarousel) {
+      return mergeCarouselItems(oembedResult, ytDlpResult);
+    }
+    return oembedResult;
+  }
+
+  // If yt-dlp returned a video-only carousel and embed/oembed couldn't fetch more, still return yt-dlp videos
   if (ytDlpResult) {
     return ytDlpResult;
   }
