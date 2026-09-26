@@ -560,8 +560,9 @@ function extractPolarisFromDump(stdout: string): IgPolarisProduct | null {
  */
 export async function extractWithYtDlp(targetUrl: string): Promise<ExtractedMedia | null> {
   try {
+    const isStory = targetUrl.includes("/stories/");
     const args: string[] = [
-      "--dump-pages",
+      isStory ? "-j" : "--dump-pages",
       "--ignore-errors",
       "--no-warnings",
       "--no-check-certificates",
@@ -765,7 +766,6 @@ export async function extractWithYtDlp(targetUrl: string): Promise<ExtractedMedi
     // Single Reel, Video, or Photo
     const resolutions = buildResolutionsFromOutput(data);
     const shortcode = data.id || "instagram_media";
-    const isStory = targetUrl.includes("/stories/");
     const hasVideoCodec = Boolean(data.formats?.some((f) => f.vcodec && f.vcodec !== "none"));
     const isVideo = data.ext === "mp4" || hasVideoCodec;
 

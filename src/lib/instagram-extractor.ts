@@ -1397,13 +1397,11 @@ export async function extractInstagramMedia(inputUrl: string, isSample = false):
   // 2. Check if it's an Instagram story URL (/stories/username/ or /stories/username/story_id/)
   if (isStoryProfileUrl(inputUrl)) {
     const storyId = extractStoryId(inputUrl);
-    // Try yt-dlp first if it's a specific story item ID and cookies are present
-    if (storyId) {
-      try {
-        const ytStory = await extractWithYtDlp(inputUrl);
-        if (ytStory) return ytStory;
-      } catch {}
-    }
+    // Try yt-dlp first as it uses the authenticated session cookies for story feed
+    try {
+      const ytStory = await extractWithYtDlp(inputUrl);
+      if (ytStory) return ytStory;
+    } catch {}
 
     const username = extractStoryUsername(inputUrl);
     if (username) {
