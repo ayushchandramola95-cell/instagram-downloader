@@ -1545,6 +1545,7 @@ export default function DownloaderSection({
                   <button
                     type="button"
                     className="primary-dl-card-btn"
+                    id="download-photo-btn"
                     onClick={() =>
                       triggerDownload(
                         currentResolution.downloadUrl,
@@ -1552,14 +1553,12 @@ export default function DownloaderSection({
                       )
                     }
                   >
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" }}>
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="7 10 12 15 17 10"></polyline>
-                        <line x1="12" y1="15" x2="12" y2="3"></line>
-                      </svg>
-                      <span style={{ fontWeight: 800, fontSize: "1.08rem" }}>Download Photo</span>
-                    </div>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="7 10 12 15 17 10"></polyline>
+                      <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    <span>Download Photo</span>
                   </button>
                 )}
               </div>
@@ -1784,7 +1783,8 @@ export default function DownloaderSection({
                   <button
                     type="button"
                     className="primary-dl-card-btn"
-                    style={{ background: "linear-gradient(135deg, #f97316 0%, #ec4899 100%)" }}
+                    id="download-audio-btn"
+                    style={{ background: "linear-gradient(135deg, #f97316 0%, #ec4899 100%)", boxShadow: "0 8px 28px rgba(249,115,22,0.45), 0 2px 8px rgba(0,0,0,0.3)" }}
                     onClick={() =>
                       triggerDownload(
                         currentAudioResolution.downloadUrl,
@@ -1792,16 +1792,14 @@ export default function DownloaderSection({
                       )
                     }
                   >
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" }}>
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="7 10 12 15 17 10"></polyline>
-                        <line x1="12" y1="15" x2="12" y2="3"></line>
-                      </svg>
-                      <span style={{ fontWeight: 800, fontSize: "1.08rem" }}>
-                        Download {currentAudioResolution.bitrate || "320 kbps"} Audio
-                      </span>
-                    </div>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="7 10 12 15 17 10"></polyline>
+                      <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    <span>
+                      Download {currentAudioResolution.bitrate || "320 kbps"} Audio
+                    </span>
                   </button>
                 )}
 
@@ -2040,6 +2038,7 @@ export default function DownloaderSection({
                   <button
                     type="button"
                     className="primary-dl-card-btn"
+                    id="download-video-btn"
                     onClick={() =>
                       triggerDownload(
                         currentResolution.downloadUrl,
@@ -2048,33 +2047,33 @@ export default function DownloaderSection({
                       )
                     }
                   >
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" }}>
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="7 10 12 15 17 10"></polyline>
-                        <line x1="12" y1="15" x2="12" y2="3"></line>
-                      </svg>
-                      <span style={{ fontWeight: 800, fontSize: "1.08rem" }}>
-                        {currentResolution.type === "mp3" ? "Download Audio" : "Download Video"}
-                      </span>
-                    </div>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="7 10 12 15 17 10"></polyline>
+                      <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    <span style={{ fontWeight: 800, fontSize: "1.08rem" }}>
+                      {currentResolution.type === "mp3" ? "Download Audio" : "Download Video"}
+                    </span>
                   </button>
                 )}
 
-                {/* Video Quick Actions Row (Share & Trim Trigger) */}
-                <div style={{ display: "flex", gap: "10px", marginTop: "12px" }}>
+                {/* Video Quick Actions Row */}
+                <div style={{ display: "flex", gap: "8px", marginTop: "12px", flexWrap: "wrap" }}>
                   <button
                     type="button"
+                    id="video-trim-toggle-btn"
                     onClick={() => setShowVideoTrimmer(!showVideoTrimmer)}
                     style={{
                       flex: 1,
-                      background: showVideoTrimmer ? "rgba(236,72,153,0.2)" : "rgba(255,255,255,0.06)",
+                      minWidth: "130px",
+                      background: showVideoTrimmer ? "rgba(236,72,153,0.18)" : "rgba(255,255,255,0.06)",
                       border: showVideoTrimmer ? "1px solid #ec4899" : "1px solid var(--card-border)",
-                      color: showVideoTrimmer ? "#f472b6" : "var(--text-primary)",
+                      color: showVideoTrimmer ? "#f472b6" : "var(--text-secondary)",
                       borderRadius: "10px",
                       padding: "10px 14px",
-                      fontSize: "0.86rem",
-                      fontWeight: 600,
+                      fontSize: "0.85rem",
+                      fontWeight: 700,
                       cursor: "pointer",
                       display: "flex",
                       alignItems: "center",
@@ -2084,7 +2083,34 @@ export default function DownloaderSection({
                     }}
                   >
                     <span>✂️</span>
-                    <span>{showVideoTrimmer ? "Close Trimmer" : "Trim / Clip Video"}</span>
+                    <span>{showVideoTrimmer ? "Close Trimmer" : "Trim Clip"}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleCopyLink(currentResolution?.downloadUrl || result.thumbnailUrl)}
+                    style={{
+                      flex: 1,
+                      minWidth: "110px",
+                      background: copiedLink ? "rgba(16,185,129,0.12)" : "rgba(255,255,255,0.06)",
+                      border: copiedLink ? "1px solid #10b981" : "1px solid var(--card-border)",
+                      color: copiedLink ? "#34d399" : "var(--text-secondary)",
+                      borderRadius: "10px",
+                      padding: "10px 14px",
+                      fontSize: "0.85rem",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "6px",
+                      transition: "all 0.2s ease",
+                    }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    <span>{copiedLink ? "Copied!" : "Copy Link"}</span>
                   </button>
                   <button
                     type="button"
@@ -2097,13 +2123,14 @@ export default function DownloaderSection({
                     }
                     style={{
                       flex: 1,
+                      minWidth: "100px",
                       background: "rgba(255,255,255,0.06)",
                       border: "1px solid var(--card-border)",
-                      color: "var(--text-primary)",
+                      color: "var(--text-secondary)",
                       borderRadius: "10px",
                       padding: "10px 14px",
-                      fontSize: "0.86rem",
-                      fontWeight: 600,
+                      fontSize: "0.85rem",
+                      fontWeight: 700,
                       cursor: "pointer",
                       display: "flex",
                       alignItems: "center",
@@ -2112,64 +2139,77 @@ export default function DownloaderSection({
                       transition: "all 0.2s ease",
                     }}
                   >
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <circle cx="18" cy="5" r="3"></circle>
                       <circle cx="6" cy="12" r="3"></circle>
                       <circle cx="18" cy="19" r="3"></circle>
                       <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
                       <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
                     </svg>
-                    <span>Share Video</span>
+                    <span>Share</span>
                   </button>
                 </div>
 
-                {/* Interactive Video Trimmer Drawer */}
+                {/* Interactive Video Trimmer Drawer – Premium Design */}
                 {showVideoTrimmer && currentResolution && (
                   <div className="video-trimmer-box">
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                      <span style={{ fontSize: "0.88rem", fontWeight: 700, color: "#fff", display: "flex", alignItems: "center", gap: "6px" }}>
+                    {/* Header */}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                      <span style={{ fontSize: "0.9rem", fontWeight: 800, color: "#fff", display: "flex", alignItems: "center", gap: "7px" }}>
                         <span>✂️</span>
-                        <span>Trim Video Clip Before Download</span>
+                        <span>Trim Video Before Download</span>
                       </span>
-                      <span style={{ fontSize: "0.72rem", color: "#ec4899", fontWeight: 700, background: "rgba(236,72,153,0.12)", padding: "2px 8px", borderRadius: "9999px" }}>
-                        WhatsApp Status &amp; TikTok
+                      <span style={{ fontSize: "0.72rem", color: "#f472b6", fontWeight: 700, background: "rgba(236,72,153,0.15)", padding: "3px 10px", borderRadius: "9999px", border: "1px solid rgba(236,72,153,0.3)" }}>
+                        WhatsApp & TikTok
                       </span>
                     </div>
-                    <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "12px" }}>
-                      Save only the exact snippet you need without downloading the entire full-length file:
+                    <p style={{ fontSize: "0.82rem", color: "var(--text-muted)", marginBottom: "14px", lineHeight: 1.5 }}>
+                      Select only the exact segment you need — no need to download the full video.
                     </p>
 
-                    {/* Trimmer Presets */}
+                    {/* Quick Presets */}
                     <div className="trimmer-presets-row">
                       <button
                         type="button"
                         className={`trimmer-preset-chip ${trimStart === 0 && trimDuration === 15 ? "active" : ""}`}
                         onClick={() => { setTrimStart(0); setTrimDuration(15); }}
                       >
-                        ⚡ First 15s (Reel Highlight)
+                        ⚡ 15s Reel
                       </button>
                       <button
                         type="button"
                         className={`trimmer-preset-chip ${trimStart === 0 && trimDuration === 30 ? "active" : ""}`}
                         onClick={() => { setTrimStart(0); setTrimDuration(30); }}
                       >
-                        📱 30s WhatsApp Status
+                        📱 30s WhatsApp
                       </button>
                       <button
                         type="button"
                         className={`trimmer-preset-chip ${trimStart === 0 && trimDuration === 60 ? "active" : ""}`}
                         onClick={() => { setTrimStart(0); setTrimDuration(60); }}
                       >
-                        ⏱️ First 60s
+                        ⏱️ 60s TikTok
                       </button>
                     </div>
 
-                    {/* Manual Sliders */}
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "14px" }}>
+                    {/* Visual Timeline */}
+                    <div className="trimmer-timeline-bar">
+                      <div
+                        className="trimmer-timeline-fill"
+                        style={{
+                          left: `${Math.min((trimStart / 120) * 100, 90)}%`,
+                          width: `${Math.min((trimDuration / 120) * 100, 100 - (trimStart / 120) * 100)}%`,
+                        }}
+                      />
+                    </div>
+
+                    {/* Sliders */}
+                    <div className="trimmer-slider-group">
                       <div>
-                        <label style={{ display: "block", fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "4px" }}>
-                          Start Second: <strong>{trimStart}s</strong>
-                        </label>
+                        <div className="trimmer-slider-label">
+                          <span>Start</span>
+                          <strong>{trimStart}s</strong>
+                        </div>
                         <input
                           type="range"
                           min="0"
@@ -2180,46 +2220,42 @@ export default function DownloaderSection({
                         />
                       </div>
                       <div>
-                        <label style={{ display: "block", fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "4px" }}>
-                          Clip Duration: <strong>{trimDuration}s</strong>
-                        </label>
+                        <div className="trimmer-slider-label">
+                          <span>Duration</span>
+                          <strong>{trimDuration}s</strong>
+                        </div>
                         <input
                           type="range"
                           min="3"
                           max="90"
                           value={trimDuration}
                           onChange={(e) => setTrimDuration(Number(e.target.value))}
-                          style={{ width: "100%", accentColor: "#ec4899" }}
+                          style={{ width: "100%", accentColor: "#8b5cf6" }}
                         />
                       </div>
                     </div>
 
+                    {/* Clip Summary */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", marginBottom: "14px", fontSize: "0.82rem", color: "var(--text-secondary)" }}>
+                      <span style={{ background: "rgba(236,72,153,0.12)", border: "1px solid rgba(236,72,153,0.25)", borderRadius: "8px", padding: "4px 12px", fontWeight: 700, color: "#f472b6" }}>
+                        {trimStart}s → {trimStart + trimDuration}s
+                      </span>
+                      <span>•</span>
+                      <span>{trimDuration}s clip</span>
+                    </div>
+
+                    {/* Download Button */}
                     <button
                       type="button"
+                      className="trimmer-download-btn"
                       onClick={() => handleDownloadTrimmedVideo(currentResolution)}
-                      style={{
-                        width: "100%",
-                        background: "linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: "10px",
-                        padding: "11px 16px",
-                        fontWeight: 700,
-                        fontSize: "0.9rem",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: "8px",
-                        boxShadow: "0 4px 14px rgba(236,72,153,0.35)",
-                      }}
                     >
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                         <polyline points="7 10 12 15 17 10"></polyline>
                         <line x1="12" y1="15" x2="12" y2="3"></line>
                       </svg>
-                      <span>Download Trimmed Clip ({trimStart}s – {trimStart + trimDuration}s MP4)</span>
+                      <span>Download Trimmed Clip · {trimStart}s – {trimStart + trimDuration}s</span>
                     </button>
                   </div>
                 )}
@@ -2610,20 +2646,18 @@ export default function DownloaderSection({
                             )
                           }
                         >
-                          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" }}>
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                              <polyline points="7 10 12 15 17 10"></polyline>
-                              <line x1="12" y1="15" x2="12" y2="3"></line>
-                            </svg>
-                            <span style={{ fontWeight: 800, fontSize: "1.08rem" }}>
-                              {activeItem.type === "video"
-                                ? chosenRes.type === "mp3"
-                                  ? "Download Audio"
-                                  : "Download Video"
-                                : "Download Photo"}
+                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                          </svg>
+                          <span>
+                            {activeItem.type === "video"
+                              ? chosenRes.type === "mp3"
+                                ? "Download Audio"
+                                : "Download Video"
+                              : "Download Photo"}
                             </span>
-                          </div>
                         </button>
 
                         {/* Filmstrip thumbnails row */}

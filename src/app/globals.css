@@ -1149,16 +1149,24 @@ button, input {
   backdrop-filter: blur(30px);
   -webkit-backdrop-filter: blur(30px);
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: 290px 1fr;
   gap: 28px;
   text-align: left;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 860px) {
   .result-card-v2 {
     grid-template-columns: 1fr;
-    padding: 20px;
+    padding: 20px 16px;
     gap: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .result-card-v2 {
+    padding: 16px 14px;
+    gap: 16px;
+    border-radius: 18px;
   }
 }
 
@@ -1359,15 +1367,29 @@ button, input {
   color: #10b981;
 }
 
-/* Video Trimmer Drawer */
+/* Video Trimmer Drawer – Premium Redesign */
 .video-trimmer-box {
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(236, 72, 153, 0.35);
-  border-radius: 14px;
-  padding: 16px;
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.06) 0%, rgba(139, 92, 246, 0.06) 100%);
+  border: 1px solid rgba(236, 72, 153, 0.28);
+  border-radius: 18px;
+  padding: 20px;
   margin-top: 14px;
   margin-bottom: 14px;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  position: relative;
+  overflow: hidden;
+}
+
+.video-trimmer-box::before {
+  content: '';
+  position: absolute;
+  top: -30px;
+  right: -30px;
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.18) 0%, transparent 70%);
+  pointer-events: none;
 }
 
 .trimmer-presets-row {
@@ -1375,26 +1397,114 @@ button, input {
   gap: 8px;
   flex-wrap: wrap;
   margin-top: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .trimmer-preset-chip {
   background: rgba(255, 255, 255, 0.06);
-  border: 1px solid var(--card-border);
+  border: 1px solid rgba(255,255,255,0.12);
   color: var(--text-secondary);
   border-radius: var(--radius-full);
-  padding: 5px 12px;
-  font-size: 0.78rem;
-  font-weight: 600;
+  padding: 6px 14px;
+  font-size: 0.79rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.22s ease;
+  white-space: nowrap;
 }
 
-.trimmer-preset-chip:hover,
+.trimmer-preset-chip:hover {
+  background: rgba(236, 72, 153, 0.12);
+  border-color: rgba(236, 72, 153, 0.5);
+  color: #f472b6;
+  transform: translateY(-1px);
+}
+
 .trimmer-preset-chip.active {
-  background: rgba(236, 72, 153, 0.2);
+  background: linear-gradient(135deg, rgba(236,72,153,0.25), rgba(139,92,246,0.25));
   border-color: #ec4899;
   color: #fff;
+  box-shadow: 0 2px 10px rgba(236, 72, 153, 0.3);
+}
+
+/* Trimmer Range Slider */
+.trimmer-slider-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 480px) {
+  .trimmer-slider-group {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+.trimmer-slider-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.trimmer-slider-label strong {
+  color: #f472b6;
+  font-size: 0.85rem;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.trimmer-timeline-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 4px;
+  margin: 10px 0 14px;
+  position: relative;
+  overflow: visible;
+}
+
+.trimmer-timeline-fill {
+  position: absolute;
+  height: 100%;
+  background: linear-gradient(90deg, #ec4899, #8b5cf6);
+  border-radius: 4px;
+  box-shadow: 0 0 8px rgba(236,72,153,0.5);
+}
+
+.trimmer-download-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 13px 16px;
+  font-weight: 800;
+  font-size: 0.92rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 6px 18px rgba(236,72,153,0.4);
+  transition: all 0.25s ease;
+  letter-spacing: -0.01em;
+}
+
+.trimmer-download-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px rgba(236,72,153,0.55);
+}
+
+.trimmer-download-btn:active {
+  transform: translateY(0);
 }
 
 .primary-dl-card-btn {
@@ -1402,22 +1512,43 @@ button, input {
   background: var(--insta-gradient);
   border: none;
   color: #ffffff;
-  padding: 16px 22px;
+  padding: 17px 22px;
   border-radius: var(--radius-md);
-  font-weight: 700;
-  font-size: 1.05rem;
+  font-weight: 800;
+  font-size: 1.08rem;
   cursor: pointer;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  box-shadow: 0 8px 25px rgba(253, 29, 29, 0.4);
-  transition: all 0.25s ease;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 8px 28px rgba(236, 72, 153, 0.45), 0 2px 8px rgba(0,0,0,0.3);
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
   margin-bottom: 14px;
+  letter-spacing: -0.01em;
+  position: relative;
+  overflow: hidden;
+}
+
+.primary-dl-card-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
 }
 
 .primary-dl-card-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 35px rgba(253, 29, 29, 0.6);
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: 0 16px 40px rgba(236, 72, 153, 0.6), 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.primary-dl-card-btn:hover::after {
+  opacity: 1;
+}
+
+.primary-dl-card-btn:active {
+  transform: translateY(-1px);
 }
 
 .options-title-row {
@@ -3248,23 +3379,31 @@ button, input {
 .video-player-frame {
   width: 100%;
   aspect-ratio: 9/16;
-  max-height: 440px;
-  border-radius: var(--radius-md);
+  max-height: 480px;
+  border-radius: 18px;
   overflow: hidden;
   position: relative;
   background: #000000;
-  border: 1px solid var(--card-border);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255,255,255,0.04);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
+@media (max-width: 860px) {
+  .video-player-frame {
+    max-height: 360px;
+    border-radius: 14px;
+  }
+}
+
 .video-player-element {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
+  background: #000;
 }
 
 /* Carousel Album Section */
@@ -3535,27 +3674,30 @@ button, input {
 
 .slide-dl-btn {
   width: 100%;
-  background: #2563eb;
-  background-image: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  background: var(--insta-gradient);
   border: none;
   color: #ffffff;
-  padding: 10px 14px;
+  padding: 11px 14px;
   border-radius: var(--radius-sm);
-  font-weight: 700;
+  font-weight: 800;
   font-size: 0.88rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 14px rgba(236, 72, 153, 0.35);
+  letter-spacing: -0.01em;
 }
 
 .slide-dl-btn:hover {
-  transform: translateY(-1px);
-  background-image: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
-  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.45);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(236, 72, 153, 0.5);
+}
+
+.slide-dl-btn:active {
+  transform: translateY(0);
 }
 
 /* Showcase Slider View */
