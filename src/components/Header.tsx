@@ -1,11 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
-import InstallAppButton from "@/components/InstallAppButton";
 import LanguageSelector from "@/components/LanguageSelector";
 import { useTranslation } from "@/lib/i18n";
+
+const InstallAppButton = dynamic(() => import("@/components/InstallAppButton"), {
+  ssr: false,
+});
 
 interface HeaderProps {
   activeTab?: string;

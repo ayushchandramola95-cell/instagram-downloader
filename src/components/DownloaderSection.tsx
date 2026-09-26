@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
-import JSZip from "jszip";
 import { useTranslation } from "@/lib/i18n";
 import { ExtractedMedia, FetchMediaResponse, MediaResolution } from "@/lib/types";
 import { trackGAEvent } from "@/lib/ga";
@@ -552,6 +551,8 @@ export default function DownloaderSection({
     setBatchProgressText("Initializing ZIP bundle...");
 
     try {
+      const JSZipModule = await import("jszip");
+      const JSZip = JSZipModule.default;
       const zip = new JSZip();
       const folderName = `gramsave_${result.shortcode || result.id || "carousel"}`;
       const folder = zip.folder(folderName) || zip;

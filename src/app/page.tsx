@@ -1,11 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import DownloaderSection from "@/components/DownloaderSection";
-import FaqAccordion, { FaqItem } from "@/components/FaqAccordion";
+import type { FaqItem } from "@/components/FaqAccordion";
 import { useTranslation } from "@/lib/i18n";
+
+const FaqAccordion = dynamic(() => import("@/components/FaqAccordion"), {
+  ssr: true,
+});
 
 const HOME_FAQS: FaqItem[] = [
   {

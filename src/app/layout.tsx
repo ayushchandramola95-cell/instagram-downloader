@@ -1,13 +1,16 @@
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { LanguageProvider } from "@/lib/i18n";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
   variable: "--font-primary",
+  preload: true,
+  fallback: ["system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
+  adjustFontFallback: true,
 });
 
 export const viewport: Viewport = {
@@ -202,29 +205,6 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="dns-prefetch" href="https://challenges.cloudflare.com" />
         <link rel="preconnect" href="https://challenges.cloudflare.com" crossOrigin="anonymous" />
-        {(() => {
-          const gaId = process.env.NEXT_PUBLIC_GA_ID || "G-T7K7C7RJV1";
-          return gaId ? (
-            <>
-              <script
-                async
-                src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
-              />
-              <script
-                dangerouslySetInnerHTML={{
-                  __html: `
-                    window.dataLayer = window.dataLayer || [];
-                    function gtag(){dataLayer.push(arguments);}
-                    gtag('js', new Date());
-                    gtag('config', '${gaId}', {
-                      page_path: window.location.pathname,
-                    });
-                  `,
-                }}
-              />
-            </>
-          ) : null;
-        })()}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -244,6 +224,31 @@ export default function RootLayout({
       </head>
       <body>
         <LanguageProvider>{children}</LanguageProvider>
+        {(() => {
+          const gaId = process.env.NEXT_PUBLIC_GA_ID || "G-T7K7C7RJV1";
+          return gaId ? (
+            <>
+              <Script
+                strategy="lazyOnload"
+                src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+              />
+              <Script
+                id="google-analytics"
+                strategy="lazyOnload"
+                dangerouslySetInnerHTML={{
+                  __html: `
+                    window.dataLayer = window.dataLayer || [];
+                    function gtag(){dataLayer.push(arguments);}
+                    gtag('js', new Date());
+                    gtag('config', '${gaId}', {
+                      page_path: window.location.pathname,
+                    });
+                  `,
+                }}
+              />
+            </>
+          ) : null;
+        })()}
       </body>
     </html>
   );
