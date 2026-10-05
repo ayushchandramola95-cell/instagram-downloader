@@ -21,7 +21,21 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/contact", priority: 0.3, changeFrequency: "monthly" as const },
   ];
 
+  const guidePages = [
+    { path: "/guides", priority: 0.85, changeFrequency: "weekly" as const },
+    { path: "/guides/instagram-downloader-not-working-fixes", priority: 0.8, changeFrequency: "monthly" as const },
+    { path: "/guides/how-to-save-instagram-reels-to-camera-roll", priority: 0.8, changeFrequency: "monthly" as const },
+    { path: "/guides/how-to-download-instagram-audio-mp3", priority: 0.8, changeFrequency: "monthly" as const },
+  ];
+
   const mainEntries: MetadataRoute.Sitemap = mainPages.map((page) => ({
+    url: `${baseUrl}${page.path}`,
+    lastModified: now,
+    changeFrequency: page.changeFrequency,
+    priority: page.priority,
+  }));
+
+  const guideEntries: MetadataRoute.Sitemap = guidePages.map((page) => ({
     url: `${baseUrl}${page.path}`,
     lastModified: now,
     changeFrequency: page.changeFrequency,
@@ -35,5 +49,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: page.priority,
   }));
 
-  return [...mainEntries, ...legalEntries];
+  return [...mainEntries, ...guideEntries, ...legalEntries];
 }

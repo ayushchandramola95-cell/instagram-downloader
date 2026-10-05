@@ -6,7 +6,7 @@ import DownloaderSection from "@/components/DownloaderSection";
 import FaqAccordion, { FaqItem } from "@/components/FaqAccordion";
 
 export const metadata: Metadata = {
-  title: "Instagram Story Saver - Download Stories Free | GramSave",
+  title: "Instagram Story Saver - Download Stories & Highlights Anonymously (1080p) | GramSave",
   description:
     "Save and download Instagram Stories and Highlights in original HD quality before they disappear after 24 hours. 100% anonymous, free, and no login required.",
   keywords: [
@@ -16,12 +16,16 @@ export const metadata: Metadata = {
     "save Instagram story video",
     "Instagram highlights downloader",
     "story saver online free",
+    "view instagram story anonymously",
+    "save instagram story to phone",
+    "instagram highlights download online",
+    "instagram story to mp4 1080p",
   ],
   alternates: {
     canonical: "https://gramsave.site/story-saver",
   },
   openGraph: {
-    title: "Instagram Story Saver - Download Stories Free | GramSave",
+    title: "Instagram Story Saver - Download Stories & Highlights Anonymously | GramSave",
     description:
       "Download Instagram Stories and Highlights anonymously before they expire. Fast, free, and secure.",
     url: "https://gramsave.site/story-saver",
@@ -37,7 +41,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Instagram Story Saver - Download Stories Free | GramSave",
+    title: "Instagram Story Saver - Download Stories Anonymously (1080p)",
     description:
       "Save Instagram Stories and Highlights in original HD quality anonymously.",
     images: ["https://gramsave.site/og-image.jpg"],

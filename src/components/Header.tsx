@@ -48,6 +48,7 @@ export default function Header({}: HeaderProps = {}) {
       icon: "👤",
       badge: "HD",
     },
+    { label: t("nav_guides", "Guides"), href: "/guides", icon: "📚" },
   ];
 
   // Secondary tools in the "More Tools" dropdown

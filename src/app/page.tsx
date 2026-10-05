@@ -428,6 +428,179 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Featured Guides & Tutorials (SEO Authority Hub) */}
+        <section className="container" style={{ padding: "40px 20px 20px" }}>
+          <div className="section-header">
+            <div className="section-tag">📚 Expert Guides &amp; Solutions</div>
+            <h2 className="section-title">Instagram Guides, Fixes &amp; Tutorials</h2>
+            <p className="section-desc">
+              Discover step-by-step guides on saving videos to camera rolls, fixing download failures, and extracting pristine MP3 audio tracks.
+            </p>
+          </div>
+
+          <div className="guides-grid" style={{ marginBottom: "30px" }}>
+            <Link
+              href="/guides/instagram-downloader-not-working-fixes"
+              className="guide-card"
+            >
+              <div>
+                <div className="guide-card-meta">
+                  <span className="guide-tag guide-tag-fix">Fixes &amp; Solutions</span>
+                  <span className="guide-read-time">⏱️ 6 min read</span>
+                </div>
+                <h3 className="guide-card-title">Instagram Downloader Not Working? 7 Proven Fixes That Actually Work</h3>
+                <p className="guide-card-desc">
+                  Encountering download errors? Learn the 7 most common causes (cookie blocks, private accounts, expired story tokens) and how to resolve them immediately.
+                </p>
+              </div>
+              <div className="guide-card-footer">
+                <span>Read Full Fixes Guide</span>
+                <span className="guide-card-arrow">→</span>
+              </div>
+            </Link>
+
+            <Link
+              href="/guides/how-to-save-instagram-reels-to-camera-roll"
+              className="guide-card"
+            >
+              <div>
+                <div className="guide-card-meta">
+                  <span className="guide-tag guide-tag-device">Device Guide</span>
+                  <span className="guide-read-time">⏱️ 5 min read</span>
+                </div>
+                <h3 className="guide-card-title">How to Save Instagram Reels to Camera Roll (iPhone &amp; Android)</h3>
+                <p className="guide-card-desc">
+                  Step-by-step instructions to save high-resolution 1080p Instagram Reels directly to your Apple Photos camera roll or Android gallery without watermarks.
+                </p>
+              </div>
+              <div className="guide-card-footer">
+                <span>Read Mobile Guide</span>
+                <span className="guide-card-arrow">→</span>
+              </div>
+            </Link>
+
+            <Link
+              href="/guides/how-to-download-instagram-audio-mp3"
+              className="guide-card"
+            >
+              <div>
+                <div className="guide-card-meta">
+                  <span className="guide-tag guide-tag-audio">Audio &amp; Music</span>
+                  <span className="guide-read-time">⏱️ 4 min read</span>
+                </div>
+                <h3 className="guide-card-title">How to Download Audio from Instagram Reels as MP3 (320kbps)</h3>
+                <p className="guide-card-desc">
+                  Extract trending background music, viral audio tracks, and speech from Instagram Reels into studio-grade 320kbps MP3 files for ringtones and video editing.
+                </p>
+              </div>
+              <div className="guide-card-footer">
+                <span>Read Audio Tutorial</span>
+                <span className="guide-card-arrow">→</span>
+              </div>
+            </Link>
+          </div>
+
+          <div style={{ textAlign: "center", marginBottom: "40px" }}>
+            <Link href="/guides" className="article-cta-btn" style={{ background: "rgba(255, 255, 255, 0.08)", border: "1px solid var(--border-subtle)" }}>
+              Explore All Guides &amp; Tutorials (3) →
+            </Link>
+          </div>
+        </section>
+
+        {/* Popular Searches & Keyword Cloud (Internal Link Equity) */}
+        <section className="container popular-searches-section" id="popular-topics">
+          <div className="section-header">
+            <div className="section-tag">🔍 Popular Searches</div>
+            <h2 className="section-title">Frequently Searched Instagram Topics</h2>
+            <p className="section-desc">
+              Quick access to our specialized tools and guides for the most popular Instagram download queries.
+            </p>
+          </div>
+
+          <div className="keyword-cluster-box">
+            {/* Cluster 1: Formats & Quality */}
+            <div className="keyword-cluster-group">
+              <div className="keyword-cluster-heading">High-Resolution Formats &amp; Features</div>
+              <div className="keyword-chips-wrap">
+                <Link href="/reels-downloader" className="keyword-chip-link">
+                  <span>🎬</span> <span className="chip-highlight">Instagram Reels Downloader</span> 1080p
+                </Link>
+                <Link href="/reels-downloader" className="keyword-chip-link">
+                  <span>✨</span> Download Reels <span className="chip-highlight">Without Watermark</span>
+                </Link>
+                <Link href="/story-saver" className="keyword-chip-link">
+                  <span>⚡</span> <span className="chip-highlight">Instagram Story Saver</span> Anonymously
+                </Link>
+                <Link href="/audio-downloader" className="keyword-chip-link">
+                  <span>🎵</span> Extract Audio to <span className="chip-highlight">MP3 320kbps</span>
+                </Link>
+                <Link href="/carousel-downloader" className="keyword-chip-link">
+                  <span>📂</span> Download <span className="chip-highlight">Multiple Photos (ZIP)</span>
+                </Link>
+                <Link href="/photo-downloader" className="keyword-chip-link">
+                  <span>📸</span> Original <span className="chip-highlight">HD Photo Downloader</span>
+                </Link>
+                <Link href="/dp-viewer" className="keyword-chip-link">
+                  <span>👤</span> <span className="chip-highlight">Full Size DP Viewer</span> Online
+                </Link>
+                <Link href="/reels-downloader" className="keyword-chip-link">
+                  <span>✂️</span> <span className="chip-highlight">Trim &amp; Cut Instagram Video</span> Online
+                </Link>
+                <Link href="/story-saver" className="keyword-chip-link">
+                  <span>📌</span> Download <span className="chip-highlight">Story Highlights</span>
+                </Link>
+              </div>
+            </div>
+
+            {/* Cluster 2: Device Specific & Solutions */}
+            <div className="keyword-cluster-group">
+              <div className="keyword-cluster-heading">Devices &amp; Troubleshooting Walkthroughs</div>
+              <div className="keyword-chips-wrap">
+                <Link href="/guides/how-to-save-instagram-reels-to-camera-roll" className="keyword-chip-link">
+                  <span>🍎</span> Save Reels to <span className="chip-highlight">iPhone Camera Roll</span>
+                </Link>
+                <Link href="/guides/how-to-save-instagram-reels-to-camera-roll" className="keyword-chip-link">
+                  <span>🤖</span> Download Video to <span className="chip-highlight">Android Gallery</span>
+                </Link>
+                <Link href="/guides/instagram-downloader-not-working-fixes" className="keyword-chip-link">
+                  <span>🔧</span> Instagram Downloader <span className="chip-highlight">Not Working Fixes</span>
+                </Link>
+                <Link href="/reels-downloader" className="keyword-chip-link">
+                  <span>💻</span> Instagram Video Downloader for <span className="chip-highlight">PC &amp; Mac</span>
+                </Link>
+                <Link href="/guides/how-to-download-instagram-audio-mp3" className="keyword-chip-link">
+                  <span>📲</span> Convert Reel Sound to <span className="chip-highlight">Phone Ringtone</span>
+                </Link>
+                <Link href="/reels-downloader" className="keyword-chip-link">
+                  <span>🚀</span> Download Instagram Video <span className="chip-highlight">Without App</span>
+                </Link>
+              </div>
+            </div>
+
+            {/* Cluster 3: Global / International Search Terms */}
+            <div className="keyword-cluster-group">
+              <div className="keyword-cluster-heading">International Popular Searches</div>
+              <div className="keyword-chips-wrap">
+                <Link href="/reels-downloader" className="keyword-chip-link">
+                  <span>🇪🇸</span> Descargar Reels de Instagram 1080p
+                </Link>
+                <Link href="/reels-downloader" className="keyword-chip-link">
+                  <span>🇧🇷</span> Baixar Vídeos do Instagram MP4 HD
+                </Link>
+                <Link href="/reels-downloader" className="keyword-chip-link">
+                  <span>🇮🇩</span> Download Video Instagram Tanpa Watermark
+                </Link>
+                <Link href="/reels-downloader" className="keyword-chip-link">
+                  <span>🇫🇷</span> Télécharger Vidéo Instagram Gratuite
+                </Link>
+                <Link href="/reels-downloader" className="keyword-chip-link">
+                  <span>🇮🇳</span> इंस्टाग्राम वीडियो डाउनलोड ऑनलाइन
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* FAQ Accordion */}
         <FaqAccordion
           items={HOME_FAQS}

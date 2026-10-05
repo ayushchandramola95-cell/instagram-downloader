@@ -1,0 +1,400 @@
+Perfect! Now I have a comprehensive understanding of your project. Let me provide you with a detailed architectural overview:
+
+---
+
+# **InstaSnap (GramSave) - Instagram Video Downloader Project Overview**
+
+## **🎯 Project Summary**
+
+This is a **Next.js 16.3+ full-stack web application** built to download Instagram Reels, Videos, Stories, Photos, Carousels, and Profile Pictures in high quality (up to 1080p Full HD) without watermarks or login requirements. The project is architected for **production deployment on Google Cloud Run with Cloudflare CDN** and includes enterprise-grade security, rate limiting, and SEO optimization.
+
+---
+
+## **📦 Core Technology Stack**
+
+| **Layer** | **Technology** | **Version** |
+|-----------|---------------|-------------|
+| **Framework** | Next.js (App Router) | 16.3.5 |
+| **Language** | TypeScript | 5+ |
+| **Runtime** | Node.js | 20 (LTS) |
+| **UI Library** | React | 19.2.8 |
+| **Styling** | Custom CSS + Glassmorphism | Vanilla |
+| **Video Extraction** | yt-dlp (self-hosted CLI) | Latest |
+| **Media Processing** | FFmpeg | Latest |
+| **HTTP Client** | Axios + Fetch API | 1.20.0 |
+| **Archive Generator** | JSZip | 3.10.2 |
+| **Deployment** | Docker + Google Cloud Run | Standalone build |
+
+---
+
+## **🏗️ Architecture Breakdown**
+
+### **Frontend (Client-Side)**
+
+#### **Main Entry Point**
+- **`src/app/page.tsx`**: Homepage with downloader UI, FAQ, features, device guides
+- **`src/app/layout.tsx`**: Root layout with SEO metadata, JSON-LD schemas, Google Analytics
+
+#### **Key Components** (`src/components/`)
+- **`DownloaderSection.tsx`**: 
+  - Main interactive download interface with tab-based navigation
+  - Handles clipboard detection, URL input, quality selection
+  - Supports multiple media types (Reels, Stories, Photos, Audio, Carousels, Profiles)
+  - Includes audio player, video trimmer, batch download for carousels
+  - Real-time download progress indicators
+  
+- **`FaqAccordion.tsx`**: Expandable FAQ section with JSON-LD structured data
+- **`Header.tsx`**: Site navigation with language selector and theme toggle
+- **`Footer.tsx`**: Site footer with links and social media
+- **`LanguageSelector.tsx`**: Multi-language support switcher
+- **`ThemeToggle.tsx`**: Dark/light mode toggle
+
+#### **Page Structure** (`src/app/`)
+```
+app/
+├── page.tsx                    # Homepage (All-in-One downloader)
+├── layout.tsx                  # Root layout (SEO + metadata)
+├── globals.css                 # Global styles + animations
+│
+├── reels-downloader/           # Dedicated Reels page
+├── story-saver/                # Stories downloader page
+├── audio-downloader/           # Audio extraction page
+├── photo-downloader/           # Photo saver page
+├── profile-downloader/         # Profile DP downloader
+├── carousel-downloader/        # Carousel album downloader
+├── dp-viewer/                  # DP viewer/zoom tool
+│
+├── contact/                    # Contact page
+├── developer/                  # Developer docs
+├── privacy/                    # Privacy policy
+└── terms/                      # Terms of service
+```
+
+---
+
+### **Backend (API Routes)**
+
+Located in `src/app/api/`:
+
+#### **1. `/api/fetch-media` (POST)**
+**Purpose**: Extract Instagram media metadata and download URLs
+
+**Flow**:
+1. Validates Instagram URL via `validateInstagramUrl()`
+2. Applies rate limiting (30 requests/min per IP by default)
+3. Optionally verifies Cloudflare Turnstile anti-bot token
+4. Calls `extractInstagramMedia()` from `instagram-extractor.ts`
+5. Returns JSON with media details, resolutions, thumbnails
+
+**Key Features**:
+- Multi-tier extraction with automatic failover
+- Supports Reels, Posts, Stories, Carousels, Profile DPs
+- Returns structured `ExtractedMedia` object
+
+---
+
+#### **2. `/api/download` (GET)**
+**Purpose**: Stream media files with proper download headers (bypasses Instagram CORS/hotlinking)
+
+**Flow**:
+1. Validates download target URL is authentic Instagram CDN via `validateDownloadTargetUrl()`
+2. Applies rate limiting (60 downloads/min per IP)
+3. Records download analytics
+4. For audio/trimmed videos: Uses **FFmpeg on-the-fly processing**
+5. For standard videos/photos: Proxies stream directly from CDN
+
+**Query Parameters**:
+- `url`: Encoded CDN URL
+- `filename`: Sanitized output filename
+- `audioUrl`: (Optional) Separate audio stream for DASH video muxing
+- `start`: (Optional) Trim start time in seconds
+- `duration`: (Optional) Clip duration for trimming
+
+**Key Features**:
+- Real-time FFmpeg transcoding for trimmed clips and audio extraction
+- SSRF protection with CDN whitelist
+- Sets `Content-Disposition: attachment` to force browser download
+- Supports video+audio muxing for DASH formats
+
+---
+
+#### **3. `/api/analytics` (POST)**
+**Purpose**: Track download events (optional analytics store)
+- Records download counts by media type
+- Stores in `src/data/analytics.json`
+
+#### **4. `/api/translations` (GET)**
+**Purpose**: Serve internationalization strings
+- Returns translations from `src/data/translations.json`
+
+---
+
+### **Core Business Logic** (`src/lib/`)
+
+#### **`instagram-extractor.ts`** 
+**The heart of the extraction system** - implements a **5-tier failover strategy**:
+
+1. **yt-dlp** (Primary) - Self-hosted CLI extraction
+2. **Direct Instagram Mobile API** - Authenticated Instagram API calls with cookies
+3. **RapidAPI** (Optional) - Third-party API fallback if key is configured
+4. **GraphQL Query** - Fallback Instagram web GraphQL endpoint
+5. **Embed Scraping** - Public embed page extraction as last resort
+
+**Special Handlers**:
+- `extractUserStories()`: Fetches active 24-hour stories for a username
+- `extractInstagramProfile()`: Extracts HD profile pictures
+- `extractViaDirectApi()`: Parses carousel albums, video formats, and photos
+- `shortcodeToMediaId()`: Converts Instagram shortcodes to numeric media IDs
+
+---
+
+#### **`ytdlp-extractor.ts`**
+**yt-dlp CLI Integration**:
+- Executes `yt-dlp` with secure `child_process.execFile`
+- Auto-detects and uses `cookies.txt` for authentication
+- Supports proxy configuration via environment variables
+- Parses JSON output and maps to structured `ExtractedMedia` format
+- Handles multi-item carousels and DASH video/audio streams
+
+**Key Functions**:
+- `extractWithYtDlp()`: Main extraction wrapper
+- `buildResolutionsFromOutput()`: Constructs quality options from yt-dlp formats
+
+---
+
+#### **`security.ts`**
+**Security & Validation Layer**:
+- `validateInstagramUrl()`: Strict URL validation with SSRF protection
+- `validateDownloadTargetUrl()`: CDN whitelist enforcement
+- `sanitizeFilename()`: Path traversal and malicious extension filtering
+- `isProfileTargetUrl()`: Detects profile vs. media URLs
+- Blocks private IPs, localhost, cloud metadata endpoints
+
+---
+
+#### **`rate-limiter.ts`**
+**In-Memory Sliding Window Rate Limiter**:
+- `checkRateLimit()`: Tracks requests per IP within time windows
+- `getClientIp()`: Extracts real client IP from Cloudflare/proxy headers
+- Default limits: 30 fetch requests/min, 60 downloads/min
+- Automatic stale entry cleanup
+
+---
+
+#### **`types.ts`**
+TypeScript interfaces:
+- `ExtractedMedia`: Main media object structure
+- `MediaResolution`: Quality/format options
+- `MediaChildItem`: Carousel slide metadata
+- `ProfileDetails`: Instagram profile information
+
+---
+
+#### **`i18n.tsx` & `translations-store.ts`**
+- Multi-language support (English, Spanish, Portuguese, Indonesian, etc.)
+- React Context-based translation provider
+- JSON translation file caching
+
+---
+
+#### **`turnstile.ts`**
+- Cloudflare Turnstile anti-bot token verification
+- Optional protection for `/api/fetch-media`
+
+---
+
+#### **`ga.ts` & `analytics-store.ts`**
+- Google Analytics 4 event tracking
+- Local JSON-based download statistics
+
+---
+
+## **🐋 Docker & Deployment**
+
+### **Dockerfile** (Multi-stage build)
+```dockerfile
+# 1. Install dependencies (node_modules)
+# 2. Build Next.js (creates .next/standalone)
+# 3. Install Python, yt-dlp, FFmpeg
+# 4. Copy standalone build + static assets
+# 5. Run as non-root user on port 8080
+```
+
+**Key Environment Variables**:
+- `YT_DLP_BINARY_PATH`: Path to yt-dlp binary
+- `YT_DLP_COOKIES_PATH`: Instagram cookies file location
+- `YT_DLP_PROXY`: Residential proxy URL for IP rotation
+- `RAPIDAPI_KEY`: (Optional) Backup extraction API
+- `INSTAGRAM_COOKIE`: Direct cookie string
+- `NEXT_PUBLIC_GA_ID`: Google Analytics measurement ID
+- `NEXT_PUBLIC_TURNSTILE_SITE_KEY`: Cloudflare bot protection
+
+---
+
+## **🔒 Security Features**
+
+1. **SSRF Protection**: Strict CDN whitelist for `/api/download`
+2. **Rate Limiting**: Per-IP request throttling
+3. **Input Validation**: URL parsing with hostname verification
+4. **Filename Sanitization**: Path traversal prevention
+5. **Cloudflare Turnstile**: Optional bot detection
+6. **HTTP Security Headers**: CSP, X-Frame-Options, etc. (configured in `next.config.ts`)
+
+---
+
+## **📊 SEO & Performance Optimizations**
+
+### **Metadata** (`layout.tsx`):
+- OpenGraph & Twitter Cards
+- JSON-LD schemas: `WebApplication`, `HowTo`, `FAQPage`, `Organization`
+- Google/Bing site verification
+- Canonical URLs and structured data
+
+### **Performance**:
+- Next.js App Router with React Server Components
+- Standalone build mode for minimal Docker image
+- Compression enabled (Gzip/Brotli)
+- Static asset caching headers
+- Edge-ready for Cloudflare CDN deployment
+
+---
+
+## **📂 File Structure Summary**
+
+```
+project-root/
+├── src/
+│   ├── app/                    # Next.js App Router pages
+│   │   ├── api/                # Backend API routes
+│   │   ├── page.tsx            # Homepage
+│   │   ├── layout.tsx          # Root layout
+│   │   └── [feature-pages]/    # Dedicated downloader pages
+│   ├── components/             # React components
+│   ├── lib/                    # Core business logic
+│   │   ├── instagram-extractor.ts
+│   │   ├── ytdlp-extractor.ts
+│   │   ├── security.ts
+│   │   ├── rate-limiter.ts
+│   │   └── types.ts
+│   └── data/                   # JSON data stores
+├── public/                     # Static assets
+├── Dockerfile                  # Production container
+├── next.config.ts              # Next.js configuration
+├── package.json                # Dependencies
+├── tsconfig.json               # TypeScript config
+├── cookies.txt.template        # Instagram cookie format example
+└── PROJECT.md                  # Complete documentation
+```
+
+---
+
+## **🚀 Key Workflows**
+
+### **User Downloads a Video**:
+1. User pastes Instagram URL into input
+2. Frontend calls `POST /api/fetch-media`
+3. Backend validates URL, checks rate limit
+4. Calls extraction pipeline (yt-dlp → Direct API → fallbacks)
+5. Returns media metadata with multiple quality options
+6. User selects quality and clicks download
+7. Frontend triggers `GET /api/download?url=...`
+8. Backend streams file with `Content-Disposition: attachment`
+9. Browser saves file to user's device
+
+### **Carousel Album Download**:
+1. Extraction detects multi-slide post
+2. Returns `carouselItems[]` array
+3. User can:
+   - Download slides individually
+   - Batch download all slides sequentially
+   - Bundle all slides into a single ZIP archive (client-side with JSZip)
+
+### **Audio Extraction**:
+1. User selects "Audio MP3" quality option
+2. Frontend passes audio stream URL to `/api/download`
+3. FFmpeg extracts audio track: `ffmpeg -i video.mp4 -vn -c:a libmp3lame -b:a 320k output.mp3`
+4. Streams MP3 directly to browser
+
+### **Video Trimming**:
+1. User sets start time and duration in UI
+2. Frontend adds `&start=15&duration=30` to download URL
+3. FFmpeg trims video on-the-fly: `ffmpeg -ss 15 -t 30 -i video.mp4 -c copy output.mp4`
+4. Streams trimmed clip
+
+---
+
+## **🛠️ Development Commands**
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server (http://localhost:3000)
+npm run dev
+
+# Build production bundle
+npm run build
+
+# Start production server
+npm run start
+
+# Lint code
+npm run lint
+
+# Build Docker image
+docker build -t instasnap:latest .
+
+# Run Docker container
+docker run -p 8080:8080 instasnap:latest
+```
+
+---
+
+## **🎨 UI/UX Features**
+
+- **Glassmorphism Design**: Modern blur effects and gradient accents
+- **Dark Mode**: Full dark theme with sunset gradients
+- **Responsive**: Mobile-first design (iPhone, iPad, Android, Desktop)
+- **Accessibility**: Semantic HTML, ARIA labels, keyboard navigation
+- **Clipboard Detection**: Auto-detects copied Instagram links
+- **Audio Player**: Built-in HTML5 audio preview with waveform animation
+- **Video Trimmer**: Interactive slider-based clip editor
+- **Batch Operations**: Download all carousel slides as ZIP
+- **Real-time Progress**: Download progress indicators
+
+---
+
+## **🌐 Internationalization Support**
+
+Prepared for multi-language expansion with translation keys:
+- English (default)
+- Spanish (`/es`)
+- Portuguese (`/pt`)
+- Indonesian (`/id`)
+- Hindi (`/hi`)
+- French (`/fr`)
+
+---
+
+## **📈 Analytics & Monitoring**
+
+- Google Analytics 4 integration
+- Download event tracking by media type
+- Rate limit metrics
+- Error logging to console (production logs to Cloud Run)
+
+---
+
+## **🔑 Key Strengths**
+
+1. ✅ **Self-hosted yt-dlp** - Full control, no API costs
+2. ✅ **Multi-tier extraction** - Automatic failover ensures high success rate
+3. ✅ **Real-time FFmpeg processing** - Audio extraction and video trimming
+4. ✅ **Comprehensive security** - SSRF protection, rate limiting, input validation
+5. ✅ **SEO-optimized** - Rich snippets, JSON-LD schemas, fast Core Web Vitals
+6. ✅ **Cloud-native** - Docker + standalone Next.js for serverless deployment
+7. ✅ **Production-ready** - Security headers, analytics, error handling
+
+---
+
+This is a **highly sophisticated, production-grade Instagram media downloader** with enterprise-level architecture, security, and user experience! 🚀

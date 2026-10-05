@@ -100,6 +100,15 @@ export default function Footer() {
                 <Link href="/contact" className="footer-link">Contact & DMCA Removal</Link>
               </li>
               <li>
+                <Link href="/guides" className="footer-link" style={{ color: "#ec4899", fontWeight: 700 }}>📚 Guides &amp; Tutorials</Link>
+              </li>
+              <li>
+                <Link href="/guides/instagram-downloader-not-working-fixes" className="footer-link">Downloader Troubleshooting</Link>
+              </li>
+              <li>
+                <Link href="/guides/how-to-save-instagram-reels-to-camera-roll" className="footer-link">Save Reels to Camera Roll</Link>
+              </li>
+              <li>
                 <Link href="/#faq" className="footer-link">Frequently Asked Questions</Link>
               </li>
               {isDevMode && (

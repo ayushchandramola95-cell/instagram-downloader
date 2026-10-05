@@ -6,9 +6,9 @@ import DownloaderSection from "@/components/DownloaderSection";
 import FaqAccordion, { FaqItem } from "@/components/FaqAccordion";
 
 export const metadata: Metadata = {
-  title: "Instagram Carousel Downloader - Save Albums | GramSave",
+  title: "Instagram Carousel Downloader - Save Multiple Photos & Zip Album (1080p) | GramSave",
   description:
-    "Download entire Instagram Carousel posts with multiple slides. Save all photos, videos, and mixed media albums in 1080p HD. Free, fast, and anonymous.",
+    "Download entire Instagram Carousel posts with multiple slides. Save all photos, videos, and mixed media albums in 1080p HD as a single ZIP file for free.",
   keywords: [
     "Instagram carousel downloader",
     "download Instagram album",
@@ -16,12 +16,16 @@ export const metadata: Metadata = {
     "Instagram multi photo downloader",
     "download mixed media Instagram post",
     "Instagram slideshow saver",
+    "download instagram post with multiple pictures",
+    "save instagram swipe album",
+    "instagram multi photo saver online",
+    "download carousel post zip",
   ],
   alternates: {
     canonical: "https://gramsave.site/carousel-downloader",
   },
   openGraph: {
-    title: "Instagram Carousel Downloader - Save Albums | GramSave",
+    title: "Instagram Carousel Downloader - Save Multiple Photos & Zip Album | GramSave",
     description:
       "Save all photos and videos from Instagram carousel albums in full resolution with one click.",
     url: "https://gramsave.site/carousel-downloader",
@@ -37,7 +41,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Instagram Carousel Downloader - Save Albums | GramSave",
+    title: "Instagram Carousel Downloader - Save Albums (1080p)",
     description:
       "Download entire multi-slide carousel posts and albums in full resolution.",
     images: ["https://gramsave.site/og-image.jpg"],

@@ -6,9 +6,9 @@ import DownloaderSection from "@/components/DownloaderSection";
 import FaqAccordion, { FaqItem } from "@/components/FaqAccordion";
 
 export const metadata: Metadata = {
-  title: "Instagram Photo Downloader - Save HD Photos | GramSave",
+  title: "Instagram Photo Downloader - Save High-Resolution Images & Posts in HD | GramSave",
   description:
-    "Download original, uncompressed high-resolution photos and profile pictures from Instagram. 100% free, fast, and anonymous online photo saver.",
+    "Download original uncompressed high-resolution photos and images from Instagram posts. 100% free, fast, and anonymous online photo downloader without login.",
   keywords: [
     "Instagram photo downloader",
     "download Instagram pictures",
@@ -16,12 +16,16 @@ export const metadata: Metadata = {
     "Instagram profile picture downloader",
     "download IG photo HD",
     "Instagram image downloader online",
+    "save instagram pictures to phone",
+    "download instagram images 1080p",
+    "instagram post image saver",
+    "save instagram photos to gallery",
   ],
   alternates: {
     canonical: "https://gramsave.site/photo-downloader",
   },
   openGraph: {
-    title: "Instagram Photo Downloader - Save HD Photos | GramSave",
+    title: "Instagram Photo Downloader - Save High-Resolution Images | GramSave",
     description:
       "Save uncompressed Instagram photos in their original clarity. Works seamlessly on iPhone, Android, and PC.",
     url: "https://gramsave.site/photo-downloader",
@@ -37,7 +41,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Instagram Photo Downloader - Save HD Photos | GramSave",
+    title: "Instagram Photo Downloader - Save HD Images Online",
     description:
       "Download original uncompressed high-resolution photos from Instagram in 1 click.",
     images: ["https://gramsave.site/og-image.jpg"],

@@ -6,9 +6,9 @@ import DownloaderSection from "@/components/DownloaderSection";
 import FaqAccordion, { FaqItem } from "@/components/FaqAccordion";
 
 export const metadata: Metadata = {
-  title: "Instagram Reels Downloader - 1080p Full HD | GramSave",
+  title: "Instagram Reels Downloader Online Free - Save 1080p MP4 Without Watermark | GramSave",
   description:
-    "Download Instagram Reels in high-quality 1080p Full HD MP4 with audio. Free, fast, no watermark, and no login required. Works on iPhone, Android, and PC.",
+    "Free online Instagram Reels downloader. Save Reels in 1080p Full HD MP4 with sound directly to iPhone Camera Roll or Android Gallery without watermarks or login.",
   keywords: [
     "Instagram Reels downloader",
     "download IG reels 1080p",
@@ -16,14 +16,18 @@ export const metadata: Metadata = {
     "reels to MP4",
     "download reels without watermark",
     "Instagram reels saver online",
+    "save Instagram reels to camera roll",
+    "download reels without app",
+    "Instagram reel downloader online free",
+    "save reels to gallery Android",
   ],
   alternates: {
     canonical: "https://gramsave.site/reels-downloader",
   },
   openGraph: {
-    title: "Instagram Reels Downloader - 1080p Full HD | GramSave",
+    title: "Instagram Reels Downloader Online Free - Save 1080p MP4 | GramSave",
     description:
-      "Save high-definition Instagram Reels in 1080p MP4 with sound directly to your device. 100% free and anonymous.",
+      "Save high-definition Instagram Reels in 1080p MP4 with sound directly to your device. 100% free, no watermark, and anonymous.",
     url: "https://gramsave.site/reels-downloader",
     siteName: "GramSave",
     images: [
@@ -37,9 +41,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Instagram Reels Downloader - 1080p Full HD | GramSave",
+    title: "Instagram Reels Downloader - 1080p Full HD (No Watermark)",
     description:
-      "Save Instagram Reels in high quality 1080p MP4 with audio. Free, fast, and no login required.",
+      "Save Instagram Reels in high quality 1080p MP4 with audio directly to Camera Roll or Gallery.",
     images: ["https://gramsave.site/og-image.jpg"],
   },
 };
@@ -195,6 +199,18 @@ export default function ReelsDownloaderPage() {
                 <p className="step-text">
                   Choose your preferred resolution (1080p Full HD, 720p, or MP3 Audio) and click to save the video immediately to your camera roll or downloads folder.
                 </p>
+              </div>
+            </div>
+
+            {/* Helpful Guides & Tutorials Banner */}
+            <div style={{ marginTop: "30px", padding: "20px 24px", background: "var(--bg-tertiary)", borderRadius: "16px", border: "1px solid var(--card-border)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
+              <div>
+                <h4 style={{ margin: "0 0 6px", fontSize: "1.05rem", fontWeight: 800, color: "var(--text-primary)" }}>📱 Need Help Saving Directly to iPhone or Android?</h4>
+                <p style={{ margin: 0, fontSize: "0.92rem", color: "var(--text-secondary)" }}>Read our step-by-step tutorial on saving videos directly to Apple Photos or Google Photos without watermarks.</p>
+              </div>
+              <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                <Link href="/guides/how-to-save-instagram-reels-to-camera-roll" className="article-cta-btn" style={{ padding: "8px 18px", fontSize: "0.85rem" }}>Camera Roll Guide →</Link>
+                <Link href="/guides/instagram-downloader-not-working-fixes" className="article-cta-btn" style={{ padding: "8px 18px", fontSize: "0.85rem", background: "rgba(255, 255, 255, 0.08)", border: "1px solid var(--border-subtle)" }}>Fix Download Errors →</Link>
               </div>
             </div>
           </div>

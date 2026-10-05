@@ -6,9 +6,9 @@ import DownloaderSection from "@/components/DownloaderSection";
 import FaqAccordion, { FaqItem } from "@/components/FaqAccordion";
 
 export const metadata: Metadata = {
-  title: "Instagram Profile Downloader - Full Size DP | GramSave",
+  title: "Instagram Profile Picture Downloader - Zoom & Save Full Size HD DP Online | GramSave",
   description:
-    "View and download full-size Instagram profile pictures (DP) in 1080p Full HD original quality. 100% free, anonymous online Insta DP viewer for public and private accounts.",
+    "View and download full-size Instagram profile pictures (DP) in 1080p Full HD original clarity. Free, 100% anonymous online Insta DP viewer for any account.",
   keywords: [
     "Instagram profile picture downloader",
     "Instagram DP viewer",
@@ -19,12 +19,13 @@ export const metadata: Metadata = {
     "view private instagram profile picture full size",
     "save instagram dp online",
     "gramsave profile downloader",
+    "zoom instagram profile picture online",
   ],
   alternates: {
     canonical: "https://gramsave.site/profile-downloader",
   },
   openGraph: {
-    title: "Instagram Profile Downloader - Full Size DP | GramSave",
+    title: "Instagram Profile Picture Downloader - Full Size HD DP | GramSave",
     description:
       "Save uncropped 1080p Instagram profile pictures anonymously without login. Zoom and download original avatars on iPhone, Android, and PC.",
     url: "https://gramsave.site/profile-downloader",
@@ -40,7 +41,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Instagram Profile Downloader - Full Size DP | GramSave",
+    title: "Instagram Profile Picture Downloader - Full Size HD DP",
     description: "Zoom and download full-size Instagram profile pictures in 1 click.",
     images: ["https://gramsave.site/og-image.jpg"],
   },
